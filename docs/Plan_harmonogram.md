@@ -4,40 +4,40 @@ Kacper Sołtysiak, Łukasz Orlikowski, Jacek Karwowski
 
 ## Wizja
 ### Opis
-Auto-calendar jest kalendarzem, który ma za zadanie ułatwić organizację czasu użytkownikowi. W tym celu samodzielne, jak i zautomatyzowane tworzenie planu w oparciu o wprowadzone informacje o obowiązkach. Użytkownik może wybrać różne heurystyki, które optymalizują różne cele.
+Auto-calendar jest kalendarzem, który ma za zadanie ułatwić organizację czasu użytkownikowi. W tym celu umożliwia samodzielne, jak i zautomatyzowane tworzenie planu w oparciu o wprowadzone informacje o obowiązkach. Użytkownik może wybrać różne heurystyki, które optymalizują różne cele.
 
 ### Grupy użytkowników/role
 Indywidualni użytkownicy
 
 ### Funkcjonalność
-Podstawowe funkcje kalendarze:
- - Dodawanie/usuwanie/modyfikacja eventów o określonym terminie
- - Dodatkowe dane eventów: notatki, miejsce, lista osób
- - Powtarzające się wydarzenia (z opcjonalną datą zakończenia)
-Przypomnienia:
- - Przypomnienia bezpośrednio w aplikacji
- - Przypomnienia mailowe przed eventem
- - Przypomnienie bez-eventowe
-Auto:
- - Dodanie zadania o określonym czasie i deadlinie
- - Dodatkowe dane zadań (minimalny/maksymalny czas trwania)
- - Ustawienie powtarzalnego zadania o określonym przedziale czasowym i czasie
- - Sortowanie zależności
- - Ustawianie priorytetów
- - Sprawdzanie kompatybilności przy wstawianiu (i jakieś opcje rozwiązania konfliktu)
- - Auto-ułożenie planu w oparciu o różne heurystyki
- - Ułożenie planu uwzględniając metadane zadań (czas, priorytet)
- - Optymalizacja (braku-)powtarzalności zadań
-Import/eksport:
- - Import/eksport plików .ical
-UI:
- - Widok miesięczny/tygodniowy/dzienny
- - Filtracja tasków (przez tag, przez czas)
- - Customizacja kolorów
-Ekstra:
- - Obsługa stref czasowych
- - Notatki na konkretny dzień
- - Tagowanie zadań
+  - Podstawowe funkcje kalendarze:
+    - Dodawanie/usuwanie/modyfikacja eventów o określonym terminie
+    - Dodatkowe dane eventów: notatki, miejsce, lista osób
+    - Powtarzające się wydarzenia (z opcjonalną datą zakończenia)
+  - Przypomnienia:
+    - Przypomnienia bezpośrednio w aplikacji
+    - Przypomnienia mailowe przed eventem
+    - Przypomnienie bez-eventowe
+  - Auto:
+    - Dodanie zadania o określonym czasie i deadlinie
+    - Dodatkowe dane zadań (minimalny/maksymalny czas trwania)
+    - Ustawienie powtarzalnego zadania o określonym przedziale czasowym i czasie
+    - Sortowanie zależności
+    - Ustawianie priorytetów
+    - Sprawdzanie kompatybilności przy wstawianiu (i jakieś opcje rozwiązania konfliktu)
+    - Auto-ułożenie planu w oparciu o różne heurystyki
+    - Ułożenie planu uwzględniając metadane zadań (czas, priorytet)
+    - Optymalizacja (braku-)powtarzalności zadań
+  - Import/eksport:
+    - Import/eksport plików .ical
+  - UI:
+    - Widok miesięczny/tygodniowy/dzienny
+    - Filtracja tasków (przez tag, przez czas)
+    - Customizacja kolorów
+  - Ekstra:
+    - Obsługa stref czasowych
+    - Notatki na konkretny dzień
+    - Tagowanie zadań
 
 ### Technologie
  - Język: Java 1.8
