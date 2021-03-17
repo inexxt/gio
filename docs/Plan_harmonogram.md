@@ -69,6 +69,7 @@ Zakres:
  - Ustawienie narzędzi (repo, issues, CI)
  - Tagowanie zadań
  - Zaplanowanie zadań na następny sprint
+ - Dokumentacja wymagań funkcjonalnych (wydajność, skalowalność, bezpieczeństwo, ergonomia, 1 str)
 
 ### Sprint 2
 Deadline: 2021-04-28  
@@ -79,6 +80,7 @@ Zakres:
  - Sprawdzanie kompatybilności przy wstawianiu (i jakieś opcje rozwiązania konfliktu)
  - Auto-ułożenie planu w oparciu o jedną heurystykę
  - Zaplanowanie zadań na następny sprint
+ - Dokumentacja architektury (1-2 diagramy)
 
 ### Sprint 3
 Deadline: 2021-05-12  
@@ -107,3 +109,4 @@ Zakres:
  - Customizacja kolorów
  - Testy integracyjne
  - Wygenerowanie dokumentacji javadoc-iem
+ - Przygotowanie prezentacji
