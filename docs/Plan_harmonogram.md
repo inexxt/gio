@@ -69,7 +69,7 @@ Zakres:
  - Ustawienie narzędzi (repo, issues, CI)
  - Tagowanie zadań
  - Zaplanowanie zadań na następny sprint
- - Dokumentacja wymagań funkcjonalnych (wydajność, skalowalność, bezpieczeństwo, ergonomia, 1 str)
+ - Dokumentacja wymagań niefunkcjonalnych (wydajność, skalowalność, bezpieczeństwo, ergonomia, 1 str)
 
 ### Sprint 2
 Deadline: 2021-04-28  
