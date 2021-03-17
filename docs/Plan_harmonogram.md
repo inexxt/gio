@@ -27,7 +27,6 @@ Indywidualni użytkownicy
     - Sprawdzanie kompatybilności przy wstawianiu (i jakieś opcje rozwiązania konfliktu)
     - Auto-ułożenie planu w oparciu o różne heurystyki
     - Ułożenie planu uwzględniając metadane zadań (czas, priorytet)
-    - Optymalizacja (braku-)powtarzalności zadań
   - Import/eksport:
     - Import/eksport plików .ical
   - UI:
@@ -40,7 +39,7 @@ Indywidualni użytkownicy
     - Tagowanie zadań
 
 ### Technologie
- - Język: Java 1.8
+ - Język: Java 1.11
  - UI: Web-based, RESTful-style
  - Build system: Gradle
  - Testing framework: JUnit5
