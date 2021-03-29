@@ -2,12 +2,10 @@ package com.example.application.views.helloworld;
 
 import com.example.application.utilities.calendar.calendarevent.CalendarEvent;
 import com.example.application.utilities.database.ConnectionManager;
-import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.Text;
-import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.PageTitle;
@@ -18,8 +16,8 @@ import com.vaadin.flow.component.dependency.CssImport;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Connection;
-import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 
 
 @Route(value = "hello", layout = MainView.class)
@@ -27,68 +25,89 @@ import java.util.ArrayList;
 @PageTitle("Calendar overview")
 @CssImport("./views/helloworld/hello-world-view.css")
 public class CalendarOverview extends Div {
+    private static final int DAILY_EVENTS_LIMIT = 1440;
 
-	private Button previousDay;
-	private Button nextDay;
+    private final DatePicker targetDatePicker;
+	private final HorizontalLayout datePickerLayout;
+    private final HorizontalLayout[] eventInfoLayouts;
 
-	private HorizontalLayout datePickerLayout;
-	private HorizontalLayout dateNotesLayout;
-	private HorizontalLayout dateEventsLayout;
-
-	private HorizontalLayout dateOverview;
-	private TextArea dateTextArea;
     private Connection databaseConn;
 
-    private DatePicker targetDatePicker;
+    private final ArrayList<CalendarEvent> eventsList;
 
-    private ArrayList<CalendarEvent> eventsList;
+    /*  Collects information from database about events that user has planned for the day on
+     *  the date chosen in targetDatePicker
+     */
+    private void getEventsInfo() {
+        /* TODO: CONNECTION TO DATABASE AND GRABBING INFORMATION ABOUT EVENTS ON SPECIFIC DAY */
+    }
 
+    private void dateChangeHandler() {
+        getEventsInfo();
+
+        /*  Clear layouts which display information about the events */
+        for(int i = 0; i < DAILY_EVENTS_LIMIT; i++) {
+            /* Check if current layout is used (contains at least one component) and
+             * clear it then
+             */
+            if(eventInfoLayouts[i].getComponentCount() > 0) {
+                eventInfoLayouts[i].removeAll();
+            }
+
+            /* Break from the loop as remaining layouts are not used at all
+             */
+            else {
+                break;
+            }
+        }
+
+        int eventIndex = 0;
+
+        eventsList.sort(Collections.reverseOrder());
+
+        for(CalendarEvent e: eventsList) {
+            eventInfoLayouts[eventIndex].add(new Text(e.toString()));
+
+            eventIndex++;
+        }
+
+        /* No longer needed, clear */
+        eventsList.clear();
+    }
     public CalendarOverview() {
         addClassName("hello-world-view");
+
+        eventsList = new ArrayList<>();
 
         try {
             databaseConn = ConnectionManager.getNewConnection();
         }
         catch(IOException e) {
-            Notification.show("IOException occured: " + e.getStackTrace());
+            Notification.show("IOException occurred: " + e.getStackTrace());
         }
         catch(SQLException e) {
-            Notification.show("SQLException occured: " + e.getStackTrace());
+            Notification.show("SQLException occurred: " + e.getStackTrace());
         }
 
         datePickerLayout = new HorizontalLayout();
 
         targetDatePicker = new DatePicker();
-        targetDatePicker.setValue(LocalDate.now());
         targetDatePicker.setLabel("Choose date to view");
-        targetDatePicker.setWidth("30%");
 
         targetDatePicker.addValueChangeListener(e -> {
             if(targetDatePicker.getValue() != null) {
-                Notification.show("Not null date test...");
-                Notification.show(targetDatePicker.getValue().toString());
-
+                dateChangeHandler();
             }
         });
 
         datePickerLayout.addAndExpand(targetDatePicker);
         add(datePickerLayout);
 
-        dateEventsLayout = new HorizontalLayout();
-
-        add(dateEventsLayout);
-        /* May come handy in some tim
-        previousDay.addClickListener(e -> {
-        	cal.add(Calendar.DATE, -1);
-
-            dateTextArea.setLabel(Objects.requireNonNull(CalendarManager.getCurrentCalendarDate(cal)));
-        });
-
-        nextDay.addClickListener(e -> {
-        	cal.add(Calendar.DATE, 1);
-
-            dateTextArea.setLabel(Objects.requireNonNull(CalendarManager.getCurrentCalendarDate(cal)));
-        });
-         */
+        eventInfoLayouts = new HorizontalLayout[DAILY_EVENTS_LIMIT];
+        
+        for(int i = 0; i < DAILY_EVENTS_LIMIT; ++i) {
+            eventInfoLayouts[i] = new HorizontalLayout();
+            add(eventInfoLayouts[i]);
+        }
     }
 }
