@@ -21,15 +21,15 @@ import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.PageTitle;
 import com.example.application.views.main.MainView;
-import com.example.application.views.helloworld.HelloWorldView;
-import com.example.application.views.about.AboutView;
+import com.example.application.views.events.NewEventView;
+import com.example.application.views.helloworld.CalendarOverview;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.CssImport;
 
 /**
  * The main view is a top-level placeholder for other views.
  */
-@PWA(name = "My App", shortName = "My App", enableInstallPrompt = false)
+@PWA(name = "Auto Calendar", shortName = "Auto Calendar", enableInstallPrompt = false)
 @JsModule("./styles/shared-styles.js")
 @CssImport("./views/main/main-view.css")
 public class MainView extends AppLayout {
@@ -69,7 +69,7 @@ public class MainView extends AppLayout {
         logoLayout.setId("logo");
         logoLayout.setAlignItems(FlexComponent.Alignment.CENTER);
         logoLayout.add(new Image("images/logo.png", "My App logo"));
-        logoLayout.add(new H1("My App"));
+        logoLayout.add(new H1("Auto calendar"));
         layout.add(logoLayout, menu);
         return layout;
     }
@@ -84,7 +84,7 @@ public class MainView extends AppLayout {
     }
 
     private Component[] createMenuItems() {
-        return new Tab[]{createTab("Hello World", HelloWorldView.class), createTab("About", AboutView.class)};
+        return new Tab[]{createTab("Calendar overview", CalendarOverview.class), createTab("Add event", NewEventView.class)};
     }
 
     private static Tab createTab(String text, Class<? extends Component> navigationTarget) {
