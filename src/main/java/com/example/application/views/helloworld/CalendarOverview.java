@@ -25,7 +25,7 @@ import java.util.Collections;
 @PageTitle("Calendar overview")
 @CssImport("./views/helloworld/hello-world-view.css")
 public class CalendarOverview extends Div {
-    private static final int DAILY_EVENTS_LIMIT = 1440;
+    private static final int DAILY_EVENTS_LIMIT = 120;
 
     private final DatePicker targetDatePicker;
 	private final HorizontalLayout datePickerLayout;
@@ -104,7 +104,7 @@ public class CalendarOverview extends Div {
         add(datePickerLayout);
 
         eventInfoLayouts = new HorizontalLayout[DAILY_EVENTS_LIMIT];
-        
+
         for(int i = 0; i < DAILY_EVENTS_LIMIT; ++i) {
             eventInfoLayouts[i] = new HorizontalLayout();
             add(eventInfoLayouts[i]);
