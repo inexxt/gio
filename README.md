@@ -1,5 +1,5 @@
 # Auto-calendar
-# Template:
+https://github.com/inexxt/gio/actions/workflows/maven.yml/badge.svg
 [![GIO](https://circleci.com/gh/inexxt/gio.svg?style=svg)](https://github.com/inexxt/gio)
 
 ### Team
