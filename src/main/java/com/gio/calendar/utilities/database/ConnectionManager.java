@@ -1,4 +1,4 @@
-package com.example.application.utilities.database;
+package com.gio.calendar.utilities.database;
 
 import java.io.IOException;
 import java.io.InputStream;

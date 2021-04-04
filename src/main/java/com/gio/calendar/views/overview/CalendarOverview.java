@@ -1,7 +1,8 @@
-package com.example.application.views.helloworld;
+package com.gio.calendar.views.overview;
 
-import com.example.application.utilities.calendar.calendarevent.CalendarEvent;
-import com.example.application.utilities.database.ConnectionManager;
+import com.gio.calendar.utilities.calendar.calendarevent.CalendarEvent;
+import com.gio.calendar.utilities.database.ConnectionManager;
+import com.gio.calendar.views.main.MainView;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -9,7 +10,6 @@ import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.PageTitle;
-import com.example.application.views.main.MainView;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.component.dependency.CssImport;
 
@@ -20,10 +20,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 
-@Route(value = "hello", layout = MainView.class)
+@Route(value = "overview", layout = MainView.class)
 @RouteAlias(value = "", layout = MainView.class)
 @PageTitle("Calendar overview")
-@CssImport("./views/helloworld/hello-world-view.css")
+@CssImport("./views/overview/overview-view.css")
 public class CalendarOverview extends Div {
     private static final int DAILY_EVENTS_LIMIT = 120;
 
@@ -75,7 +75,7 @@ public class CalendarOverview extends Div {
         eventsList.clear();
     }
     public CalendarOverview() {
-        addClassName("hello-world-view");
+        addClassName("overview-view");
 
         eventsList = new ArrayList<>();
 

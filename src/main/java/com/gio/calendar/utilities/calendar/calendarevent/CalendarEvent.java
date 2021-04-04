@@ -1,9 +1,12 @@
-package com.example.application.utilities.calendar.calendarevent;
+package com.gio.calendar.utilities.calendar.calendarevent;
 
-import com.example.application.utilities.calendar.tag.Tag;
+import com.gio.calendar.utilities.calendar.tag.Tag;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class CalendarEvent {
     private LocalDate eventDate;
@@ -11,15 +14,15 @@ public class CalendarEvent {
     private LocalTime eventStartTime;
     private LocalTime eventEndTime;
 
-    private Tag eventTag;
+    private List<Tag> eventTag;
     private String eventDescription;
 
-    public CalendarEvent(LocalDate eDate, LocalTime eStartTime, LocalTime eEndTime, Tag eTags, String eDesc) {
+    public CalendarEvent(LocalDate eDate, LocalTime eStartTime, LocalTime eEndTime, String eTags, String eDesc) {
         eventDate = eDate;
         eventStartTime = eStartTime;
         eventEndTime = eEndTime;
 
-        eventTag = eTags;
+        eventTag = Arrays.stream(eTags.split(",")).map(Tag::new).collect(Collectors.toList());
         eventDescription = eDesc;
     }
 

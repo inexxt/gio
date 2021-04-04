@@ -1,6 +1,7 @@
-package com.example.application.views.events;
+package com.gio.calendar.views.events;
 
-import com.example.application.utilities.database.ConnectionManager;
+import com.gio.calendar.utilities.database.ConnectionManager;
+import com.gio.calendar.views.main.MainView;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -10,7 +11,6 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.PageTitle;
-import com.example.application.views.main.MainView;
 import com.vaadin.flow.component.dependency.CssImport;
 
 
@@ -18,7 +18,6 @@ import java.sql.Statement;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.time.Duration;
 
 @Route(value = "new_event", layout = MainView.class)
 @PageTitle("New event")
