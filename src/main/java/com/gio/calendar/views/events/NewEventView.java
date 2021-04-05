@@ -14,10 +14,11 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.component.dependency.CssImport;
 
 
-import java.sql.Statement;
+import java.sql.*;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Arrays;
 
 @Route(value = "new_event", layout = MainView.class)
 @PageTitle("New event")
@@ -50,19 +51,19 @@ public class NewEventView extends Div {
     private final HorizontalLayout eventStartTimeLayout;
     private final HorizontalLayout eventEndTimeLayout;
 
-    private void addEventToDatabase() throws SQLException, IOException {
-        Connection conn;
-        Statement stat;
-
-        try {
-            conn = ConnectionManager.getNewConnection();
-            stat = conn.createStatement();
-
-            /* TO DO: Insert appropriate values into the table */
-        }
-        catch(IOException | SQLException e) {
-            throw e;
-        }
+    private void addEventToDatabase() throws SQLException, IOException, ClassNotFoundException {
+        LocalDate eventDate = eventDatePicker.getValue();
+        LocalDateTime eventStart = eventStartTimePicker.getValue().atDate(eventDate);
+        LocalDateTime eventEnd = eventEndTimePicker.getValue().atDate(eventDate);
+        Connection conn = ConnectionManager.getConnection();
+        String sql = "INSERT INTO events(name, desc, event_start, event_end) VALUES(?, ?, ?, ?)";
+        PreparedStatement pstmt = conn.prepareStatement(sql);
+        pstmt.setString(1, eventNameArea.getValue());
+        pstmt.setString(2, eventDescriptionArea.getValue());
+        // slight incompatiblity between timestamp in miliseconds and in seconds
+        pstmt.setInt(3, (int) (Timestamp.valueOf(eventStart).getTime() / 1000L));
+        pstmt.setInt(4, (int) (Timestamp.valueOf(eventEnd).getTime() / 1000L));
+        pstmt.executeUpdate();
     }
 
     private void addEventHandler() {
@@ -71,9 +72,13 @@ public class NewEventView extends Div {
         }
         catch(SQLException e) {
             Notification.show("SQLException occured. Event has not been added.");
+            Notification.show("SQLException occurred: " + e.getMessage());
+            Notification.show("SQLException occurred: " + Arrays.toString(e.getStackTrace()));
         }
         catch(IOException e) {
             Notification.show("IOException occured.");
+        } catch (ClassNotFoundException e) {
+            Notification.show("JDBC error: " + e.getMessage());
         }
     }
 
@@ -137,7 +142,6 @@ public class NewEventView extends Div {
             if(eventStartTimePicker.getValue() != null &&
                eventEndTimePicker.getValue()   != null &&
                eventStartTimePicker.getValue().compareTo(eventEndTimePicker.getValue()) >= 0) {
-
                 Notification.show("Error: event start time later or just the event end time.");
             }
             /*  Check if event end time has been provided and if so check whether event start time
@@ -155,8 +159,18 @@ public class NewEventView extends Div {
             }
             else {
                 addEventHandler();
+                Notification.show("Event " + eventNameArea.getValue() + " was created!");
+                clearForm();
             }
         });
+    }
+
+    private void clearForm() {
+        eventNameArea.clear();
+        eventDescriptionArea.clear();
+        eventDatePicker.clear();
+        eventEndTimePicker.clear();
+        eventStartTimePicker.clear();
     }
 
 }
