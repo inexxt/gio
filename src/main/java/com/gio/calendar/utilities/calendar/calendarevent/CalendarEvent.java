@@ -15,11 +15,17 @@ public class CalendarEvent {
     private LocalTime eventStartTime;
     private LocalTime eventEndTime;
 
-    private List<Tag> eventTag;
+    protected List<Tag> eventTag;
     private String eventDescription;
     private String eventName;
 
-    public CalendarEvent(String eventName, String eventDescription, LocalDate eventDate, LocalTime eventStartTime, LocalTime eventEndTime, String tags) {
+    public CalendarEvent(String eventName, 
+    					 String eventDescription, 
+    					 LocalDate eventDate, 
+    					 LocalTime eventStartTime, 
+    					 LocalTime eventEndTime, 
+    					 String tags) {
+
         this.eventDate = eventDate;
         this.eventStartTime = eventStartTime;
         this.eventEndTime = eventEndTime;
@@ -28,13 +34,39 @@ public class CalendarEvent {
         this.eventName = eventName;
     }
 
+    private String timeToString(LocalTime targetTime) {
+    	return (targetTime.getHour() < 10 ? "0" + targetTime.getHour() : targetTime.getHour()) + ":" + 
+     		   (targetTime.getMinute() < 10 ? "0" + targetTime.getMinute() : targetTime.getMinute());
+    }
+    
+    /* Returns string representation of event start time in format HH:MM
+     */
+    public String getEventStartTimeString() {
+    	return timeToString(eventStartTime);
+    }
+    
+    /* Returns string representation of event end time in format HH:MM
+     */
+    public String getEventEndTimeString() {
+    	return timeToString(eventEndTime);
+    }
+    
+    public String getEventDescription() {
+    	return eventDescription;
+    }
+    
+    public String getEventName() {
+    	return eventName;
+    }
+    
+    /* For further purposes */
     @Override
     public String toString() {
         return "Date: " + eventDate.toString() +
                "\n" +
                 (eventName != null ? "Name: " + eventName + "\n" : "") +
-                (eventStartTime != null ? "Start time: " + eventStartTime.toString() + "\n" : "") +
-                (eventEndTime   != null ? "End time: " + eventEndTime.toString() + "\n" : "") +
+                (eventStartTime != null ? "Start time: " + getEventStartTimeString() + "\n" : "") +
+                (eventEndTime   != null ? "End time: " + getEventEndTimeString() + "\n" : "") +
                 (eventDescription != null ? "Description: " + eventDescription + "\n" : "") +
                "Tags: ";
     }

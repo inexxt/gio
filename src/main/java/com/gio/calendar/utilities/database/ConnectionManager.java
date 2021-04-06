@@ -12,24 +12,13 @@ public class ConnectionManager
     private static final String url = "jdbc:sqlite:calendar_sqlite.db";
     private static final String dbDriver = "org.sqlite.JDBC";
 
-    // singleton class managing the connection
+    /* Singleton class managing the connection
+     */
     public static class ConnectionManagerInstance {
         private Connection conn;
 
         public Connection getConn() {
             return conn;
-        }
-
-        public void insertExampleData() throws SQLException, IOException, ClassNotFoundException {
-            executeStatement("insert into events values(1, 'urodziny', 'desc1', 1617650012, 1617650013)");
-            executeStatement("insert into events values(2, 'imieniny', 'desc2', 1617650014, 1617650015)");
-            ResultSet rs = getConnectionManager().query("select * from events");
-            // TODO - remove this
-            while(rs.next())
-            {
-                System.out.println("id = " + rs.getInt("id"));
-                System.out.println("name = " + rs.getString("name"));
-            }
         }
 
         private void dropEventTable() throws SQLException, ClassNotFoundException {
@@ -54,7 +43,6 @@ public class ConnectionManager
                 this.conn = DriverManager.getConnection(url);
                 dropEventTable();
                 createEventTable();
-                insertExampleData();
             }
         }
 
@@ -72,15 +60,14 @@ public class ConnectionManager
         }
 
         public void closeConnection() {
-            try
-            {
+            try {
                 if (conn != null) {
                     conn.close();
                 }
             }
-            catch (SQLException e)
-            {
-                // connection close failed.
+            catch (SQLException e) {
+            	/* Connection close failed.
+            	 */
                 System.err.println(e.getMessage());
             }
         }
@@ -94,7 +81,7 @@ public class ConnectionManager
         return instance;
     }
 
-    public static void inititialize() throws SQLException, ClassNotFoundException, IOException {
+    public static void initialize() throws SQLException, ClassNotFoundException, IOException {
         getConnectionManager().initConnection();
     }
 
