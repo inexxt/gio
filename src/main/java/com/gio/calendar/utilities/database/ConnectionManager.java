@@ -37,6 +37,11 @@ public class ConnectionManager
             executeStatement(sql);
         }
 
+        private void dropTaskTable() throws SQLException, ClassNotFoundException {
+            String sql = "DROP TABLE IF EXISTS tasks;";
+            executeStatement(sql);
+        }
+
         private void createEventTable() throws ClassNotFoundException, SQLException {
             String sql = "CREATE TABLE IF NOT EXISTS events (\n"
                     + "	id integer PRIMARY KEY AUTOINCREMENT,\n"
@@ -48,6 +53,16 @@ public class ConnectionManager
             executeStatement(sql);
         }
 
+        private void createTaskTable() throws ClassNotFoundException, SQLException {
+            String sql = "CREATE TABLE IF NOT EXISTS tasks (\n"
+                    + "	id integer PRIMARY KEY AUTOINCREMENT,\n"
+                    + "	name text NOT NULL,\n"
+                    + "	desc text NOT NULL,\n"
+                    + "	task_date integer NOT NULL\n"
+                    + ");";
+            executeStatement(sql);
+        }
+
         public void initConnection() throws SQLException, ClassNotFoundException, IOException {
             if (conn == null) {
                 Class.forName(dbDriver);
@@ -55,6 +70,8 @@ public class ConnectionManager
                 dropEventTable();
                 createEventTable();
                 insertExampleData();
+                dropTaskTable();
+                createTaskTable();
             }
         }
 

@@ -3,6 +3,7 @@ package com.gio.calendar.utilities.calendar.calendartask;
 import com.gio.calendar.utilities.calendar.tag.Tag;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,6 +29,14 @@ public class CalendarTask {
                 (taskName != null ? "Name: " + taskName + "\n" : "") +
                 (taskDescription != null ? "Description: " + taskDescription + "\n" : "") +
                 "Tags: ";
+    }
+
+    public String getTaskDescription() {
+        return taskDescription;
+    }
+
+    public String getTaskName() {
+        return taskName;
     }
 
 }
