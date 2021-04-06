@@ -28,13 +28,34 @@ public class CalendarEvent {
         this.eventName = eventName;
     }
 
+    /* Returns string representation of event start time in format HH:MM
+     */
+    public String getEventStartTimeString() {
+    	return eventStartTime.getHour() + ":" + eventStartTime.getMinute();
+    }
+    
+    /* Returns string representation of event end time in format HH:MM
+     */
+    public String getEventEndTimeString() {
+    	return eventEndTime.getHour() + ":" + eventEndTime.getMinute();
+    }
+    
+    public String getEventDescription() {
+    	return eventDescription;
+    }
+    
+    public String getEventName() {
+    	return eventName;
+    }
+    
+    /* For further purposes */
     @Override
     public String toString() {
         return "Date: " + eventDate.toString() +
                "\n" +
                 (eventName != null ? "Name: " + eventName + "\n" : "") +
-                (eventStartTime != null ? "Start time: " + eventStartTime.toString() + "\n" : "") +
-                (eventEndTime   != null ? "End time: " + eventEndTime.toString() + "\n" : "") +
+                (eventStartTime != null ? "Start time: " + getEventStartTimeString() + "\n" : "") +
+                (eventEndTime   != null ? "End time: " + getEventEndTimeString() + "\n" : "") +
                 (eventDescription != null ? "Description: " + eventDescription + "\n" : "") +
                "Tags: ";
     }
