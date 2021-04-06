@@ -10,9 +10,12 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.component.dialog.*;
 import com.vaadin.flow.component.dependency.CssImport;
 
 import java.io.IOException;
@@ -27,6 +30,8 @@ import java.util.*;
 @CssImport("./views/overview/overview-view.css")
 public class CalendarOverview extends Div {
     private static final int DAILY_EVENTS_LIMIT = 120;
+    private static LocalDate dateToSet = null;
+    private static boolean forceDatePickerValue = false;
 
 //    private final Button button;
     private final DatePicker targetDatePicker;
@@ -76,6 +81,7 @@ public class CalendarOverview extends Div {
 
             String tags = ""; // empty for now
             CalendarEvent event = new CalendarEvent(
+            		rs.getInt("id"),
                     rs.getString("name"),
                     rs.getString("desc"),
                     eventDate,
@@ -167,7 +173,76 @@ public class CalendarOverview extends Div {
                 eventInfoLayouts[eventIndex].add(textLabels[i]);
                 eventInfoLayouts[eventIndex].add(breakLabels[i]);
             }
+            
+            HorizontalLayout eventActionsLayout = new HorizontalLayout();
+            
+            Button eventModificationButton = new Button("Modify event data");
+            //eventInfoLayouts[eventIndex].add(eventModificationButton);
+            
+            Button eventDeleteButton = new Button("Delete event");
+            //eventInfoLayouts[eventIndex].add(eventDeleteButton);
+            
+            eventActionsLayout.add(eventModificationButton, eventDeleteButton);
+            eventInfoLayouts[eventIndex].add(eventActionsLayout);
+            
+            eventModificationButton.addClickListener(v -> { 
+            	
+            });
 
+            eventDeleteButton.addClickListener(v -> { 
+            	Dialog deleteDialog = new Dialog();
+            	
+            	HorizontalLayout queryLayout = new HorizontalLayout();
+            	HorizontalLayout buttonsLayout = new HorizontalLayout();
+            	
+            	Label deleteConfirmationQuery = new Label("Please confirm operation");
+                Button eventDeleteConfirmation = new Button("Confirm event deletion");
+            	Button eventDeleteCancellation = new Button("Cancel event deletion");
+            	
+            	queryLayout.add(deleteConfirmationQuery);
+            	buttonsLayout.add(eventDeleteCancellation, eventDeleteConfirmation);
+                
+            	deleteDialog.add(queryLayout, buttonsLayout);
+            	
+            	deleteDialog.setVisible(true);
+            	deleteDialog.open();
+            	
+            	eventDeleteCancellation.addClickListener(w -> {
+            		deleteDialog.close();
+            	});
+            	
+            	eventDeleteConfirmation.addClickListener(w -> {
+            		boolean okDeletion = true;
+            		LocalDate saveDate = targetDatePicker.getValue();
+            		
+            		try {
+            			String sql = "delete from events where id = ?";
+            			PreparedStatement pstmt = ConnectionManager.
+            									  getConnectionManager().
+            									  getConn().prepareStatement(sql);
+            			
+            			pstmt.setInt(1, e.getEventId());
+            			pstmt.execute();
+            		}
+            		catch(SQLException | ClassNotFoundException ex) {
+            			okDeletion = false;
+            			Notification.show("Exception occured. Event has not been deleted.");
+            		}
+            		finally {
+            			if(okDeletion) {
+            				Notification.show("Event has been successfully deleted.");
+            				
+            				dateToSet = saveDate;
+            				forceDatePickerValue = true;
+            				UI.getCurrent().getPage().reload();
+            			}
+            		}
+            		
+            		deleteDialog.close();
+            	});
+            	
+            });
+            
             eventIndex++;
             eventNo++;
         }
@@ -272,13 +347,9 @@ public class CalendarOverview extends Div {
             taskInfoLayouts[0].add(noTasksInfoLabel);
 
         }
+
         setEventsInfo();
         setTasksInfo();
-
-
-        /* No longer needed, clear */
-        eventsList.clear();
-        tasksList.clear();
     }
 
     public CalendarOverview() {
@@ -306,6 +377,9 @@ public class CalendarOverview extends Div {
 
         targetDatePicker.addValueChangeListener(e -> {
             if(targetDatePicker.getValue() != null) {
+                eventsList.clear();
+                tasksList.clear();
+                
                 try {
                     dateChangeHandler();
                 } catch (SQLException | ClassNotFoundException | IOException throwables) {
@@ -328,6 +402,17 @@ public class CalendarOverview extends Div {
         for (int i = 0; i < DAILY_EVENTS_LIMIT; ++i) {
             taskInfoLayouts[i] = new VerticalLayout();
             add(taskInfoLayouts[i]);
+        }
+        
+        if(forceDatePickerValue) {
+        	targetDatePicker.setValue(dateToSet);
+        	/* Now after the value has been changed, the valueChangeListener associated
+        	 * with the targetDatePicker object will do its action
+        	 */
+        	/* Restore original flags values for further possible deletions of events
+        	 */
+        	forceDatePickerValue = false;
+        	dateToSet = null;
         }
     }
 }
