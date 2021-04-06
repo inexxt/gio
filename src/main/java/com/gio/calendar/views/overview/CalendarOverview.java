@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.sql.*;
 import java.time.*;
 import java.util.*;
-import java.util.Date;
 
 
 @Route(value = "overview", layout = MainView.class)
@@ -41,21 +40,32 @@ public class CalendarOverview extends Div {
     private void getEventsInfo() throws SQLException, IOException, ClassNotFoundException {
         String sql = "select name, desc, event_start, event_end from events where (event_start > ?) and (event_start < ?);";
         PreparedStatement pstmt = ConnectionManager.getConnectionManager().getConn().prepareStatement(sql);
+        
         LocalDateTime targetDateStart = targetDatePicker.getValue().atStartOfDay();
         LocalDateTime targetDateEnd = targetDatePicker.getValue().atStartOfDay().plusDays(1).minusSeconds(1);
 
         pstmt.setInt(1, ((int) (Timestamp.valueOf(targetDateStart).getTime() / 1000L)));
         pstmt.setInt(2, ((int) (Timestamp.valueOf(targetDateEnd).getTime() / 1000L)));
-        System.out.println("Executing select: " + pstmt.toString()); // TODO remove
+
         ResultSet rs = pstmt.executeQuery();
-        while(rs.next())
-        {
-            Date startTime = new Date(rs.getInt("event_start"));
-            Date endTime = new Date(rs.getInt("event_end"));
-            String timeZone = ZoneId.systemDefault().toString();
-            LocalTime startTimeLocal = LocalTime.ofInstant(startTime.toInstant(), ZoneId.of(timeZone));
-            LocalTime endTimeLocal = LocalTime.ofInstant(endTime.toInstant(), ZoneId.of(timeZone));
-            LocalDate eventDate = LocalDate.ofInstant(startTime.toInstant(), ZoneId.of(timeZone));
+        
+        while(rs.next()) {        	
+            LocalDateTime eventStart = LocalDateTime.ofInstant(Instant.ofEpochMilli(rs.getInt("event_start")*1000L), 
+                    TimeZone.getDefault().toZoneId());
+            
+            LocalDateTime eventEnd = LocalDateTime.ofInstant(Instant.ofEpochMilli(rs.getInt("event_end")*1000L), 
+                    TimeZone.getDefault().toZoneId());
+            
+            LocalTime startTimeLocal = LocalTime.of(eventStart.getHour(), 
+            										eventStart.getMinute());
+            
+            LocalTime endTimeLocal = LocalTime.of(eventEnd.getHour(), 
+            									  eventEnd.getMinute());
+            
+            LocalDate eventDate = LocalDate.of(eventStart.getYear(), 
+            								   eventStart.getMonthValue(), 
+            								   eventStart.getDayOfMonth());
+            
             String tags = ""; // empty for now
             CalendarEvent event = new CalendarEvent(
                     rs.getString("name"),
@@ -165,7 +175,7 @@ public class CalendarOverview extends Div {
 
         try {
             Notification.show("Establishing connection to db and initializing data");
-            ConnectionManager.inititialize();
+            ConnectionManager.initialize();
             Notification.show("Connection established");
         }
         catch(IOException e) {

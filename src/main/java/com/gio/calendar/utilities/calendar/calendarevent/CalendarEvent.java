@@ -19,7 +19,13 @@ public class CalendarEvent {
     private String eventDescription;
     private String eventName;
 
-    public CalendarEvent(String eventName, String eventDescription, LocalDate eventDate, LocalTime eventStartTime, LocalTime eventEndTime, String tags) {
+    public CalendarEvent(String eventName, 
+    					 String eventDescription, 
+    					 LocalDate eventDate, 
+    					 LocalTime eventStartTime, 
+    					 LocalTime eventEndTime, 
+    					 String tags) {
+
         this.eventDate = eventDate;
         this.eventStartTime = eventStartTime;
         this.eventEndTime = eventEndTime;
