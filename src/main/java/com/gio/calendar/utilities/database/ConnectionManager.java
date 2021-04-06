@@ -42,6 +42,16 @@ public class ConnectionManager
             executeStatement(sql);
         }
 
+        private void dropTaskTagsTable() throws SQLException, ClassNotFoundException {
+            String sql = "DROP TABLE IF EXISTS task_tags;";
+            executeStatement(sql);
+        }
+
+        private void dropEventTagsTable() throws SQLException, ClassNotFoundException {
+            String sql = "DROP TABLE IF EXISTS event_tags;";
+            executeStatement(sql);
+        }
+
         private void createEventTable() throws ClassNotFoundException, SQLException {
             String sql = "CREATE TABLE IF NOT EXISTS events (\n"
                     + "	id integer PRIMARY KEY AUTOINCREMENT,\n"
@@ -58,10 +68,32 @@ public class ConnectionManager
                     + "	id integer PRIMARY KEY AUTOINCREMENT,\n"
                     + "	name text NOT NULL,\n"
                     + "	desc text NOT NULL,\n"
-                    + "	task_date integer NOT NULL\n"
+                    + "	task_date integer NOT NULL,\n"
+                    + " task_duration integer NOT NULL\n"
                     + ");";
             executeStatement(sql);
         }
+
+        private void createTaskTagsTable() throws ClassNotFoundException, SQLException {
+            String sql = "CREATE TABLE IF NOT EXISTS task_tags (\n"
+                    + "	id integer PRIMARY KEY AUTOINCREMENT,\n"
+                    + " task integer,\n"
+                    + "	tag text NOT NULL\n,"
+                    + " FOREIGN KEY(task) REFERENCES tasks(id)\n"
+                    + ");";
+            executeStatement(sql);
+        }
+
+        private void createEventTagsTable() throws ClassNotFoundException, SQLException {
+            String sql = "CREATE TABLE IF NOT EXISTS event_tags (\n"
+                    + "	id integer PRIMARY KEY AUTOINCREMENT,\n"
+                    + " event integer,\n"
+                    + "	tag text NOT NULL\n,"
+                    + " FOREIGN KEY(event) REFERENCES event(id)\n"
+                    + ");";
+            executeStatement(sql);
+        }
+
 
         public void initConnection() throws SQLException, ClassNotFoundException, IOException {
             if (conn == null) {
@@ -72,6 +104,10 @@ public class ConnectionManager
                 insertExampleData();
                 dropTaskTable();
                 createTaskTable();
+                dropTaskTagsTable();
+                createTaskTagsTable();
+                dropEventTagsTable();
+                createEventTagsTable();
             }
         }
 

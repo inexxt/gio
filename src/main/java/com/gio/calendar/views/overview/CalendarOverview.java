@@ -42,7 +42,7 @@ public class CalendarOverview extends Div {
      *  the date chosen in targetDatePicker
      */
     private void getEventsInfo() throws SQLException, IOException, ClassNotFoundException {
-        String sql = "select name, desc, event_start, event_end from events where (event_start > ?) and (event_start < ?);";
+        String sql = "select id, name, desc, event_start, event_end from events where (event_start > ?) and (event_start < ?);";
         PreparedStatement pstmt = ConnectionManager.getConnectionManager().getConn().prepareStatement(sql);
         LocalDateTime targetDateStart = targetDatePicker.getValue().atStartOfDay();
         LocalDateTime targetDateEnd = targetDatePicker.getValue().atStartOfDay().plusDays(1).minusSeconds(1);
@@ -59,14 +59,18 @@ public class CalendarOverview extends Div {
             LocalTime startTimeLocal = LocalTime.ofInstant(startTime.toInstant(), ZoneId.of(timeZone));
             LocalTime endTimeLocal = LocalTime.ofInstant(endTime.toInstant(), ZoneId.of(timeZone));
             LocalDate eventDate = LocalDate.ofInstant(startTime.toInstant(), ZoneId.of(timeZone));
-            String tags = ""; // empty for now
+            String sql_tags = "select tag from event_tags where event = ?;";
+            PreparedStatement pstmt_tags = ConnectionManager.getConnectionManager().getConn().prepareStatement(sql_tags);
+            pstmt_tags.setInt(1, rs.getInt("id"));
+            ResultSet tagsResult = pstmt_tags.executeQuery();
+
             CalendarEvent event = new CalendarEvent(
                     rs.getString("name"),
                     rs.getString("desc"),
                     eventDate,
                     startTimeLocal,
                     endTimeLocal,
-                    tags
+                    tagsResult
             );
             eventsList.add(event);
         }
@@ -76,7 +80,7 @@ public class CalendarOverview extends Div {
      *  the date chosen in targetDatePicker
      */
     private void getTasksInfo() throws SQLException, IOException, ClassNotFoundException {
-        String sql = "select name, desc from tasks where task_date = ?;";
+        String sql = "select id, name, desc, task_duration from tasks where task_date = ?;";
         PreparedStatement pstmt = ConnectionManager.getConnectionManager().getConn().prepareStatement(sql);
         LocalDateTime targetDate = targetDatePicker.getValue().atStartOfDay();
 
@@ -87,12 +91,16 @@ public class CalendarOverview extends Div {
         while(rs.next())
         {
 
-            String tags = ""; // empty for now
+            String sql_tags = "select tag from task_tags where task = ?;";
+            PreparedStatement pstmt_tags = ConnectionManager.getConnectionManager().getConn().prepareStatement(sql_tags);
+            pstmt_tags.setInt(1, rs.getInt("id"));
+            ResultSet tagsResult = pstmt_tags.executeQuery();
             CalendarTask task = new CalendarTask(
                     rs.getString("name"),
                     rs.getString("desc"),
                     taskTime,
-                    tags
+                    tagsResult,
+                    rs.getInt("task_duration")
             );
             tasksList.add(task);
         }
@@ -116,16 +124,16 @@ public class CalendarOverview extends Div {
             eventInfoLayouts[eventIndex].add(eventTag);
 
             /* Array of break labels to be input between event data fields */
-            Label[] breakLabels = new Label[4];
+            Label[] breakLabels = new Label[5];
 
             /* Array of text labels to display specified event data
              * (event name, description, start time and end time)
              */
-            Label[] textLabels = new Label[4];
+            Label[] textLabels = new Label[5];
 
             /* Set up break labels
              */
-            for(int i = 0; i < 4; ++i) {
+            for(int i = 0; i < 5; ++i) {
                 breakLabels[i] = new Label("");
                 breakLabels[i].setWidth(null);
                 breakLabels[i].setHeight("0.1px");
@@ -137,11 +145,11 @@ public class CalendarOverview extends Div {
             textLabels[1] = new Label("Description: " + e.getEventDescription());
             textLabels[2] = new Label("Start time: " + e.getEventStartTimeString());
             textLabels[3] = new Label("End time: " + e.getEventEndTimeString());
-
+            textLabels[4] = new Label("Tags: " + e.getEventTags());
             /* Set width and height of text labels and add both break and text labels
              * to the display
              */
-            for(int i = 0; i < 4; ++i) {
+            for(int i = 0; i < 5; ++i) {
                 textLabels[i].setWidth("30%");
                 textLabels[i].setHeight("10px");
 
@@ -172,16 +180,16 @@ public class CalendarOverview extends Div {
             taskInfoLayouts[taskIndex].add(taskTag);
 
             /* Array of break labels to be input between event data fields */
-            Label[] breakLabels = new Label[2];
+            Label[] breakLabels = new Label[4];
 
             /* Array of text labels to display specified event data
              * (event name, description, start time and end time)
              */
-            Label[] textLabels = new Label[2];
+            Label[] textLabels = new Label[4];
 
             /* Set up break labels
              */
-            for(int i = 0; i < 2; ++i) {
+            for(int i = 0; i < 4; ++i) {
                 breakLabels[i] = new Label("");
                 breakLabels[i].setWidth(null);
                 breakLabels[i].setHeight("0.1px");
@@ -191,11 +199,12 @@ public class CalendarOverview extends Div {
              */
             textLabels[0] = new Label("Name: " + e.getTaskName());
             textLabels[1] = new Label("Description: " + e.getTaskDescription());
-
+            textLabels[2] = new Label("Tags: " + e.getTaskTags());
+            textLabels[3] = new Label("Duration: " + e.getDuration());
             /* Set width and height of text labels and add both break and text labels
              * to the display
              */
-            for(int i = 0; i < 2; ++i) {
+            for(int i = 0; i < 4; ++i) {
                 textLabels[i].setWidth("30%");
                 textLabels[i].setHeight("10px");
 
