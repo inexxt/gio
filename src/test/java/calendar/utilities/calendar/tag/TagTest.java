@@ -1,6 +1,8 @@
-package com.gio.calendar.utilities.calendar.tag;
+package calendar.utilities.calendar.tag;
 
-import static org.junit.Assert.*;
+import com.gio.calendar.utilities.calendar.tag.Tag;
+
+import static org.junit.Assert.assertEquals;
 
 public class TagTest {
 

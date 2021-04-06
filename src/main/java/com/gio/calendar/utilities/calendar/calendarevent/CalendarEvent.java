@@ -15,7 +15,7 @@ public class CalendarEvent {
     private LocalTime eventStartTime;
     private LocalTime eventEndTime;
 
-    protected List<Tag> eventTag;
+    private List<Tag> eventTags;
     private String eventDescription;
     private String eventName;
 
@@ -29,7 +29,7 @@ public class CalendarEvent {
         this.eventDate = eventDate;
         this.eventStartTime = eventStartTime;
         this.eventEndTime = eventEndTime;
-        this.eventTag = Arrays.stream(tags.split(",")).map(Tag::new).collect(Collectors.toList());;
+        this.eventTags = Arrays.stream(tags.split(",")).map(Tag::new).collect(Collectors.toList());;
         this.eventDescription = eventDescription;
         this.eventName = eventName;
     }
@@ -72,7 +72,10 @@ public class CalendarEvent {
     }
 
     public LocalDateTime getStart() {
-        LocalDateTime eventStart = eventStartTime.atDate(eventDate);
-        return eventStart;
+        return eventStartTime.atDate(eventDate);
+    }
+
+    public List<Tag> getEventTags() {
+        return eventTags;
     }
 }
