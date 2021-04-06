@@ -32,10 +32,26 @@ public class ConnectionManager
             }
         }
 
+        private void dropEventTable() throws SQLException, ClassNotFoundException {
+            String sql = "DROP TABLE IF EXISTS events;";
+            executeStatement(sql);
+        }
+
+        private void createEventTable() throws ClassNotFoundException, SQLException {
+            String sql = "CREATE TABLE IF NOT EXISTS events (\n"
+                    + "	id integer PRIMARY KEY AUTOINCREMENT,\n"
+                    + "	name text NOT NULL,\n"
+                    + "	desc text NOT NULL,\n"
+                    + "	event_start integer NOT NULL,\n"
+                    + "	event_end integer NOT NULL\n"
+                    + ");";
+            executeStatement(sql);
+        }
+
         public void initConnection() throws SQLException, ClassNotFoundException, IOException {
-            Class.forName(dbDriver);
-            this.conn = DriverManager.getConnection(url);
             if (conn == null) {
+                Class.forName(dbDriver);
+                this.conn = DriverManager.getConnection(url);
                 dropEventTable();
                 createEventTable();
                 insertExampleData();
@@ -76,22 +92,6 @@ public class ConnectionManager
             instance = new ConnectionManagerInstance();
         }
         return instance;
-    }
-
-    private static void dropEventTable() throws SQLException, ClassNotFoundException {
-        String sql = "DROP TABLE IF EXISTS events;";
-        getConnectionManager().executeStatement(sql);
-    }
-
-    private static void createEventTable() throws ClassNotFoundException, SQLException {
-        String sql = "CREATE TABLE IF NOT EXISTS events (\n"
-                + "	id integer PRIMARY KEY AUTOINCREMENT,\n"
-                + "	name text NOT NULL,\n"
-                + "	desc text NOT NULL,\n"
-                + "	event_start integer NOT NULL,\n"
-                + "	event_end integer NOT NULL\n"
-                + ");";
-        getConnectionManager().executeStatement(sql);
     }
 
     public static void inititialize() throws SQLException, ClassNotFoundException, IOException {
