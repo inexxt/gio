@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class CalendarEvent {
+	private int eventId;
     private LocalDate eventDate;
 
     private LocalTime eventStartTime;
@@ -23,13 +24,15 @@ public class CalendarEvent {
     private String eventDescription;
     private String eventName;
 
-    public CalendarEvent(String eventName, 
+    public CalendarEvent(int eventId,
+    					 String eventName, 
     					 String eventDescription, 
     					 LocalDate eventDate, 
     					 LocalTime eventStartTime, 
     					 LocalTime eventEndTime, 
     					 String tags) {
-
+    	
+    	this.eventId = eventId;
         this.eventDate = eventDate;
         this.eventStartTime = eventStartTime;
         this.eventEndTime = eventEndTime;
@@ -38,7 +41,15 @@ public class CalendarEvent {
         this.eventName = eventName;
     }
 
-    public CalendarEvent(String eventName, String eventDescription, LocalDate eventDate, LocalTime eventStartTime, LocalTime eventEndTime, ResultSet tags) throws SQLException {
+    public CalendarEvent(int eventId,
+    					 String eventName, 
+    					 String eventDescription, 
+    					 LocalDate eventDate, 
+    					 LocalTime eventStartTime, 
+    					 LocalTime eventEndTime, 
+    					 ResultSet tags) throws SQLException {
+    	
+    	this.eventId = eventId;
         this.eventDate = eventDate;
         this.eventStartTime = eventStartTime;
         this.eventEndTime = eventEndTime;
@@ -97,5 +108,9 @@ public class CalendarEvent {
         }
         List<String> ss = eventTags.stream().map(Tag::getTagName).collect(Collectors.toList());
         return String.join(",", ss);
+    }
+    
+    public int getEventId() {
+    	return eventId;
     }
 }
