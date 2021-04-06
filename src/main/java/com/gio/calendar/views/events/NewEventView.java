@@ -1,5 +1,6 @@
 package com.gio.calendar.views.events;
 
+import com.gio.calendar.utilities.calendar.tag.Tag;
 import com.gio.calendar.utilities.database.ConnectionManager;
 import com.gio.calendar.views.main.MainView;
 import com.vaadin.flow.component.button.Button;
@@ -18,7 +19,10 @@ import java.sql.*;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Route(value = "new_event", layout = MainView.class)
 @PageTitle("New event")
@@ -34,6 +38,8 @@ public class NewEventView extends Div {
      */
     private static final Integer EVENT_DESCRIPTION_CHARACTERS_LIMIT = 750;
 
+    private static final Integer EVENT_TAGS_CHARACTERS_LIMIT = 180;
+
     private final Button addEventButton;
 
     private final DatePicker eventDatePicker;
@@ -43,6 +49,7 @@ public class NewEventView extends Div {
 
     private final TextArea eventNameArea;
     private final TextArea eventDescriptionArea;
+    private final TextArea tagsField;
 
     private final HorizontalLayout eventDateLayout;
     private final HorizontalLayout eventDescriptionLayout;
@@ -50,6 +57,7 @@ public class NewEventView extends Div {
 
     private final HorizontalLayout eventStartTimeLayout;
     private final HorizontalLayout eventEndTimeLayout;
+    private final HorizontalLayout tagsFieldLayout;
 
     private void addEventToDatabase() throws SQLException, IOException, ClassNotFoundException {
         LocalDate eventDate = eventDatePicker.getValue();
@@ -79,6 +87,18 @@ public class NewEventView extends Div {
         pstmt.setInt(3, (int) (Timestamp.valueOf(eventStart).getTime() / 1000L));
         pstmt.setInt(4, (int) (Timestamp.valueOf(eventEnd).getTime() / 1000L));
         pstmt.executeUpdate();
+        ResultSet res = pstmt.getGeneratedKeys();
+        List<Tag> tags = new ArrayList<Tag>();
+        tags = Arrays.stream(tagsField.getValue().split(",")).map(Tag::new).collect(Collectors.toList());
+        while(res.next()) {
+            for (Tag t : tags) {
+                String sql_task = "INSERT INTO event_tags(event, tag) VALUES(?, ?)";
+                PreparedStatement pstmt_task = conn.prepareStatement(sql_task);
+                pstmt_task.setString(1, res.getString(1));
+                pstmt_task.setString(2, t.toString());
+                pstmt_task.executeUpdate();
+            }
+        }
     }
 
     private void addEventHandler() {
@@ -135,12 +155,17 @@ public class NewEventView extends Div {
 
         eventDescriptionArea.setMaxLength(EVENT_DESCRIPTION_CHARACTERS_LIMIT);
 
+        tagsField = new TextArea("Event tags (optional). Should be separated by coma. Maximum length: " + EVENT_TAGS_CHARACTERS_LIMIT);
+        tagsField.setMaxLength(EVENT_TAGS_CHARACTERS_LIMIT);
+
+
         /* Layouts creating */
         eventDateLayout = new HorizontalLayout();
         eventDescriptionLayout = new HorizontalLayout();
         eventNameLayout = new HorizontalLayout();
         eventStartTimeLayout = new HorizontalLayout();
         eventEndTimeLayout = new HorizontalLayout();
+        tagsFieldLayout = new HorizontalLayout();
 
         /* Button for confirming new event add operation */
         addEventButton = new Button("Add event");
@@ -151,10 +176,11 @@ public class NewEventView extends Div {
         eventNameLayout.addAndExpand(eventNameArea);
         eventStartTimeLayout.addAndExpand(eventStartTimePicker);
         eventEndTimeLayout.addAndExpand(eventEndTimePicker);
+        tagsFieldLayout.addAndExpand(tagsField);
 
         /* Add all layouts */
         add(eventDateLayout, eventNameLayout, eventDescriptionLayout,
-            eventStartTimeLayout, eventEndTimeLayout, addEventButton);
+            eventStartTimeLayout, eventEndTimeLayout, tagsFieldLayout, addEventButton);
 
         /* Listener for the Button object which is to add the event on click after
         *  checking correctness of event input data

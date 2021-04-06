@@ -136,8 +136,7 @@ public class CalendarEventTest {
 											"first,second,third,fourth");
 		
 		Stream<String> stringStream = Stream.of("first", "second", "third", "fourth");
-		List<Tag> expectedList = stringStream.map(Tag::new).collect(Collectors.toList());
 		
-		assertEquals(expectedList.toString(), c.getEventTags().toString());
+		assertEquals("first,second,third,fourth", c.getEventTags().toString());
 	}
 }

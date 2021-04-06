@@ -1,10 +1,14 @@
 package com.gio.calendar.utilities.calendar.calendarevent;
 
 import com.gio.calendar.utilities.calendar.tag.Tag;
+import org.apache.commons.lang3.StringUtils;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,7 +33,19 @@ public class CalendarEvent {
         this.eventDate = eventDate;
         this.eventStartTime = eventStartTime;
         this.eventEndTime = eventEndTime;
-        this.eventTags = Arrays.stream(tags.split(",")).map(Tag::new).collect(Collectors.toList());;
+        this.eventTags = Arrays.stream(tags.split(",")).map(Tag::new).collect(Collectors.toList());
+        this.eventDescription = eventDescription;
+        this.eventName = eventName;
+    }
+
+    public CalendarEvent(String eventName, String eventDescription, LocalDate eventDate, LocalTime eventStartTime, LocalTime eventEndTime, ResultSet tags) throws SQLException {
+        this.eventDate = eventDate;
+        this.eventStartTime = eventStartTime;
+        this.eventEndTime = eventEndTime;
+        this.eventTags = new ArrayList<Tag>();
+        while(tags.next()) {
+            eventTags.add(new Tag(tags.getString("tag")));
+        }
         this.eventDescription = eventDescription;
         this.eventName = eventName;
     }
@@ -75,7 +91,11 @@ public class CalendarEvent {
         return eventStartTime.atDate(eventDate);
     }
 
-    public List<Tag> getEventTags() {
-        return eventTags;
+    public String getEventTags() {
+        if (eventTags.isEmpty()) {
+            return "None";
+        }
+        List<String> ss = eventTags.stream().map(Tag::getTagName).collect(Collectors.toList());
+        return String.join(",", ss);
     }
 }
