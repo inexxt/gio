@@ -61,14 +61,29 @@ public class NewEventView extends Div {
 
     private void addEventToDatabase() throws SQLException, IOException, ClassNotFoundException {
         LocalDate eventDate = eventDatePicker.getValue();
-        LocalDateTime eventStart = eventStartTimePicker.getValue().atDate(eventDate);
-        LocalDateTime eventEnd = eventEndTimePicker.getValue().atDate(eventDate);
+        
+        LocalDateTime eventStart = LocalDateTime.of(eventDate.getYear(), 
+        										    eventDate.getMonthValue(), 
+        										    eventDate.getDayOfMonth(),
+        										    eventStartTimePicker.getValue().getHour(), 
+        										    eventStartTimePicker.getValue().getMinute());
+
+        LocalDateTime eventEnd = LocalDateTime.of(eventDate.getYear(), 
+        										  eventDate.getMonthValue(), 
+        										  eventDate.getDayOfMonth(),
+        										  eventEndTimePicker.getValue().getHour(), 
+        										  eventEndTimePicker.getValue().getMinute());
+                
         Connection conn = ConnectionManager.getConnection();
         String sql = "INSERT INTO events(name, desc, event_start, event_end) VALUES(?, ?, ?, ?)";
         PreparedStatement pstmt = conn.prepareStatement(sql);
-        pstmt.setString(1, eventNameArea.getValue());
-        pstmt.setString(2, eventDescriptionArea.getValue());
-        // slight incompatiblity between timestamp in miliseconds and in seconds
+        
+        pstmt.setString(1, (eventNameArea.getValue() != null ? 
+        					eventNameArea.getValue() : "Event name not provided."));
+        
+        pstmt.setString(2, (eventDescriptionArea.getValue() != null ? 
+        					eventDescriptionArea.getValue() : "Event description not provided."));
+        
         pstmt.setInt(3, (int) (Timestamp.valueOf(eventStart).getTime() / 1000L));
         pstmt.setInt(4, (int) (Timestamp.valueOf(eventEnd).getTime() / 1000L));
         pstmt.executeUpdate();
@@ -101,17 +116,27 @@ public class NewEventView extends Div {
             Notification.show("JDBC error: " + e.getMessage());
         }
     }
+    
+    private void clearForm() {
+        eventNameArea.clear();
+        eventDescriptionArea.clear();
+        eventDatePicker.clear();
+        eventEndTimePicker.clear();
+        eventStartTimePicker.clear();
+    }
 
     public NewEventView() {
         addClassName("newevent-view");
         
         /* Picker of the new event start time */
         eventStartTimePicker = new TimePicker();
-        eventStartTimePicker.setLabel("Choose or type in event start time (required if end time is specified):");
+        eventStartTimePicker.setLabel("Choose or type in event start time (required):");
+        eventStartTimePicker.setRequired(true);
 
         /* Picker of the new event end time */
         eventEndTimePicker = new TimePicker();
-        eventEndTimePicker.setLabel("Choose or type in event end time:");
+        eventEndTimePicker.setLabel("Choose or type in event end time (required):");
+        eventEndTimePicker.setRequired(true);
 
         /* Picker of the new event date */
         eventDatePicker = new DatePicker();
@@ -161,22 +186,22 @@ public class NewEventView extends Div {
         *  checking correctness of event input data
         */
         addEventButton.addClickListener(e -> {
+        	/* Check for the case when event start time has not been provided.
+        	 */
+        	if(eventStartTimePicker.getValue() == null) {
+        		Notification.show("Error: event start time has not been provided.");
+        	}
+        	/* Check for the case when event end time has not been provided.
+        	 */
+        	else if(eventEndTimePicker.getValue() == null) {
+        		Notification.show("Error: event end time has not been provided.");
+        	}
             /*  Check for the case when both start and event end time were provided but according
              *  to the information given, event is to end before or the moment it starts.
              *  Prevent event adding by issuing an error message.
              */
-            if(eventStartTimePicker.getValue() != null &&
-               eventEndTimePicker.getValue()   != null &&
-               eventStartTimePicker.getValue().compareTo(eventEndTimePicker.getValue()) >= 0) {
+        	else if(eventStartTimePicker.getValue().compareTo(eventEndTimePicker.getValue()) >= 0) {
                 Notification.show("Error: event start time later or just the event end time.");
-            }
-            /*  Check if event end time has been provided and if so check whether event start time
-             *  has been provided and if not, issue error message
-             */
-            else if(eventStartTimePicker.getValue() == null &&
-                    eventEndTimePicker.getValue()   != null) {
-
-                Notification.show("Error: event end time has been provided without start time.");
             }
             /*  Check if no event date has been provided and issue an error message in such case
              */
@@ -190,13 +215,4 @@ public class NewEventView extends Div {
             }
         });
     }
-
-    private void clearForm() {
-        eventNameArea.clear();
-        eventDescriptionArea.clear();
-        eventDatePicker.clear();
-        eventEndTimePicker.clear();
-        eventStartTimePicker.clear();
-    }
-
 }

@@ -1,6 +1,7 @@
 package com.gio.calendar.utilities.calendar.calendarevent;
 
 import com.gio.calendar.utilities.calendar.tag.Tag;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,15 +19,21 @@ public class CalendarEvent {
     private LocalTime eventStartTime;
     private LocalTime eventEndTime;
 
-    protected List<Tag> eventTag;
+    private List<Tag> eventTags;
     private String eventDescription;
     private String eventName;
 
-    public CalendarEvent(String eventName, String eventDescription, LocalDate eventDate, LocalTime eventStartTime, LocalTime eventEndTime, String tags) {
+    public CalendarEvent(String eventName, 
+    					 String eventDescription, 
+    					 LocalDate eventDate, 
+    					 LocalTime eventStartTime, 
+    					 LocalTime eventEndTime, 
+    					 String tags) {
+
         this.eventDate = eventDate;
         this.eventStartTime = eventStartTime;
         this.eventEndTime = eventEndTime;
-        this.eventTag = Arrays.stream(tags.split(",")).map(Tag::new).collect(Collectors.toList());
+        this.eventTags = Arrays.stream(tags.split(",")).map(Tag::new).collect(Collectors.toList());
         this.eventDescription = eventDescription;
         this.eventName = eventName;
     }
@@ -35,9 +42,9 @@ public class CalendarEvent {
         this.eventDate = eventDate;
         this.eventStartTime = eventStartTime;
         this.eventEndTime = eventEndTime;
-        this.eventTag = new ArrayList<Tag>();
+        this.eventTags = new ArrayList<Tag>();
         while(tags.next()) {
-            eventTag.add(new Tag(tags.getString("tag")));
+            eventTags.add(new Tag(tags.getString("tag")));
         }
         this.eventDescription = eventDescription;
         this.eventName = eventName;
@@ -81,23 +88,14 @@ public class CalendarEvent {
     }
 
     public LocalDateTime getStart() {
-        LocalDateTime eventStart = eventStartTime.atDate(eventDate);
-        return eventStart;
+        return eventStartTime.atDate(eventDate);
     }
 
     public String getEventTags() {
-        if (eventTag.isEmpty())
+        if (eventTags.isEmpty()) {
             return "None";
-        else {
-            StringBuilder sb = new StringBuilder();
-            int where = 0;
-            for (Tag tag : eventTag) {
-                sb.append(tag);
-                ++where;
-                if (eventTag.size() != where)
-                    sb.append(",");
-            }
-            return sb.toString();
         }
+        List<String> ss = eventTags.stream().map(Tag::getTagName).collect(Collectors.toList());
+        return String.join(",", ss);
     }
 }
