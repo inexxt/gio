@@ -2,6 +2,7 @@ package com.gio.calendar.views.main;
 
 import java.util.Optional;
 
+import com.gio.calendar.views.tasks.NewTaskView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.applayout.AppLayout;
@@ -81,7 +82,8 @@ public class MainView extends AppLayout {
     }
 
     private Component[] createMenuItems() {
-        return new Tab[]{createTab("Calendar overview", CalendarOverview.class), createTab("Add event", NewEventView.class)};
+        return new Tab[]{createTab("Calendar overview", CalendarOverview.class), createTab("Add event", NewEventView.class),
+                         createTab("Add task", NewTaskView.class)};
     }
 
     private static Tab createTab(String text, Class<? extends Component> navigationTarget) {
