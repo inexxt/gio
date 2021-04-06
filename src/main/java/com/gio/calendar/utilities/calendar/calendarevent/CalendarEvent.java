@@ -84,7 +84,7 @@ public class CalendarEvent {
                 (eventStartTime != null ? "Start time: " + getEventStartTimeString() + "\n" : "") +
                 (eventEndTime   != null ? "End time: " + getEventEndTimeString() + "\n" : "") +
                 (eventDescription != null ? "Description: " + eventDescription + "\n" : "") +
-               "Tags: ";
+               "Tags: " + eventTags;
     }
 
     public LocalDateTime getStart() {
