@@ -15,7 +15,7 @@ public class CalendarEvent {
     private LocalTime eventStartTime;
     private LocalTime eventEndTime;
 
-    private List<Tag> eventTag;
+    protected List<Tag> eventTag;
     private String eventDescription;
     private String eventName;
 
@@ -28,16 +28,21 @@ public class CalendarEvent {
         this.eventName = eventName;
     }
 
+    private String timeToString(LocalTime targetTime) {
+    	return (targetTime.getHour() < 10 ? "0" + targetTime.getHour() : targetTime.getHour()) + ":" + 
+     		   (targetTime.getMinute() < 10 ? "0" + targetTime.getMinute() : targetTime.getMinute());
+    }
+    
     /* Returns string representation of event start time in format HH:MM
      */
     public String getEventStartTimeString() {
-    	return eventStartTime.getHour() + ":" + eventStartTime.getMinute();
+    	return timeToString(eventStartTime);
     }
     
     /* Returns string representation of event end time in format HH:MM
      */
     public String getEventEndTimeString() {
-    	return eventEndTime.getHour() + ":" + eventEndTime.getMinute();
+    	return timeToString(eventEndTime);
     }
     
     public String getEventDescription() {
