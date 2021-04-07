@@ -222,6 +222,8 @@ public class CalendarOverview extends Div {
             	});
             	
             	eventDeleteConfirmation.addClickListener(w -> {
+            		/* Flag to indicate whether event deletion was successful
+            		 */
             		boolean okDeletion = true;
             		/* Store current date stored in targetDatePicker to set it as 
             		 * targetDatePicker value after the page refresh which occurs
@@ -251,7 +253,10 @@ public class CalendarOverview extends Div {
             			 */
             			if(okDeletion) {
             				Notification.show("Event has been successfully deleted.");
-            				
+            				/* Update class data with values that will force the page to display
+            				 * current date (the one in targetDatePicker) after the page has been
+            				 * reloaded
+            				 */
             				dateToSet = saveDate;
             				forceDatePickerValue = true;
             				UI.getCurrent().getPage().reload();
@@ -331,7 +336,7 @@ public class CalendarOverview extends Div {
         getTasksInfo();
 
         /*  Clear layouts which display information about the events */
-        for(int i = 0; i < DAILY_EVENTS_LIMIT; i++) {
+        for(int i = 0; i < 2*DAILY_EVENTS_LIMIT; i++) {
             /* Check if current layout is used (contains at least one component) and
              * clear it then
              */
@@ -361,6 +366,9 @@ public class CalendarOverview extends Div {
         	
         	infoLayouts[0].add(noEventsInfoLabel);
         }
+        /* Display information about the tasks scheduled for specified day and obtain
+         * (return value) the index of first non-used layout that can store tasks data
+         */
         else {
         	tasksInfoStartingIndex = setEventsInfo();
         }
@@ -376,6 +384,8 @@ public class CalendarOverview extends Div {
             infoLayouts[tasksInfoStartingIndex].add(noTasksInfoLabel);
 
         }
+        /* Display information about the tasks scheduled for specified day
+         */
         else {
         	setTasksInfo(tasksInfoStartingIndex);
         }
