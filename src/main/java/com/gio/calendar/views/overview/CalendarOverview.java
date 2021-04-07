@@ -343,10 +343,6 @@ public class CalendarOverview extends Div {
             if(infoLayouts[i].getComponentCount() > 0) {
                infoLayouts[i].removeAll();
             }
-
-            if(infoLayouts[i].getComponentCount() > 0) {
-               infoLayouts[i].removeAll();
-            }
             /* Break from the loop as remaining layouts are not used at all
              */
             else if(infoLayouts[i].getComponentCount() == 0){
