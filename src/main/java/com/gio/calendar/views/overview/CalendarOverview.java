@@ -29,15 +29,15 @@ import java.util.*;
 @PageTitle("Calendar overview")
 @CssImport("./views/overview/overview-view.css")
 public class CalendarOverview extends Div {
-    private static final int DAILY_EVENTS_LIMIT = 120;
     private static LocalDate dateToSet = null;
     private static boolean forceDatePickerValue = false;
+    
+    private static final int DAILY_EVENTS_LIMIT = 120;
 
-//    private final Button button;
     private final DatePicker targetDatePicker;
 	private final HorizontalLayout datePickerLayout;
-    private final VerticalLayout[] eventInfoLayouts;
-    private final VerticalLayout[] taskInfoLayouts;
+    
+    private final VerticalLayout[] infoLayouts;
 
     private final ArrayList<CalendarEvent> eventsList;
     private final ArrayList<CalendarTask> tasksList;
@@ -79,7 +79,6 @@ public class CalendarOverview extends Div {
             pstmt_tags.setInt(1, rs.getInt("id"));
             ResultSet tagsResult = pstmt_tags.executeQuery();
 
-            String tags = ""; // empty for now
             CalendarEvent event = new CalendarEvent(
             		rs.getInt("id"),
                     rs.getString("name"),
@@ -93,7 +92,7 @@ public class CalendarOverview extends Div {
         }
     }
 
-    /*  Collects information from database about events that user has planned for the day on
+    /*  Collects information from database about tasks that user has planned for the day on
      *  the date chosen in targetDatePicker
      */
     private void getTasksInfo() throws SQLException, IOException, ClassNotFoundException {
@@ -123,7 +122,12 @@ public class CalendarOverview extends Div {
         }
     }
 
-    private void setEventsInfo() {
+    /* Sets events info for display on page.
+     * Returns the index (in infoLayouts array) of first non-occupied layout
+     * that can (as well as successive layouts in array) be further filled 
+     * with informations about tasks scheduled for specified day
+     */
+    private int setEventsInfo() {
         int eventIndex = 0;
         int eventNo = 1;
 
@@ -138,7 +142,7 @@ public class CalendarOverview extends Div {
             eventTag.setHeight("10px");
             eventTag.getStyle().set("font-weight", "bold");
 
-            eventInfoLayouts[eventIndex].add(eventTag);
+            infoLayouts[eventIndex].add(eventTag);
 
             /* Array of break labels to be input between event data fields */
             Label[] breakLabels = new Label[5];
@@ -170,20 +174,22 @@ public class CalendarOverview extends Div {
                 textLabels[i].setWidth("30%");
                 textLabels[i].setHeight("10px");
 
-                eventInfoLayouts[eventIndex].add(textLabels[i]);
-                eventInfoLayouts[eventIndex].add(breakLabels[i]);
+                infoLayouts[eventIndex].add(textLabels[i]);
+                infoLayouts[eventIndex].add(breakLabels[i]);
             }
             
+            /* Layout for displaying buttons which are to handle available actions
+             * concerning the specified event:
+             * Event data modification
+             * Event deletion
+             */
             HorizontalLayout eventActionsLayout = new HorizontalLayout();
             
             Button eventModificationButton = new Button("Modify event data");
-            //eventInfoLayouts[eventIndex].add(eventModificationButton);
-            
             Button eventDeleteButton = new Button("Delete event");
-            //eventInfoLayouts[eventIndex].add(eventDeleteButton);
             
             eventActionsLayout.add(eventModificationButton, eventDeleteButton);
-            eventInfoLayouts[eventIndex].add(eventActionsLayout);
+            infoLayouts[eventIndex].add(eventActionsLayout);
             
             eventModificationButton.addClickListener(v -> { 
             	
@@ -192,6 +198,10 @@ public class CalendarOverview extends Div {
             eventDeleteButton.addClickListener(v -> { 
             	Dialog deleteDialog = new Dialog();
             	
+            	/* Layouts with following purposes:
+            	 * queryLayout - stores Label with query text
+            	 * buttonsLayout - stores Buttons which execute further actions
+            	 */
             	HorizontalLayout queryLayout = new HorizontalLayout();
             	HorizontalLayout buttonsLayout = new HorizontalLayout();
             	
@@ -213,6 +223,10 @@ public class CalendarOverview extends Div {
             	
             	eventDeleteConfirmation.addClickListener(w -> {
             		boolean okDeletion = true;
+            		/* Store current date stored in targetDatePicker to set it as 
+            		 * targetDatePicker value after the page refresh which occurs
+            		 * after successful event deletion
+            		 */
             		LocalDate saveDate = targetDatePicker.getValue();
             		
             		try {
@@ -225,10 +239,16 @@ public class CalendarOverview extends Div {
             			pstmt.execute();
             		}
             		catch(SQLException | ClassNotFoundException ex) {
+            			/* Mark deletion as unsuccessful and issue proper notification informing
+            			 * about the exception that has occurred
+            			 */
             			okDeletion = false;
             			Notification.show("Exception occured. Event has not been deleted.");
             		}
             		finally {
+            			/* Proceed with page update on successful deletion of event data
+            			 * from the database
+            			 */
             			if(okDeletion) {
             				Notification.show("Event has been successfully deleted.");
             				
@@ -237,7 +257,8 @@ public class CalendarOverview extends Div {
             				UI.getCurrent().getPage().reload();
             			}
             		}
-            		
+            		/* Close the dialog
+            		 */
             		deleteDialog.close();
             	});
             	
@@ -246,10 +267,12 @@ public class CalendarOverview extends Div {
             eventIndex++;
             eventNo++;
         }
+        
+        return eventIndex;
     }
 
-    private void setTasksInfo() {
-        int taskIndex = 0;
+    private void setTasksInfo(int arrayIndex) {
+        int taskIndex = arrayIndex;
         int taskNo = 1;
 
 
@@ -263,7 +286,7 @@ public class CalendarOverview extends Div {
             taskTag.setHeight("10px");
             taskTag.getStyle().set("font-weight", "bold");
 
-            taskInfoLayouts[taskIndex].add(taskTag);
+            infoLayouts[taskIndex].add(taskTag);
 
             /* Array of break labels to be input between event data fields */
             Label[] breakLabels = new Label[4];
@@ -294,8 +317,8 @@ public class CalendarOverview extends Div {
                 textLabels[i].setWidth("30%");
                 textLabels[i].setHeight("10px");
 
-                taskInfoLayouts[taskIndex].add(textLabels[i]);
-                taskInfoLayouts[taskIndex].add(breakLabels[i]);
+                infoLayouts[taskIndex].add(textLabels[i]);
+                infoLayouts[taskIndex].add(breakLabels[i]);
             }
 
             taskIndex++;
@@ -312,19 +335,21 @@ public class CalendarOverview extends Div {
             /* Check if current layout is used (contains at least one component) and
              * clear it then
              */
-            if(eventInfoLayouts[i].getComponentCount() > 0) {
-                eventInfoLayouts[i].removeAll();
+            if(infoLayouts[i].getComponentCount() > 0) {
+               infoLayouts[i].removeAll();
             }
 
-            if(taskInfoLayouts[i].getComponentCount() > 0) {
-                taskInfoLayouts[i].removeAll();
+            if(infoLayouts[i].getComponentCount() > 0) {
+               infoLayouts[i].removeAll();
             }
             /* Break from the loop as remaining layouts are not used at all
              */
-            else if (eventInfoLayouts[i].getComponentCount() == 0){
+            else if(infoLayouts[i].getComponentCount() == 0){
                 break;
             }
         }
+        
+        int tasksInfoStartingIndex = 1;
         
         /* Display appropriate message instead of events data when no events are scheduled
          * for the specified day
@@ -334,22 +359,26 @@ public class CalendarOverview extends Div {
         	noEventsInfoLabel.setWidth(null);
         	noEventsInfoLabel.setHeight("5px");
         	
-        	eventInfoLayouts[0].add(noEventsInfoLabel);
-
-
+        	infoLayouts[0].add(noEventsInfoLabel);
         }
-
+        else {
+        	tasksInfoStartingIndex = setEventsInfo();
+        }
+        
+        /* Display appropriate message instead of tasks data when no tasks are scheduled
+         * for the specified day
+         */
         if(tasksList.isEmpty()) {
             Label noTasksInfoLabel = new Label("No tasks on specified date.");
             noTasksInfoLabel.setWidth(null);
             noTasksInfoLabel.setHeight("5px");
 
-            taskInfoLayouts[0].add(noTasksInfoLabel);
+            infoLayouts[tasksInfoStartingIndex].add(noTasksInfoLabel);
 
         }
-
-        setEventsInfo();
-        setTasksInfo();
+        else {
+        	setTasksInfo(tasksInfoStartingIndex);
+        }
     }
 
     public CalendarOverview() {
@@ -391,24 +420,19 @@ public class CalendarOverview extends Div {
         datePickerLayout.addAndExpand(targetDatePicker);
         add(datePickerLayout);
 
-        eventInfoLayouts = new VerticalLayout[DAILY_EVENTS_LIMIT];
-        taskInfoLayouts = new VerticalLayout[DAILY_EVENTS_LIMIT];
+        infoLayouts = new VerticalLayout[2*DAILY_EVENTS_LIMIT];
 
-        for(int i = 0; i < DAILY_EVENTS_LIMIT; ++i) {
-            eventInfoLayouts[i] = new VerticalLayout();
-            add(eventInfoLayouts[i]);
+        for(int i = 0; i < 2*DAILY_EVENTS_LIMIT; ++i) {
+            infoLayouts[i] = new VerticalLayout();
+            add(infoLayouts[i]);
         }
 
-        for (int i = 0; i < DAILY_EVENTS_LIMIT; ++i) {
-            taskInfoLayouts[i] = new VerticalLayout();
-            add(taskInfoLayouts[i]);
-        }
-        
         if(forceDatePickerValue) {
         	targetDatePicker.setValue(dateToSet);
         	/* Now after the value has been changed, the valueChangeListener associated
         	 * with the targetDatePicker object will do its action
         	 */
+        	
         	/* Restore original flags values for further possible deletions of events
         	 */
         	forceDatePickerValue = false;
