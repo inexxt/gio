@@ -44,7 +44,7 @@ public class CalendarTask {
                 "\n" +
                 (taskName != null ? "Name: " + taskName + "\n" : "") +
                 (taskDescription != null ? "Description: " + taskDescription + "\n" : "") +
-                "Tags: " + taskTag;
+                "Tags: " + getTaskTags();
     }
 
     public String getTaskDescription() {
@@ -56,19 +56,15 @@ public class CalendarTask {
     }
 
     public String getTaskTags() {
-        if (taskTag.isEmpty())
-            return "None";
-        else {
-            StringBuilder sb = new StringBuilder();
-            int where = 0;
-            for (Tag tag : taskTag) {
-                sb.append(tag);
-                ++where;
-                if (taskTag.size() != where)
-                    sb.append(",");
-            }
-            return sb.toString();
+        StringBuilder sb = new StringBuilder();
+        int where = 0;
+        for (Tag tag : taskTag) {
+            sb.append(tag);
+            ++where;
+            if (taskTag.size() != where)
+                sb.append(",");
         }
+        return sb.toString();
     }
 
     public int getDuration() {

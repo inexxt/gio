@@ -21,7 +21,7 @@ public class ConnectionManager
             return conn;
         }
 
-        private void dropEventTable() throws SQLException, ClassNotFoundException {
+        /*private void dropEventTable() throws SQLException, ClassNotFoundException {
             String sql = "DROP TABLE IF EXISTS events;";
             executeStatement(sql);
         }
@@ -39,7 +39,7 @@ public class ConnectionManager
         private void dropEventTagsTable() throws SQLException, ClassNotFoundException {
             String sql = "DROP TABLE IF EXISTS event_tags;";
             executeStatement(sql);
-        }
+        }*/
 
         private void createEventTable() throws ClassNotFoundException, SQLException {
             String sql = "CREATE TABLE IF NOT EXISTS events (\n"
@@ -95,15 +95,16 @@ public class ConnectionManager
             }
         }
 
+        /*
         public ConnectionManagerInstance() {
-        }
+        }*/
 
         public void executeStatement(String sql) throws SQLException {
             Statement stmt = getConn().createStatement();
             stmt.execute(sql);
         }
 
-        public ResultSet query(String sql) throws SQLException {
+        /*public ResultSet query(String sql) throws SQLException {
             Statement stmt = getConn().createStatement();
             return stmt.executeQuery(sql);
         }
@@ -116,10 +117,10 @@ public class ConnectionManager
             }
             catch (SQLException e) {
             	/* Connection close failed.
-            	 */
+
                 System.err.println(e.getMessage());
             }
-        }
+        }*/
     }
 
     private static ConnectionManagerInstance instance = null;

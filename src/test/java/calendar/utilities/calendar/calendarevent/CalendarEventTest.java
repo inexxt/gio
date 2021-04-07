@@ -5,6 +5,7 @@ import com.gio.calendar.utilities.calendar.tag.Tag;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -159,7 +160,27 @@ public class CalendarEventTest {
 				LocalDate.now(),
 				LocalTime.now(), LocalTime.now(),
 				"first, second");
-		
+
 		assertEquals(132, c.getEventId());
+	}
+
+	@org.junit.Test
+	public void testToString() {
+		LocalDate start = LocalDate.now();
+		LocalTime now =	LocalTime.of(0, 0);
+		CalendarEvent c = new CalendarEvent(0,"NAME", "DESC",
+				start,
+				now, now,
+				"first,second");
+		List<String> l = new ArrayList<String>();
+		l.add("first");
+		l.add("second");
+		assertEquals("Date: " + start.toString() +
+				"\n" +
+				 "Name: NAME"  + "\n" +
+				 "Start time: " + "00:00" + "\n" +
+				 "End time: " + "00:00" + "\n" +
+				 "Description: " + "DESC" + "\n" +
+				"Tags: " + l.toString(), c.toString());
 	}
 }
