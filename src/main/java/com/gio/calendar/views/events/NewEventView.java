@@ -12,17 +12,21 @@ import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.component.dependency.CssImport;
 
 
 import java.sql.*;
 import java.io.IOException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 
 @Route(value = "new_event", layout = MainView.class)
@@ -80,16 +84,54 @@ public class NewEventView extends Div {
         }
     }
     
+    private void removeEventFromDatabase(String eventIdString) throws SQLException,
+    																  IOException,
+    																  ClassNotFoundException {
+	    Connection conn = ConnectionManager.getConnection();
+	    String sql = "DELETE FROM events WHERE id = ?";
+    	PreparedStatement pstmt = conn.prepareStatement(sql);
+    	pstmt.setInt(1, Integer.parseInt(eventIdString));
+    	pstmt.execute();
+    }
+    
+    private void modifyEventHandler(String eventIdString) {
+    	boolean operationSuccess = true;
+    	
+    	try {
+    		removeEventFromDatabase(eventIdString);
+    	}
+    	catch(SQLException e) {
+    		operationSuccess = false;
+    		Notification.show("SQLException occured. Event has not been modified.");
+    	}
+    	catch(IOException e) {
+    		operationSuccess = false;
+    		Notification.show("IOException occured. Event has not been modified.");
+    	}
+    	catch(ClassNotFoundException e) {
+    		operationSuccess = false;
+    		Notification.show("ClassNotFoundException occured. Event has not been modified.");
+    	}
+    	finally {
+    		if(operationSuccess) {
+    			addEventHandler();
+    		}
+    	}
+    }
+    
     private void clearForm() {
         eventNameArea.clear();
         eventDescriptionArea.clear();
         eventDatePicker.clear();
         eventEndTimePicker.clear();
         eventStartTimePicker.clear();
+        tagsField.clear();
     }
 
     public NewEventView() {
         addClassName("newevent-view");
+        
+        String eventIdString = VaadinService.getCurrentRequest().getParameter("event_id");
         
         /* Picker of the new event start time */
         eventStartTimePicker = new TimePicker();
@@ -131,7 +173,7 @@ public class NewEventView extends Div {
         tagsFieldLayout = new HorizontalLayout();
 
         /* Button for confirming new event add operation */
-        addEventButton = new Button("Add event");
+        addEventButton = (eventIdString == null ? new Button("Add event") : new Button("Modify event"));
 
         /* Enrich layouts with created components */
         eventDateLayout.addAndExpand(eventDatePicker);
@@ -144,6 +186,48 @@ public class NewEventView extends Div {
         /* Add all layouts */
         add(eventDateLayout, eventNameLayout, eventDescriptionLayout,
             eventStartTimeLayout, eventEndTimeLayout, tagsFieldLayout, addEventButton);
+        
+        if(eventIdString != null) {
+        	try {
+	        	String sql = "select id, name, desc, event_start, event_end from events where id = ?;";
+	            PreparedStatement pstmt = ConnectionManager.getConnectionManager().getConn().prepareStatement(sql);
+	
+	            pstmt.setInt(1, Integer.parseInt(eventIdString));
+	
+	            ResultSet rs = pstmt.executeQuery();
+	            while(rs.next()) {
+	                eventNameArea.setValue(rs.getString("name"));
+	                eventDescriptionArea.setValue(rs.getString("desc"));
+	                
+	                LocalDateTime eventStart = LocalDateTime.ofInstant(Instant.ofEpochMilli(rs.getInt("event_start")*1000L),
+	                        TimeZone.getDefault().toZoneId());
+	
+	                LocalDateTime eventEnd = LocalDateTime.ofInstant(Instant.ofEpochMilli(rs.getInt("event_end")*1000L),
+	                        TimeZone.getDefault().toZoneId());
+	
+	                LocalTime startTimeLocal = LocalTime.of(eventStart.getHour(),
+	                        eventStart.getMinute());
+	
+	                LocalTime endTimeLocal = LocalTime.of(eventEnd.getHour(),
+	                        eventEnd.getMinute());
+	
+	                LocalDate eventDate = LocalDate.of(eventStart.getYear(),
+	                        eventStart.getMonthValue(),
+	                        eventStart.getDayOfMonth());
+	                
+	                eventStartTimePicker.setValue(startTimeLocal);
+	                eventEndTimePicker.setValue(endTimeLocal);
+	                
+	                eventDatePicker.setValue(eventDate);
+	            }
+        	}
+        	catch(SQLException e) {
+        		Notification.show("SQLException occured.");
+        	}
+        	catch(ClassNotFoundException e) {
+        		Notification.show("ClassNotFoundException occured.");
+        	}
+        }
 
         /* Listener for the Button object which is to add the event on click after
         *  checking correctness of event input data
@@ -172,9 +256,16 @@ public class NewEventView extends Div {
                 Notification.show("Error: event date has not been provided.");
             }
             else {
-                addEventHandler();
-                Notification.show("Event " + eventNameArea.getValue() + " was created!");
+            	if(eventIdString == null) {
+	                addEventHandler();
+	                Notification.show("Event " + eventNameArea.getValue() + " was created!");
+            	}
+            	else {
+            		modifyEventHandler(eventIdString);
+            		Notification.show("Event successfully modified!");
+            	}
                 clearForm();
+                
             }
         });
     }

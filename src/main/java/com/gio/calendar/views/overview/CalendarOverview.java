@@ -101,7 +101,7 @@ public class CalendarOverview extends Div {
         LocalDateTime targetDate = targetDatePicker.getValue().atStartOfDay();
 
         pstmt.setInt(1, ((int) (Timestamp.valueOf(targetDate).getTime() / 1000L)));
-        System.out.println("Executing select: " + pstmt.toString()); // TODO remove
+
         ResultSet rs = pstmt.executeQuery();
         LocalDate taskTime = targetDatePicker.getValue();
         while(rs.next())
@@ -192,7 +192,7 @@ public class CalendarOverview extends Div {
             infoLayouts[eventIndex].add(eventActionsLayout);
             
             eventModificationButton.addClickListener(v -> { 
-            	
+            	UI.getCurrent().getPage().setLocation("new_event" + "?" + "event_id=" + e.getEventId());
             });
 
             eventDeleteButton.addClickListener(v -> { 
