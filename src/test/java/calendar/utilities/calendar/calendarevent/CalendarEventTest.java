@@ -177,12 +177,20 @@ public class CalendarEventTest {
 		List<String> l = new ArrayList<String>();
 		l.add("first");
 		l.add("second");
-		assertEquals("Date: " + start.toString() +
+
+		List<String> p = new ArrayList<>();
+		p.add("p1@wp.pl");
+		p.add("p2@wp.pl");
+
+		String expected = "Date: " + start.toString() +
 				"\n" +
-				 "Name: NAME"  + "\n" +
-				 "Start time: " + "00:00" + "\n" +
-				 "End time: " + "00:00" + "\n" +
-				 "Description: " + "DESC" + "\n" +
-				 "Tags: " + l.toString(), c.toString());
+				"Name: NAME"  + "\n" +
+				"Start time: " + "00:00" + "\n" +
+				"End time: " + "00:00" + "\n" +
+				"Description: " + "DESC" + "\n" +
+				"Event place: " + "Warsaw" + "\n" +
+				"Tags: " + l.toString() + "\n" +
+				"People: " + p.toString();
+		assertEquals(expected, c.toString());
 	}
 }

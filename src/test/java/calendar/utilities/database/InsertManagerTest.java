@@ -66,8 +66,14 @@ public class InsertManagerTest {
 
                 pstmt.setInt(1, keys.get(0));
                 System.out.println(pstmt);
-                ResultSet rs = pstmt.executeQuery();
-                InsertManager.addTags("task", rs, tagList);
+                ResultSet res = pstmt.executeQuery();
+
+                List<String> ids = new ArrayList<>();
+                while (res.next()) {
+                    ids.add(res.getString(1));
+                }
+
+                InsertManager.addTags("task", ids, tagList);
                 boolean executed = false;
                 for (int x : keys) {
                     executed = true;

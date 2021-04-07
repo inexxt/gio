@@ -68,7 +68,13 @@ public class NewTaskView extends Div {
             ResultSet res = InsertManager.addTask(taskDatePicker.getValue(), taskNameArea.getValue(),
                     taskDescriptionArea.getValue(), taskDuration.getValue());
             List<Tag> tags = Arrays.stream(tagsField.getValue().split(",")).map(Tag::new).collect(Collectors.toList());
-            InsertManager.addTags("task", res, tags);
+
+            List<String> ids = new ArrayList<>();
+            while (res.next()) {
+                ids.add(res.getString(1));
+            }
+
+            InsertManager.addTags("task", ids, tags);
         }
         catch(SQLException e) {
             Notification.show("SQLException occured. Task has not been added.");

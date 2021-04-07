@@ -12,32 +12,31 @@ import java.util.List;
 
 public class InsertManager {
 
-    public static void addTags(String taskOrEvent, ResultSet res, List<Tag> tags) throws SQLException, IOException, ClassNotFoundException {
+    public static void addTags(String taskOrEvent, List<String> ids, List<Tag> tags) throws SQLException, IOException, ClassNotFoundException {
         Connection conn = ConnectionManager.getConnection();
-        while(res.next()) {
+        for (String id : ids) {
             for (Tag t : tags) {
                 String sql = "INSERT INTO " + taskOrEvent + "_tags("+ taskOrEvent + ", tag) VALUES(?, ?)";
                 PreparedStatement pstmt = conn.prepareStatement(sql);
-                pstmt.setString(1, res.getString(1));
+                pstmt.setString(1, id);
                 pstmt.setString(2, t.toString());
                 pstmt.executeUpdate();
             }
         }
     }
 
-    public static void addPeople(ResultSet res, List<Person> people) throws SQLException, IOException, ClassNotFoundException {
+    public static void addPeople(List<String> ids, List<Person> people) throws SQLException, IOException, ClassNotFoundException {
         Connection conn = ConnectionManager.getConnection();
-        while(res.next()) {
+        for (String id : ids) {
             for (Person p : people) {
-                String sql = "INSERT INTO event_people(event, tag) VALUES(?, ?)";
+                String sql = "INSERT INTO event_people(event, person) VALUES(?, ?)";
                 PreparedStatement pstmt = conn.prepareStatement(sql);
-                pstmt.setString(1, res.getString(1));
+                pstmt.setString(1, id);
                 pstmt.setString(2, p.toString());
                 pstmt.executeUpdate();
             }
         }
     }
-
 
     public static ResultSet addTask(LocalDate taskTime, String name, String description, String duration)
             throws SQLException, IOException, ClassNotFoundException {

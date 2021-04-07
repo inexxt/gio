@@ -75,16 +75,17 @@ public class CalendarOverview extends Div {
                     eventStart.getDayOfMonth());
 
             String place = rs.getString("place");
+            int id = rs.getInt("id");
 
             String sql_tags = "select tag from event_tags where event = ?;";
             PreparedStatement pstmt_tags = ConnectionManager.getConnectionManager().getConn().prepareStatement(sql_tags);
-            pstmt_tags.setInt(1, rs.getInt("id"));
+            pstmt_tags.setInt(1, id);
             ResultSet tagsResult = pstmt_tags.executeQuery();
 
             String sql_people = "select person from event_people where event = ?;";
             PreparedStatement pstmt_people = ConnectionManager.getConnectionManager().getConn().prepareStatement(sql_people);
-            pstmt_people.setInt(1, rs.getInt("id"));
-            ResultSet peopleResult = pstmt_tags.executeQuery();
+            pstmt_people.setInt(1, id);
+            ResultSet peopleResult = pstmt_people.executeQuery();
 
             CalendarEvent event = new CalendarEvent(
             		rs.getInt("id"),
@@ -177,11 +178,11 @@ public class CalendarOverview extends Div {
             textLabels[3] = new Label("End time: " + e.getEventEndTimeString());
             textLabels[4] = new Label("Tags: " + e.getEventTags());
             textLabels[5] = new Label("Place: " + e.getEventPlace());
-            textLabels[6] = new Label("People: " + e.getEventPeople());
+            textLabels[6] = new Label("Guests: " + e.getEventPeople());
             /* Set width and height of text labels and add both break and text labels
              * to the display
              */
-            for(int i = 0; i < 5; ++i) {
+            for(int i = 0; i < 7; ++i) {
                 textLabels[i].setWidth("30%");
                 textLabels[i].setHeight("10px");
 

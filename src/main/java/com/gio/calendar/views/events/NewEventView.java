@@ -78,8 +78,14 @@ public class NewEventView extends Div {
                     eventPlaceField.getValue());
             List<Tag> tags = Arrays.stream(tagsField.getValue().split(",")).map(Tag::new).collect(Collectors.toList());
             List<Person> people = Arrays.stream(peopleField.getValue().split(",")).map(Person::new).collect(Collectors.toList());
-            InsertManager.addTags("event", res, tags);
-            InsertManager.addPeople(res, people);
+
+            List<String> ids = new ArrayList<>();
+            while (res.next()) {
+                ids.add(res.getString(1));
+            }
+
+            InsertManager.addTags("event", ids, tags);
+            InsertManager.addPeople(ids, people);
         }
         catch(SQLException e) {
             Notification.show("SQLException occured. Event has not been added.");
@@ -174,7 +180,7 @@ public class NewEventView extends Div {
         tagsField = new TextArea("Event tags (optional). Should be separated by coma. Maximum length: " + EVENT_TAGS_CHARACTERS_LIMIT);
         tagsField.setMaxLength(EVENT_TAGS_CHARACTERS_LIMIT);
 
-        peopleField = new TextArea("Guests (optional). A list of emails separated by coma. Maximum length: " + EVENT_TAGS_CHARACTERS_LIMIT);
+        peopleField = new TextArea("Guests (optional). A list of guests separated by coma. Maximum length: " + EVENT_TAGS_CHARACTERS_LIMIT);
         peopleField.setMaxLength(EVENT_TAGS_CHARACTERS_LIMIT);
 
         eventPlaceField = new TextArea("Event place (optional). Maximum length: " + EVENT_TAGS_CHARACTERS_LIMIT);
@@ -252,7 +258,7 @@ public class NewEventView extends Div {
                     String sql_people = "select person from event_people where event = ?;";
                     PreparedStatement pstmt_people = ConnectionManager.getConnectionManager().getConn().prepareStatement(sql_people);
                     pstmt_people.setInt(1, rs.getInt("id"));
-                    ResultSet peopleResult = pstmt_tags.executeQuery();
+                    ResultSet peopleResult = pstmt_people.executeQuery();
 
                     CalendarEvent event = new CalendarEvent(
 	                		rs.getInt("id"),

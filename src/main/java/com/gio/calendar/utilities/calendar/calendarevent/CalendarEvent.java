@@ -70,6 +70,7 @@ public class CalendarEvent {
         this.eventDescription = eventDescription;
         this.eventName = eventName;
         this.eventPlace = place;
+        this.eventPeople = new ArrayList<Person>();
         while(people.next()) {
             eventPeople.add(new Person(people.getString("person")));
         }
@@ -113,7 +114,9 @@ public class CalendarEvent {
                 (eventStartTime != null ? "Start time: " + getEventStartTimeString() + "\n" : "") +
                 (eventEndTime   != null ? "End time: " + getEventEndTimeString() + "\n" : "") +
                 (eventDescription != null ? "Description: " + eventDescription + "\n" : "") +
-               "Tags: " + eventTags;
+                (eventPlace != null ? "Event place: " + eventPlace + "\n" : "") +
+                "Tags: " + eventTags + "\n" +
+                "People: " + eventPeople;
     }
 
     public LocalDateTime getStart() {
