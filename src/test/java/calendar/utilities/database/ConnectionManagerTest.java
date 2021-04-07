@@ -13,7 +13,7 @@ public class ConnectionManagerTest {
         try {
             ConnectionManager.initialize();
             Connection conn = ConnectionManager.getConnection();
-            String tables [] = {"tasks", "events", "task_tags", "event_tags"};
+            String tables [] = {"tasks", "events", "task_tags", "event_tags", "event_people"};
             for (String t : tables) {
                 String sql = "SELECT name FROM sqlite_master WHERE type='table' AND name='"+t+"';";
                 PreparedStatement pstmt = conn.prepareStatement(sql);

@@ -1,5 +1,6 @@
 package com.gio.calendar.utilities.database;
 
+import com.gio.calendar.utilities.calendar.person.Person;
 import com.gio.calendar.utilities.calendar.tag.Tag;
 
 import java.io.IOException;
@@ -11,14 +12,27 @@ import java.util.List;
 
 public class InsertManager {
 
-    public static void addTags(String taskOrEvent, ResultSet res, List<Tag> tags) throws SQLException, IOException, ClassNotFoundException {
+    public static void addTags(String taskOrEvent, List<String> ids, List<Tag> tags) throws SQLException, IOException, ClassNotFoundException {
         Connection conn = ConnectionManager.getConnection();
-        while(res.next()) {
+        for (String id : ids) {
             for (Tag t : tags) {
                 String sql = "INSERT INTO " + taskOrEvent + "_tags("+ taskOrEvent + ", tag) VALUES(?, ?)";
                 PreparedStatement pstmt = conn.prepareStatement(sql);
-                pstmt.setString(1, res.getString(1));
+                pstmt.setString(1, id);
                 pstmt.setString(2, t.toString());
+                pstmt.executeUpdate();
+            }
+        }
+    }
+
+    public static void addPeople(List<String> ids, List<Person> people) throws SQLException, IOException, ClassNotFoundException {
+        Connection conn = ConnectionManager.getConnection();
+        for (String id : ids) {
+            for (Person p : people) {
+                String sql = "INSERT INTO event_people(event, person) VALUES(?, ?)";
+                PreparedStatement pstmt = conn.prepareStatement(sql);
+                pstmt.setString(1, id);
+                pstmt.setString(2, p.toString());
                 pstmt.executeUpdate();
             }
         }
@@ -43,7 +57,7 @@ public class InsertManager {
     }
 
     public static ResultSet addEvent(LocalDate eventDate, LocalTime eventStartTime, LocalTime eventEndTime,
-                                     String name, String description) throws SQLException, IOException, ClassNotFoundException {
+                                     String name, String description, String place) throws SQLException, IOException, ClassNotFoundException {
 
         LocalDateTime eventStart = LocalDateTime.of(eventDate.getYear(),
                 eventDate.getMonthValue(),
@@ -58,7 +72,7 @@ public class InsertManager {
                 eventEndTime.getMinute());
 
         Connection conn = ConnectionManager.getConnection();
-        String sql = "INSERT INTO events(name, desc, event_start, event_end) VALUES(?, ?, ?, ?)";
+        String sql = "INSERT INTO events(name, desc, event_start, event_end, place) VALUES(?, ?, ?, ?, ?)";
         PreparedStatement pstmt = conn.prepareStatement(sql);
 
         pstmt.setString(1, (name != null ?
@@ -69,6 +83,8 @@ public class InsertManager {
 
         pstmt.setInt(3, (int) (Timestamp.valueOf(eventStart).getTime() / 1000L));
         pstmt.setInt(4, (int) (Timestamp.valueOf(eventEnd).getTime() / 1000L));
+        pstmt.setString(5, (place != null ?
+                place : "Event place not provided."));
         pstmt.executeUpdate();
         return pstmt.getGeneratedKeys();
     }

@@ -50,7 +50,6 @@ public class InsertManagerTest {
                     assertEquals(name, rs1.getString("name"));
                     assertEquals(desc, rs1.getString("desc"));
                     assertEquals(1, rs1.getInt("task_duration"));
-
                 }
                 assertTrue(executed);
                 assertEquals(keys.size(), 1);
@@ -67,8 +66,14 @@ public class InsertManagerTest {
 
                 pstmt.setInt(1, keys.get(0));
                 System.out.println(pstmt);
-                ResultSet rs = pstmt.executeQuery();
-                InsertManager.addTags("task", rs, tagList);
+                ResultSet res = pstmt.executeQuery();
+
+                List<String> ids = new ArrayList<>();
+                while (res.next()) {
+                    ids.add(res.getString(1));
+                }
+
+                InsertManager.addTags("task", ids, tagList);
                 boolean executed = false;
                 for (int x : keys) {
                     executed = true;
@@ -86,31 +91,33 @@ public class InsertManagerTest {
             }
         }
 
-            @org.junit.Test
-            public void addEventTest() {
-                LocalDate eventDate = LocalDate.now();
-                LocalTime eventStartTime = LocalTime.of(15, 0);
-                LocalTime eventEndTime = LocalTime.of(16, 0);
-                String name = "name";
-                String desc = "desc";
-                try {
-                    ResultSet rs = InsertManager.addEvent(eventDate, eventStartTime, eventEndTime, name, desc);
-                    boolean executed = false;
-                    while (rs.next()) {
-                        executed = true;
-                        String sql = "select name, desc from events where id = ?;";
-                        PreparedStatement pstmt = ConnectionManager.getConnectionManager().getConn().prepareStatement(sql);
+        @org.junit.Test
+        public void addEventTest() {
+            LocalDate eventDate = LocalDate.now();
+            LocalTime eventStartTime = LocalTime.of(15, 0);
+            LocalTime eventEndTime = LocalTime.of(16, 0);
+            String name = "name";
+            String desc = "desc";
+            String place = "Warsaw";
+            try {
+                ResultSet rs = InsertManager.addEvent(eventDate, eventStartTime, eventEndTime, name, desc, place);
+                boolean executed = false;
+                while (rs.next()) {
+                    executed = true;
+                    String sql = "select name, desc, place from events where id = ?;";
+                    PreparedStatement pstmt = ConnectionManager.getConnectionManager().getConn().prepareStatement(sql);
 
-                        pstmt.setInt(1, rs.getInt(1));
-                        ResultSet rs1 = pstmt.executeQuery();
-                        assertEquals(name, rs1.getString("name"));
-                        assertEquals(desc, rs1.getString("desc"));
-                    }
-                    assertTrue(executed);
+                    pstmt.setInt(1, rs.getInt(1));
+                    ResultSet rs1 = pstmt.executeQuery();
+                    assertEquals(name, rs1.getString("name"));
+                    assertEquals(desc, rs1.getString("desc"));
+                    assertEquals(place, rs1.getString("place"));
                 }
-                catch (Exception e) {
-                    fail();
-                }
+                assertTrue(executed);
             }
+            catch (Exception e) {
+                fail();
+            }
+        }
 
 }

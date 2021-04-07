@@ -20,7 +20,8 @@ public class CalendarEventTest {
 											"NAME",  "DESC",
 											LocalDate.now(),
 											LocalTime.now(), LocalTime.now(),
-											"first, second");
+											"first, second",
+										"Warsaw","p1@wp.pl,p2@wp.pl");
 
 		assertEquals("NAME", c.getEventName());
 	}
@@ -40,7 +41,7 @@ public class CalendarEventTest {
 							  "NAME",  "DESC",
 							  LocalDate.now(),
 							  firstTimeCase, fourthTimeCase,
-							  "first, second");
+							  "first, second","Warsaw","p1@wp.pl,p2@wp.pl");
 
 		assertEquals("13:45", c.getEventStartTimeString());
 
@@ -48,7 +49,7 @@ public class CalendarEventTest {
 							  "NAME",  "DESC",
 							  LocalDate.now(),
 							  secondTimeCase, thirdTimeCase,
-							  "first, second");
+							  "first, second","Warsaw","p1@wp.pl,p2@wp.pl");
 
 		assertEquals("00:05", c.getEventStartTimeString());
 
@@ -56,7 +57,7 @@ public class CalendarEventTest {
 							  "NAME",  "DESC",
 							  LocalDate.now(),
 							  thirdTimeCase, fourthTimeCase,
-							  "first, second");
+							  "first, second","Warsaw","p1@wp.pl,p2@wp.pl");
 
 		assertEquals("09:13", c.getEventStartTimeString());
 
@@ -64,7 +65,7 @@ public class CalendarEventTest {
 							  "NAME",  "DESC",
 							  LocalDate.now(),
 							  fourthTimeCase, secondTimeCase,
-							  "first, second");
+							  "first, second","Warsaw","p1@wp.pl,p2@wp.pl");
 
 		assertEquals("04:08", c.getEventStartTimeString());
 
@@ -72,7 +73,7 @@ public class CalendarEventTest {
 							  "NAME",  "DESC",
 							  LocalDate.now(),
 							  fifthTimeCase, firstTimeCase,
-							  "first, second");
+							  "first, second","Warsaw","p1@wp.pl,p2@wp.pl");
 
 		assertEquals("00:00", c.getEventStartTimeString());
 	}
@@ -92,7 +93,7 @@ public class CalendarEventTest {
 							  "NAME",  "DESC",
 							  LocalDate.now(),
 							  secondTimeCase, firstTimeCase,
-							  "first, second");
+							  "first, second","Warsaw","p1@wp.pl,p2@wp.pl");
 
 		assertEquals("13:45", c.getEventEndTimeString());
 
@@ -100,7 +101,7 @@ public class CalendarEventTest {
 							  "NAME",  "DESC",
 							  LocalDate.now(),
 							  fifthTimeCase, secondTimeCase,
-							  "first, second");
+							  "first, second","Warsaw","p1@wp.pl,p2@wp.pl");
 
 		assertEquals("00:05", c.getEventEndTimeString());
 
@@ -108,7 +109,7 @@ public class CalendarEventTest {
 							  "NAME",  "DESC",
 							  LocalDate.now(),
 							  fourthTimeCase, thirdTimeCase,
-							  "first, second");
+							  "first, second","Warsaw","p1@wp.pl,p2@wp.pl");
 
 		assertEquals("09:13", c.getEventEndTimeString());
 
@@ -116,7 +117,7 @@ public class CalendarEventTest {
 							  "NAME",  "DESC",
 							  LocalDate.now(),
 							  firstTimeCase, fourthTimeCase,
-							  "first, second");
+							  "first, second","Warsaw","p1@wp.pl,p2@wp.pl");
 
 		assertEquals("04:08", c.getEventEndTimeString());
 
@@ -124,7 +125,7 @@ public class CalendarEventTest {
 							  "NAME",  "DESC",
 							  LocalDate.now(),
 							  thirdTimeCase, fifthTimeCase,
-							  "first, second");
+							  "first, second","Warsaw","p1@wp.pl,p2@wp.pl");
 
 		assertEquals("00:00", c.getEventEndTimeString());
 	}
@@ -136,7 +137,7 @@ public class CalendarEventTest {
 											"NAME",  "DESC",
 											LocalDate.now(),
 											LocalTime.now(), LocalTime.now(),
-											"first, second");
+											"first, second","Warsaw","p1@wp.pl,p2@wp.pl");
 
 		assertEquals("DESC", c.getEventDescription());
 	}
@@ -147,23 +148,33 @@ public class CalendarEventTest {
 											"NAME", "DESC",
 											LocalDate.now(),
 											LocalTime.now(), LocalTime.now(),
-											"first,second,third,fourth");
-		
-		Stream<String> stringStream = Stream.of("first", "second", "third", "fourth");
-		
-		assertEquals("first,second,third,fourth", c.getEventTags().toString());
+											"first,second,third,fourth","Warsaw","p1@wp.pl,p2@wp.pl");
+		assertEquals("first,second,third,fourth", c.getEventTags());
 	}
+
+	@org.junit.Test
+	public void testPeopleSplit() {
+		CalendarEvent c = new CalendarEvent(1,
+				"NAME", "DESC",
+				LocalDate.now(),
+				LocalTime.now(), LocalTime.now(),
+				"first,second,third,fourth","Warsaw","p1@wp.pl,p2@wp.pl");
+
+		assertEquals("p1@wp.pl,p2@wp.pl", c.getEventPeople());
+	}
+
 	@org.junit.Test
 	public void testId() {
 		CalendarEvent c = new CalendarEvent(132,
 				"NAME",  "DESC",
 				LocalDate.now(),
 				LocalTime.now(), LocalTime.now(),
-				"first, second");
+				"first, second","Warsaw","p1@wp.pl,p2@wp.pl");
 
 		assertEquals(132, c.getEventId());
 	}
 
+	// TODO
 	@org.junit.Test
 	public void testToString() {
 		LocalDate start = LocalDate.now();
@@ -171,16 +182,24 @@ public class CalendarEventTest {
 		CalendarEvent c = new CalendarEvent(0,"NAME", "DESC",
 				start,
 				now, now,
-				"first,second");
+				"first,second","Warsaw","p1@wp.pl,p2@wp.pl");
 		List<String> l = new ArrayList<String>();
 		l.add("first");
 		l.add("second");
-		assertEquals("Date: " + start.toString() +
+
+		List<String> p = new ArrayList<>();
+		p.add("p1@wp.pl");
+		p.add("p2@wp.pl");
+
+		String expected = "Date: " + start.toString() +
 				"\n" +
-				 "Name: NAME"  + "\n" +
-				 "Start time: " + "00:00" + "\n" +
-				 "End time: " + "00:00" + "\n" +
-				 "Description: " + "DESC" + "\n" +
-				"Tags: " + l.toString(), c.toString());
+				"Name: NAME"  + "\n" +
+				"Start time: " + "00:00" + "\n" +
+				"End time: " + "00:00" + "\n" +
+				"Description: " + "DESC" + "\n" +
+				"Event place: " + "Warsaw" + "\n" +
+				"Tags: " + l.toString() + "\n" +
+				"People: " + p.toString();
+		assertEquals(expected, c.toString());
 	}
 }
