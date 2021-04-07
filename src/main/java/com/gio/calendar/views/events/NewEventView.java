@@ -1,5 +1,6 @@
 package com.gio.calendar.views.events;
 
+import com.gio.calendar.utilities.calendar.calendarevent.CalendarEvent;
 import com.gio.calendar.utilities.calendar.tag.Tag;
 import com.gio.calendar.utilities.database.ConnectionManager;
 import com.gio.calendar.views.main.MainView;
@@ -256,6 +257,23 @@ public class NewEventView extends Div {
 	                eventEndTimePicker.setValue(endTimeLocal);
 	                
 	                eventDatePicker.setValue(eventDate);
+	                
+	                String sql_tags = "select tag from event_tags where event = ?;";
+	                PreparedStatement pstmt_tags = ConnectionManager.getConnectionManager().getConn().prepareStatement(sql_tags);
+	                pstmt_tags.setInt(1, rs.getInt("id"));
+	                ResultSet tagsResult = pstmt_tags.executeQuery();
+
+	                CalendarEvent event = new CalendarEvent(
+	                		rs.getInt("id"),
+	                        rs.getString("name"),
+	                        rs.getString("desc"),
+	                        eventDate,
+	                        startTimeLocal,
+	                        endTimeLocal,
+	                        tagsResult
+	                );
+	                
+	                tagsField.setValue(event.getEventTags());
 	            }
         	}
         	catch(SQLException e) {
