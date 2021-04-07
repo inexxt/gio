@@ -1,5 +1,6 @@
 package com.gio.calendar.utilities.calendar.calendarevent;
 
+import com.gio.calendar.utilities.calendar.person.Person;
 import com.gio.calendar.utilities.calendar.tag.Tag;
 import org.apache.commons.lang3.StringUtils;
 
@@ -21,8 +22,11 @@ public class CalendarEvent {
     private LocalTime eventEndTime;
 
     private List<Tag> eventTags;
+    private List<Person> eventPeople;
+
     private String eventDescription;
     private String eventName;
+    private String eventPlace;
 
     public CalendarEvent(int eventId,
     					 String eventName, 
@@ -30,7 +34,9 @@ public class CalendarEvent {
     					 LocalDate eventDate, 
     					 LocalTime eventStartTime, 
     					 LocalTime eventEndTime, 
-    					 String tags) {
+    					 String tags,
+                         String place,
+                         String people) {
     	
     	this.eventId = eventId;
         this.eventDate = eventDate;
@@ -39,6 +45,8 @@ public class CalendarEvent {
         this.eventTags = Arrays.stream(tags.split(",")).map(Tag::new).collect(Collectors.toList());
         this.eventDescription = eventDescription;
         this.eventName = eventName;
+        this.eventPeople = Arrays.stream(people.split(",")).map(Person::new).collect(Collectors.toList());
+        this.eventPlace = place;
     }
 
     public CalendarEvent(int eventId,
@@ -47,7 +55,9 @@ public class CalendarEvent {
     					 LocalDate eventDate, 
     					 LocalTime eventStartTime, 
     					 LocalTime eventEndTime, 
-    					 ResultSet tags) throws SQLException {
+    					 ResultSet tags,
+                         String place,
+                         ResultSet people) throws SQLException {
     	
     	this.eventId = eventId;
         this.eventDate = eventDate;
@@ -59,6 +69,10 @@ public class CalendarEvent {
         }
         this.eventDescription = eventDescription;
         this.eventName = eventName;
+        this.eventPlace = place;
+        while(people.next()) {
+            eventPeople.add(new Person(people.getString("person")));
+        }
     }
 
     private String timeToString(LocalTime targetTime) {
@@ -85,6 +99,10 @@ public class CalendarEvent {
     public String getEventName() {
     	return eventName;
     }
+
+    public String getEventPlace() {
+        return eventPlace;
+    }
     
     /* For further purposes */
     @Override
@@ -109,7 +127,16 @@ public class CalendarEvent {
         List<String> ss = eventTags.stream().map(Tag::getTagName).collect(Collectors.toList());
         return String.join(",", ss);
     }
-    
+
+    public String getEventPeople() {
+        if (eventPeople.isEmpty()) {
+            return "None";
+        }
+        List<String> ss = eventPeople.stream().map(Person::getPersonDetails).collect(Collectors.toList());
+        return String.join(",", ss);
+    }
+
+
     public int getEventId() {
     	return eventId;
     }

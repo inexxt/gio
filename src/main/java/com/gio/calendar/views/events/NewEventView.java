@@ -1,6 +1,7 @@
 package com.gio.calendar.views.events;
 
 import com.gio.calendar.utilities.calendar.calendarevent.CalendarEvent;
+import com.gio.calendar.utilities.calendar.person.Person;
 import com.gio.calendar.utilities.calendar.tag.Tag;
 import com.gio.calendar.utilities.database.ConnectionManager;
 import com.gio.calendar.utilities.database.InsertManager;
@@ -56,6 +57,8 @@ public class NewEventView extends Div {
     private final TextArea eventNameArea;
     private final TextArea eventDescriptionArea;
     private final TextArea tagsField;
+    private final TextArea peopleField;
+    private final TextArea eventPlaceField;
 
     private final HorizontalLayout eventDateLayout;
     private final HorizontalLayout eventDescriptionLayout;
@@ -64,14 +67,19 @@ public class NewEventView extends Div {
     private final HorizontalLayout eventStartTimeLayout;
     private final HorizontalLayout eventEndTimeLayout;
     private final HorizontalLayout tagsFieldLayout;
+    private final HorizontalLayout peopleFieldLayout;
+    private final HorizontalLayout eventPlaceFieldLayout;
 
 
     private void addEventHandler() {
         try {
             ResultSet res = InsertManager.addEvent(eventDatePicker.getValue(), eventStartTimePicker.getValue(),
-                    eventEndTimePicker.getValue(), eventNameArea.getValue(), eventDescriptionArea.getValue());
+                    eventEndTimePicker.getValue(), eventNameArea.getValue(), eventDescriptionArea.getValue(),
+                    eventPlaceField.getValue());
             List<Tag> tags = Arrays.stream(tagsField.getValue().split(",")).map(Tag::new).collect(Collectors.toList());
+            List<Person> people = Arrays.stream(peopleField.getValue().split(",")).map(Person::new).collect(Collectors.toList());
             InsertManager.addTags("event", res, tags);
+            InsertManager.addPeople(res, people);
         }
         catch(SQLException e) {
             Notification.show("SQLException occured. Event has not been added.");
@@ -126,7 +134,9 @@ public class NewEventView extends Div {
         eventDatePicker.clear();
         eventEndTimePicker.clear();
         eventStartTimePicker.clear();
+        eventPlaceField.clear();
         tagsField.clear();
+        peopleField.clear();
     }
 
     public NewEventView() {
@@ -164,6 +174,11 @@ public class NewEventView extends Div {
         tagsField = new TextArea("Event tags (optional). Should be separated by coma. Maximum length: " + EVENT_TAGS_CHARACTERS_LIMIT);
         tagsField.setMaxLength(EVENT_TAGS_CHARACTERS_LIMIT);
 
+        peopleField = new TextArea("Guests (optional). A list of emails separated by coma. Maximum length: " + EVENT_TAGS_CHARACTERS_LIMIT);
+        peopleField.setMaxLength(EVENT_TAGS_CHARACTERS_LIMIT);
+
+        eventPlaceField = new TextArea("Event place (optional). Maximum length: " + EVENT_TAGS_CHARACTERS_LIMIT);
+        eventPlaceField.setMaxLength(EVENT_TAGS_CHARACTERS_LIMIT);
 
         /* Layouts creating */
         eventDateLayout = new HorizontalLayout();
@@ -172,6 +187,8 @@ public class NewEventView extends Div {
         eventStartTimeLayout = new HorizontalLayout();
         eventEndTimeLayout = new HorizontalLayout();
         tagsFieldLayout = new HorizontalLayout();
+        peopleFieldLayout = new HorizontalLayout();
+        eventPlaceFieldLayout = new HorizontalLayout();
 
         /* Button for confirming new event add operation */
         addEventButton = (eventIdString == null ? new Button("Add event") : new Button("Modify event"));
@@ -183,14 +200,17 @@ public class NewEventView extends Div {
         eventStartTimeLayout.addAndExpand(eventStartTimePicker);
         eventEndTimeLayout.addAndExpand(eventEndTimePicker);
         tagsFieldLayout.addAndExpand(tagsField);
+        peopleFieldLayout.addAndExpand(peopleField);
+        eventPlaceFieldLayout.addAndExpand(eventPlaceField);
 
         /* Add all layouts */
         add(eventDateLayout, eventNameLayout, eventDescriptionLayout,
-            eventStartTimeLayout, eventEndTimeLayout, tagsFieldLayout, addEventButton);
+            eventStartTimeLayout, eventEndTimeLayout, tagsFieldLayout,
+                peopleFieldLayout, eventPlaceFieldLayout, addEventButton);
         
         if(eventIdString != null) {
         	try {
-	        	String sql = "select id, name, desc, event_start, event_end from events where id = ?;";
+	        	String sql = "select id, name, desc, event_start, event_end, place from events where id = ?;";
 	            PreparedStatement pstmt = ConnectionManager.getConnectionManager().getConn().prepareStatement(sql);
 	
 	            pstmt.setInt(1, Integer.parseInt(eventIdString));
@@ -220,23 +240,34 @@ public class NewEventView extends Div {
 	                eventEndTimePicker.setValue(endTimeLocal);
 	                
 	                eventDatePicker.setValue(eventDate);
-	                
+
+                    String place = rs.getString("place");
+                    eventPlaceField.setValue(place);
+
 	                String sql_tags = "select tag from event_tags where event = ?;";
 	                PreparedStatement pstmt_tags = ConnectionManager.getConnectionManager().getConn().prepareStatement(sql_tags);
 	                pstmt_tags.setInt(1, rs.getInt("id"));
 	                ResultSet tagsResult = pstmt_tags.executeQuery();
 
-	                CalendarEvent event = new CalendarEvent(
+                    String sql_people = "select person from event_people where event = ?;";
+                    PreparedStatement pstmt_people = ConnectionManager.getConnectionManager().getConn().prepareStatement(sql_people);
+                    pstmt_people.setInt(1, rs.getInt("id"));
+                    ResultSet peopleResult = pstmt_tags.executeQuery();
+
+                    CalendarEvent event = new CalendarEvent(
 	                		rs.getInt("id"),
 	                        rs.getString("name"),
 	                        rs.getString("desc"),
 	                        eventDate,
 	                        startTimeLocal,
 	                        endTimeLocal,
-	                        tagsResult
+	                        tagsResult,
+                            place,
+                            peopleResult
 	                );
-	                
-	                tagsField.setValue(event.getEventTags());
+
+                    tagsField.setValue(event.getEventTags());
+	                peopleField.setValue(event.getEventPeople());
 	            }
         	}
         	catch(SQLException e) {

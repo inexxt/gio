@@ -47,7 +47,8 @@ public class ConnectionManager
                     + "	name text NOT NULL,\n"
                     + "	desc text NOT NULL,\n"
                     + "	event_start integer NOT NULL,\n"
-                    + "	event_end integer NOT NULL\n"
+                    + "	event_end integer NOT NULL,\n"
+                    + "	place text NOT NULL\n"
                     + ");";
             executeStatement(sql);
         }
@@ -83,6 +84,15 @@ public class ConnectionManager
             executeStatement(sql);
         }
 
+        private void createEventPeopleTable() throws ClassNotFoundException, SQLException {
+            String sql = "CREATE TABLE IF NOT EXISTS event_people (\n"
+                    + "	id integer PRIMARY KEY AUTOINCREMENT,\n"
+                    + " event integer,\n"
+                    + "	person text NOT NULL\n,"
+                    + " FOREIGN KEY(event) REFERENCES event(id)\n"
+                    + ");";
+            executeStatement(sql);
+        }
 
         public void initConnection() throws SQLException, ClassNotFoundException, IOException {
             if (conn == null) {
@@ -92,6 +102,7 @@ public class ConnectionManager
                 createTaskTable();
                 createTaskTagsTable();
                 createEventTagsTable();
+                createEventPeopleTable();
             }
         }
 
