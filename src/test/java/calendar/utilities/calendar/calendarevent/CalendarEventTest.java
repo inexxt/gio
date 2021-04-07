@@ -149,11 +149,20 @@ public class CalendarEventTest {
 											LocalDate.now(),
 											LocalTime.now(), LocalTime.now(),
 											"first,second,third,fourth","Warsaw","p1@wp.pl,p2@wp.pl");
-		
-		Stream<String> stringStream = Stream.of("first", "second", "third", "fourth");
-		
-		assertEquals("first,second,third,fourth", c.getEventTags().toString());
+		assertEquals("first,second,third,fourth", c.getEventTags());
 	}
+
+	@org.junit.Test
+	public void testPeopleSplit() {
+		CalendarEvent c = new CalendarEvent(1,
+				"NAME", "DESC",
+				LocalDate.now(),
+				LocalTime.now(), LocalTime.now(),
+				"first,second,third,fourth","Warsaw","p1@wp.pl,p2@wp.pl");
+
+		assertEquals("p1@wp.pl,p2@wp.pl", c.getEventPeople());
+	}
+
 	@org.junit.Test
 	public void testId() {
 		CalendarEvent c = new CalendarEvent(132,
