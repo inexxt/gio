@@ -2,6 +2,7 @@ package com.gio.calendar.views.events;
 
 import com.gio.calendar.utilities.calendar.tag.Tag;
 import com.gio.calendar.utilities.database.ConnectionManager;
+import com.gio.calendar.utilities.database.InsertManager;
 import com.gio.calendar.views.main.MainView;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
@@ -59,51 +60,13 @@ public class NewEventView extends Div {
     private final HorizontalLayout eventEndTimeLayout;
     private final HorizontalLayout tagsFieldLayout;
 
-    private void addEventToDatabase() throws SQLException, IOException, ClassNotFoundException {
-        LocalDate eventDate = eventDatePicker.getValue();
-        
-        LocalDateTime eventStart = LocalDateTime.of(eventDate.getYear(), 
-        										    eventDate.getMonthValue(), 
-        										    eventDate.getDayOfMonth(),
-        										    eventStartTimePicker.getValue().getHour(), 
-        										    eventStartTimePicker.getValue().getMinute());
-
-        LocalDateTime eventEnd = LocalDateTime.of(eventDate.getYear(), 
-        										  eventDate.getMonthValue(), 
-        										  eventDate.getDayOfMonth(),
-        										  eventEndTimePicker.getValue().getHour(), 
-        										  eventEndTimePicker.getValue().getMinute());
-                
-        Connection conn = ConnectionManager.getConnection();
-        String sql = "INSERT INTO events(name, desc, event_start, event_end) VALUES(?, ?, ?, ?)";
-        PreparedStatement pstmt = conn.prepareStatement(sql);
-        
-        pstmt.setString(1, (eventNameArea.getValue() != null ? 
-        					eventNameArea.getValue() : "Event name not provided."));
-        
-        pstmt.setString(2, (eventDescriptionArea.getValue() != null ? 
-        					eventDescriptionArea.getValue() : "Event description not provided."));
-        
-        pstmt.setInt(3, (int) (Timestamp.valueOf(eventStart).getTime() / 1000L));
-        pstmt.setInt(4, (int) (Timestamp.valueOf(eventEnd).getTime() / 1000L));
-        pstmt.executeUpdate();
-        ResultSet res = pstmt.getGeneratedKeys();
-        List<Tag> tags = new ArrayList<Tag>();
-        tags = Arrays.stream(tagsField.getValue().split(",")).map(Tag::new).collect(Collectors.toList());
-        while(res.next()) {
-            for (Tag t : tags) {
-                String sql_task = "INSERT INTO event_tags(event, tag) VALUES(?, ?)";
-                PreparedStatement pstmt_task = conn.prepareStatement(sql_task);
-                pstmt_task.setString(1, res.getString(1));
-                pstmt_task.setString(2, t.toString());
-                pstmt_task.executeUpdate();
-            }
-        }
-    }
 
     private void addEventHandler() {
         try {
-            addEventToDatabase();
+            ResultSet res = InsertManager.addEvent(eventDatePicker.getValue(), eventStartTimePicker.getValue(),
+                    eventEndTimePicker.getValue(), eventNameArea.getValue(), eventDescriptionArea.getValue());
+            List<Tag> tags = Arrays.stream(tagsField.getValue().split(",")).map(Tag::new).collect(Collectors.toList());
+            InsertManager.addTags("event", res, tags);
         }
         catch(SQLException e) {
             Notification.show("SQLException occured. Event has not been added.");

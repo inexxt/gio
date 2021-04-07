@@ -2,6 +2,7 @@ package com.gio.calendar.views.tasks;
 
 import com.gio.calendar.utilities.calendar.tag.Tag;
 import com.gio.calendar.utilities.database.ConnectionManager;
+import com.gio.calendar.utilities.database.InsertManager;
 import com.gio.calendar.views.main.MainView;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.datepicker.DatePicker;
@@ -13,6 +14,8 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.sql.*;
@@ -22,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 @Route(value = "new_task", layout = MainView.class)
 @PageTitle("New task")
@@ -59,35 +63,12 @@ public class NewTaskView extends Div {
     private final HorizontalLayout tagsFieldLayout;
     private final HorizontalLayout taskDurationLayout;
 
-
-    private void addTaskToDatabase() throws SQLException, IOException, ClassNotFoundException {
-        LocalDateTime taskDate = taskDatePicker.getValue().atStartOfDay();
-        Connection conn = ConnectionManager.getConnection();
-        String sql = "INSERT INTO tasks(name, desc, task_date, task_duration) VALUES(?, ?, ?, ?)";
-        PreparedStatement pstmt = conn.prepareStatement(sql);
-        pstmt.setString(1, taskNameArea.getValue());
-        pstmt.setString(2, taskDescriptionArea.getValue());
-        // slight incompatiblity between timestamp in miliseconds and in seconds
-        pstmt.setInt(3, (int) (Timestamp.valueOf(taskDate).getTime() / 1000L));
-        pstmt.setInt(4, Integer.parseInt(taskDuration.getValue()));
-        pstmt.executeUpdate();
-        ResultSet res = pstmt.getGeneratedKeys();
-        List<Tag> tags = new ArrayList<Tag>();
-        tags = Arrays.stream(tagsField.getValue().split(",")).map(Tag::new).collect(Collectors.toList());
-        while(res.next()) {
-            for (Tag t : tags) {
-                String sql_task = "INSERT INTO task_tags(task, tag) VALUES(?, ?)";
-                PreparedStatement pstmt_task = conn.prepareStatement(sql_task);
-                pstmt_task.setString(1, res.getString(1));
-                pstmt_task.setString(2, t.toString());
-                pstmt_task.executeUpdate();
-            }
-        }
-    }
-
     private void addTaskHandler() {
         try {
-            addTaskToDatabase();
+            ResultSet res = InsertManager.addTask(taskDatePicker.getValue(), taskNameArea.getValue(),
+                    taskDescriptionArea.getValue(), taskDuration.getValue());
+            List<Tag> tags = Arrays.stream(tagsField.getValue().split(",")).map(Tag::new).collect(Collectors.toList());
+            InsertManager.addTags("task", res, tags);
         }
         catch(SQLException e) {
             Notification.show("SQLException occured. Task has not been added.");
@@ -180,5 +161,4 @@ public class NewTaskView extends Div {
         taskDescriptionArea.clear();
         taskDatePicker.clear();
     }
-
 }
