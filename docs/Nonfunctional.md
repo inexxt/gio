@@ -23,7 +23,7 @@ Platform portability
 
 Data portability 
  - the user should be able to move the data out of the application easy (soft requirement)
- - this means using an established, open-source data storage format
+ - this means using an established, open-source data storage format (such as SQLite format)
 
 Ergonomy
  - every main action in the program (calendar view, adding events, adding tasks) should be accessible from the main page
