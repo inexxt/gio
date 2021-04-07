@@ -168,7 +168,7 @@ public class CalendarEventTest {
 	public void testToString() {
 		LocalDate start = LocalDate.now();
 		LocalTime now =	LocalTime.of(0, 0);
-		CalendarEvent c = new CalendarEvent(0, "NAME", "DESC",
+		CalendarEvent c = new CalendarEvent(0,"NAME", "DESC",
 				start,
 				now, now,
 				"first,second");
