@@ -13,23 +13,11 @@ public class Tag {
     @Id
     private String tagId;
 
-    public Set<CalendarEvent> getTagEvents() {
-        return tagEvents;
-    }
-
-    public void setTagEvents(Set<CalendarEvent> tagEvents) {
-        this.tagEvents = tagEvents;
-    }
-
     @ManyToMany(mappedBy = "eventTags")
     private Set<CalendarEvent> tagEvents;
 
     public String getTagId() {
         return tagId;
-    }
-
-    public void setTagId(String tagId) {
-        this.tagId = tagId;
     }
 
     public Tag() { } // for persistance

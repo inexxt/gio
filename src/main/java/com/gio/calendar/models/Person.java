@@ -17,20 +17,8 @@ public class Person {
         return personName;
     }
 
-    public void setPersonName(String personName) {
-        this.personName = personName;
-    }
-
     @Id
     private String personName;
-
-    public Set<CalendarEvent> getPersonEvents() {
-        return personEvents;
-    }
-
-    public void setPersonEvents(Set<CalendarEvent> personEvents) {
-        this.personEvents = personEvents;
-    }
 
     @ManyToMany(mappedBy = "eventPeople")
     private Set<CalendarEvent> personEvents;

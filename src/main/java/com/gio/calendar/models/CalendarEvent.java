@@ -2,7 +2,6 @@ package com.gio.calendar.models;
 
 import javax.persistence.*;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Set;
 
@@ -31,48 +30,24 @@ public class CalendarEvent {
         return eventDate;
     }
 
-    public void setEventDate(LocalDate eventDate) {
-        this.eventDate = eventDate;
-    }
-
     public LocalTime getEventStartTime() {
         return eventStartTime;
-    }
-
-    public void setEventStartTime(LocalTime eventStartTime) {
-        this.eventStartTime = eventStartTime;
     }
 
     public LocalTime getEventEndTime() {
         return eventEndTime;
     }
 
-    public void setEventEndTime(LocalTime eventEndTime) {
-        this.eventEndTime = eventEndTime;
-    }
-
     public Set<Tag> getEventTags() {
         return eventTags;
-    }
-
-    public void setEventTags(Set<Tag> eventTags) {
-        this.eventTags = eventTags;
     }
 
     public Set<Person> getEventPeople() {
         return eventPeople;
     }
 
-    public void setEventPeople(Set<Person> eventPeople) {
-        this.eventPeople = eventPeople;
-    }
-
     public String getEventDescription() {
         return eventDescription;
-    }
-
-    public void setEventDescription(String eventDescription) {
-        this.eventDescription = eventDescription;
     }
 
     public String getEventName() {
@@ -87,9 +62,6 @@ public class CalendarEvent {
         return eventPlace;
     }
 
-    public void setEventPlace(String eventPlace) {
-        this.eventPlace = eventPlace;
-    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
