@@ -6,6 +6,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -55,5 +56,18 @@ public class Person {
 
     public static Set<Person> peopleFromString(String people) {
         return Arrays.stream(people.split(",")).map(Person::new).collect(Collectors.toSet());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Person person = (Person) o;
+        return Objects.equals(personName, person.personName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(personName);
     }
 }
