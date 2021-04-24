@@ -1,9 +1,5 @@
-package com.gio.calendar.views.tasks;
+package com.gio.calendar.views;
 
-import com.gio.calendar.utilities.calendar.tag.Tag;
-import com.gio.calendar.utilities.database.ConnectionManager;
-import com.gio.calendar.utilities.database.InsertManager;
-import com.gio.calendar.views.main.MainView;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -11,21 +7,8 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
-import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
-import java.io.IOException;
-import java.sql.*;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
 
 @Route(value = "new_task", layout = MainView.class)
 @PageTitle("New task")
@@ -64,28 +47,7 @@ public class NewTaskView extends Div {
     private final HorizontalLayout taskDurationLayout;
 
     private void addTaskHandler() {
-        try {
-            ResultSet res = InsertManager.addTask(taskDatePicker.getValue(), taskNameArea.getValue(),
-                    taskDescriptionArea.getValue(), taskDuration.getValue());
-            List<Tag> tags = Arrays.stream(tagsField.getValue().split(",")).map(Tag::new).collect(Collectors.toList());
-
-            List<String> ids = new ArrayList<>();
-            while (res.next()) {
-                ids.add(res.getString(1));
-            }
-
-            InsertManager.addTags("task", ids, tags);
-        }
-        catch(SQLException e) {
-            Notification.show("SQLException occured. Task has not been added.");
-            Notification.show("SQLException occurred: " + e.getMessage());
-            Notification.show("SQLException occurred: " + Arrays.toString(e.getStackTrace()));
-        }
-        catch(IOException e) {
-            Notification.show("IOException occured.");
-        } catch (ClassNotFoundException e) {
-            Notification.show("JDBC error: " + e.getMessage());
-        }
+        // Here will be the handler for the tasks
     }
 
     public NewTaskView() {
@@ -166,5 +128,7 @@ public class NewTaskView extends Div {
         taskNameArea.clear();
         taskDescriptionArea.clear();
         taskDatePicker.clear();
+        tagsField.clear();
+        taskDuration.clear();
     }
 }

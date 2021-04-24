@@ -1,8 +1,7 @@
-package com.gio.calendar.views.main;
+package com.gio.calendar.views;
 
 import java.util.Optional;
 
-import com.gio.calendar.views.tasks.NewTaskView;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.applayout.AppLayout;
@@ -19,8 +18,6 @@ import com.vaadin.flow.component.tabs.TabsVariant;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.router.PageTitle;
-import com.gio.calendar.views.events.NewEventView;
-import com.gio.calendar.views.overview.CalendarOverview;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.CssImport;
 
