@@ -1,11 +1,9 @@
-package com.gio.calendar.views.events;
+package com.gio.calendar.views;
 
-import com.gio.calendar.utilities.calendar.calendarevent.CalendarEvent;
-import com.gio.calendar.utilities.calendar.person.Person;
-import com.gio.calendar.utilities.calendar.tag.Tag;
-import com.gio.calendar.utilities.database.ConnectionManager;
-import com.gio.calendar.utilities.database.InsertManager;
-import com.gio.calendar.views.main.MainView;
+import com.gio.calendar.models.CalendarEvent;
+import com.gio.calendar.models.Person;
+import com.gio.calendar.models.Tag;
+import com.gio.calendar.persistance.CalendarEventRepo;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -18,18 +16,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.component.dependency.CssImport;
 
-
-import java.sql.*;
-import java.io.IOException;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.TimeZone;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Route(value = "new_event", layout = MainView.class)
 @PageTitle("New event")
@@ -71,66 +58,42 @@ public class NewEventView extends Div {
     private final HorizontalLayout eventPlaceFieldLayout;
 
 
+    private void handleSqlException(Exception e) {
+        Notification.show("SQLException occured. Event has not been added.");
+        Notification.show("SQLException occurred: " + e.getMessage());
+        Notification.show("SQLException occurred: " + Arrays.toString(e.getStackTrace()));
+    }
+
     private void addEventHandler() {
         try {
-            ResultSet res = InsertManager.addEvent(eventDatePicker.getValue(), eventStartTimePicker.getValue(),
-                    eventEndTimePicker.getValue(), eventNameArea.getValue(), eventDescriptionArea.getValue(),
-                    eventPlaceField.getValue());
-            List<Tag> tags = Arrays.stream(tagsField.getValue().split(",")).map(Tag::new).collect(Collectors.toList());
-            List<Person> people = Arrays.stream(peopleField.getValue().split(",")).map(Person::new).collect(Collectors.toList());
-
-            List<String> ids = new ArrayList<>();
-            while (res.next()) {
-                ids.add(res.getString(1));
-            }
-
-            InsertManager.addTags("event", ids, tags);
-            InsertManager.addPeople(ids, people);
+            CalendarEvent event = new CalendarEvent(
+                    eventNameArea.getValue(),
+                    eventDescriptionArea.getValue(),
+                    eventDatePicker.getValue(),
+                    eventStartTimePicker.getValue(),
+                    eventEndTimePicker.getValue(),
+                    tagsField.getValue(),
+                    eventPlaceField.getValue(),
+                    peopleField.getValue());
+            CalendarEventRepo.save(event);
         }
-        catch(SQLException e) {
-            Notification.show("SQLException occured. Event has not been added.");
-            Notification.show("SQLException occurred: " + e.getMessage());
-            Notification.show("SQLException occurred: " + Arrays.toString(e.getStackTrace()));
-        }
-        catch(IOException e) {
-            Notification.show("IOException occured.");
-        } catch (ClassNotFoundException e) {
-            Notification.show("JDBC error: " + e.getMessage());
+        catch(IllegalArgumentException e) {
+            handleSqlException(e);
         }
     }
-    
-    private void removeEventFromDatabase(String eventIdString) throws SQLException,
-    																  IOException,
-    																  ClassNotFoundException {
-	    Connection conn = ConnectionManager.getConnection();
-	    String sql = "DELETE FROM events WHERE id = ?";
-    	PreparedStatement pstmt = conn.prepareStatement(sql);
-    	pstmt.setInt(1, Integer.parseInt(eventIdString));
-    	pstmt.execute();
-    }
-    
+
     private void modifyEventHandler(String eventIdString) {
     	boolean operationSuccess = true;
     	
     	try {
-    		removeEventFromDatabase(eventIdString);
+    		CalendarEventRepo.deleteById(Integer.parseInt(eventIdString));
     	}
-    	catch(SQLException e) {
+    	catch(IllegalArgumentException e) {
     		operationSuccess = false;
-    		Notification.show("SQLException occured. Event has not been modified.");
+    		handleSqlException(e);
     	}
-    	catch(IOException e) {
-    		operationSuccess = false;
-    		Notification.show("IOException occured. Event has not been modified.");
-    	}
-    	catch(ClassNotFoundException e) {
-    		operationSuccess = false;
-    		Notification.show("ClassNotFoundException occured. Event has not been modified.");
-    	}
-    	finally {
-    		if(operationSuccess) {
-    			addEventHandler();
-    		}
+        if(operationSuccess) {
+            addEventHandler();
     	}
     }
     
@@ -215,73 +178,25 @@ public class NewEventView extends Div {
                 peopleFieldLayout, eventPlaceFieldLayout, addEventButton);
         
         if(eventIdString != null) {
-        	try {
-	        	String sql = "select id, name, desc, event_start, event_end, place from events where id = ?;";
-	            PreparedStatement pstmt = ConnectionManager.getConnectionManager().getConn().prepareStatement(sql);
-	
-	            pstmt.setInt(1, Integer.parseInt(eventIdString));
-	
-	            ResultSet rs = pstmt.executeQuery();
-	            while(rs.next()) {
-	                eventNameArea.setValue(rs.getString("name"));
-	                eventDescriptionArea.setValue(rs.getString("desc"));
-	                
-	                LocalDateTime eventStart = LocalDateTime.ofInstant(Instant.ofEpochMilli(rs.getInt("event_start")*1000L),
-	                        TimeZone.getDefault().toZoneId());
-	
-	                LocalDateTime eventEnd = LocalDateTime.ofInstant(Instant.ofEpochMilli(rs.getInt("event_end")*1000L),
-	                        TimeZone.getDefault().toZoneId());
-	
-	                LocalTime startTimeLocal = LocalTime.of(eventStart.getHour(),
-	                        eventStart.getMinute());
-	
-	                LocalTime endTimeLocal = LocalTime.of(eventEnd.getHour(),
-	                        eventEnd.getMinute());
-	
-	                LocalDate eventDate = LocalDate.of(eventStart.getYear(),
-	                        eventStart.getMonthValue(),
-	                        eventStart.getDayOfMonth());
-	                
-	                eventStartTimePicker.setValue(startTimeLocal);
-	                eventEndTimePicker.setValue(endTimeLocal);
-	                
-	                eventDatePicker.setValue(eventDate);
-
-                    String place = rs.getString("place");
-                    eventPlaceField.setValue(place);
-
-	                String sql_tags = "select tag from event_tags where event = ?;";
-	                PreparedStatement pstmt_tags = ConnectionManager.getConnectionManager().getConn().prepareStatement(sql_tags);
-	                pstmt_tags.setInt(1, rs.getInt("id"));
-	                ResultSet tagsResult = pstmt_tags.executeQuery();
-
-                    String sql_people = "select person from event_people where event = ?;";
-                    PreparedStatement pstmt_people = ConnectionManager.getConnectionManager().getConn().prepareStatement(sql_people);
-                    pstmt_people.setInt(1, rs.getInt("id"));
-                    ResultSet peopleResult = pstmt_people.executeQuery();
-
-                    CalendarEvent event = new CalendarEvent(
-	                		rs.getInt("id"),
-	                        rs.getString("name"),
-	                        rs.getString("desc"),
-	                        eventDate,
-	                        startTimeLocal,
-	                        endTimeLocal,
-	                        tagsResult,
-                            place,
-                            peopleResult
-	                );
-
-                    tagsField.setValue(event.getEventTags());
-	                peopleField.setValue(event.getEventPeople());
-	            }
-        	}
-        	catch(SQLException e) {
-        		Notification.show("SQLException occured.");
-        	}
-        	catch(ClassNotFoundException e) {
-        		Notification.show("ClassNotFoundException occured.");
-        	}
+            Optional<CalendarEvent> event = Optional.empty();
+            try {
+                event = CalendarEventRepo.findById(Integer.parseInt(eventIdString));
+        	} catch (IllegalArgumentException e) {
+        	    handleSqlException(e);
+            }
+            if(event.isPresent()) {
+                eventNameArea.setValue(event.get().getEventName());
+                eventDescriptionArea.setValue(event.get().getEventDescription());
+                eventStartTimePicker.setValue(event.get().getEventStartTime());
+                eventEndTimePicker.setValue(event.get().getEventEndTime());
+                eventDatePicker.setValue(event.get().getEventDate());
+                eventPlaceField.setValue(event.get().getEventPlace());
+                tagsField.setValue(Tag.tagsToString(event.get().getEventTags()));
+                peopleField.setValue(Person.peopleToString(event.get().getEventPeople()));
+            }
+            else {
+                Notification.show("Event with id " + eventIdString + " not found.");
+            }
         }
 
         /* Listener for the Button object which is to add the event on click after

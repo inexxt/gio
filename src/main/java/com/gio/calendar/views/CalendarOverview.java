@@ -1,9 +1,9 @@
-package com.gio.calendar.views.overview;
+package com.gio.calendar.views;
 
-import com.gio.calendar.utilities.calendar.calendarevent.CalendarEvent;
-import com.gio.calendar.utilities.calendar.calendartask.CalendarTask;
-import com.gio.calendar.utilities.database.ConnectionManager;
-import com.gio.calendar.views.main.MainView;
+import com.gio.calendar.models.CalendarEvent;
+import com.gio.calendar.models.Person;
+import com.gio.calendar.models.Tag;
+import com.gio.calendar.persistance.CalendarEventRepo;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.notification.Notification;
@@ -36,100 +36,15 @@ public class CalendarOverview extends Div {
 
     private final DatePicker targetDatePicker;
 	private final HorizontalLayout datePickerLayout;
-    
     private final VerticalLayout[] infoLayouts;
-
-    private final ArrayList<CalendarEvent> eventsList;
-    private final ArrayList<CalendarTask> tasksList;
+    private List<CalendarEvent> eventsList;
 
     /*  Collects information from database about events that user has planned for the day on
      *  the date chosen in targetDatePicker
      */
-    private void getEventsInfo() throws SQLException, IOException, ClassNotFoundException {
-        String sql = "select id, name, desc, event_start, event_end, place from events where (event_start > ?) and (event_start < ?);";
-        PreparedStatement pstmt = ConnectionManager.getConnectionManager().getConn().prepareStatement(sql);
-        
-        LocalDateTime targetDateStart = targetDatePicker.getValue().atStartOfDay();
-        LocalDateTime targetDateEnd = targetDatePicker.getValue().atStartOfDay().plusDays(1).minusSeconds(1);
-
-        pstmt.setInt(1, ((int) (Timestamp.valueOf(targetDateStart).getTime() / 1000L)));
-        pstmt.setInt(2, ((int) (Timestamp.valueOf(targetDateEnd).getTime() / 1000L)));
-
-        ResultSet rs = pstmt.executeQuery();
-        while(rs.next())
-        {
-            LocalDateTime eventStart = LocalDateTime.ofInstant(Instant.ofEpochMilli(rs.getInt("event_start")*1000L),
-                    TimeZone.getDefault().toZoneId());
-
-            LocalDateTime eventEnd = LocalDateTime.ofInstant(Instant.ofEpochMilli(rs.getInt("event_end")*1000L),
-                    TimeZone.getDefault().toZoneId());
-
-            LocalTime startTimeLocal = LocalTime.of(eventStart.getHour(),
-                    eventStart.getMinute());
-
-            LocalTime endTimeLocal = LocalTime.of(eventEnd.getHour(),
-                    eventEnd.getMinute());
-
-            LocalDate eventDate = LocalDate.of(eventStart.getYear(),
-                    eventStart.getMonthValue(),
-                    eventStart.getDayOfMonth());
-
-            String place = rs.getString("place");
-            int id = rs.getInt("id");
-
-            String sql_tags = "select tag from event_tags where event = ?;";
-            PreparedStatement pstmt_tags = ConnectionManager.getConnectionManager().getConn().prepareStatement(sql_tags);
-            pstmt_tags.setInt(1, id);
-            ResultSet tagsResult = pstmt_tags.executeQuery();
-
-            String sql_people = "select person from event_people where event = ?;";
-            PreparedStatement pstmt_people = ConnectionManager.getConnectionManager().getConn().prepareStatement(sql_people);
-            pstmt_people.setInt(1, id);
-            ResultSet peopleResult = pstmt_people.executeQuery();
-
-            CalendarEvent event = new CalendarEvent(
-            		rs.getInt("id"),
-                    rs.getString("name"),
-                    rs.getString("desc"),
-                    eventDate,
-                    startTimeLocal,
-                    endTimeLocal,
-                    tagsResult,
-                    place,
-                    peopleResult
-            );
-            eventsList.add(event);
-        }
-    }
-
-    /*  Collects information from database about tasks that user has planned for the day on
-     *  the date chosen in targetDatePicker
-     */
-    private void getTasksInfo() throws SQLException, IOException, ClassNotFoundException {
-        String sql = "select id, name, desc, task_duration from tasks where task_date = ?;";
-        PreparedStatement pstmt = ConnectionManager.getConnectionManager().getConn().prepareStatement(sql);
-        LocalDateTime targetDate = targetDatePicker.getValue().atStartOfDay();
-
-        pstmt.setInt(1, ((int) (Timestamp.valueOf(targetDate).getTime() / 1000L)));
-
-        ResultSet rs = pstmt.executeQuery();
-        LocalDate taskTime = targetDatePicker.getValue();
-        while(rs.next())
-        {
-
-            String sql_tags = "select tag from task_tags where task = ?;";
-            PreparedStatement pstmt_tags = ConnectionManager.getConnectionManager().getConn().prepareStatement(sql_tags);
-            pstmt_tags.setInt(1, rs.getInt("id"));
-            ResultSet tagsResult = pstmt_tags.executeQuery();
-            CalendarTask task = new CalendarTask(
-                    rs.getString("name"),
-                    rs.getString("desc"),
-                    taskTime,
-                    tagsResult,
-                    rs.getInt("task_duration")
-            );
-            tasksList.add(task);
-        }
+    private void getEventsInfo() throws SQLException {
+        LocalDate targetDateStart = targetDatePicker.getValue();
+        eventsList = CalendarEventRepo.findByDate(targetDateStart);
     }
 
     /* Sets events info for display on page.
@@ -141,7 +56,7 @@ public class CalendarOverview extends Div {
         int eventIndex = 0;
         int eventNo = 1;
 
-        eventsList.sort(Comparator.comparing(CalendarEvent::getStart));
+        eventsList.sort(Comparator.comparing(CalendarEvent::getEventStartTime));
 
         for(CalendarEvent e: eventsList) {
             /* Event tag displaying information in format "Event + n" where n is
@@ -176,9 +91,9 @@ public class CalendarOverview extends Div {
             textLabels[1] = new Label("Description: " + e.getEventDescription());
             textLabels[2] = new Label("Start time: " + e.getEventStartTimeString());
             textLabels[3] = new Label("End time: " + e.getEventEndTimeString());
-            textLabels[4] = new Label("Tags: " + e.getEventTags());
+            textLabels[4] = new Label("Tags: " + Tag.tagsToString(e.getEventTags()));
             textLabels[5] = new Label("Place: " + e.getEventPlace());
-            textLabels[6] = new Label("Guests: " + e.getEventPeople());
+            textLabels[6] = new Label("Guests: " + Person.peopleToString(e.getEventPeople()));
             /* Set width and height of text labels and add both break and text labels
              * to the display
              */
@@ -244,15 +159,9 @@ public class CalendarOverview extends Div {
             		LocalDate saveDate = targetDatePicker.getValue();
             		
             		try {
-            			String sql = "delete from events where id = ?";
-            			PreparedStatement pstmt = ConnectionManager.
-            									  getConnectionManager().
-            									  getConn().prepareStatement(sql);
-            			
-            			pstmt.setInt(1, e.getEventId());
-            			pstmt.execute();
+                        CalendarEventRepo.deleteById(e.getEventId());
             		}
-            		catch(SQLException | ClassNotFoundException ex) {
+            		catch(IllegalArgumentException ex) {
             			/* Mark deletion as unsuccessful and issue proper notification informing
             			 * about the exception that has occurred
             			 */
@@ -288,64 +197,8 @@ public class CalendarOverview extends Div {
         return eventIndex;
     }
 
-    private void setTasksInfo(int arrayIndex) {
-        int taskIndex = arrayIndex;
-        int taskNo = 1;
-
-
-
-        for(CalendarTask e: tasksList) {
-            /* Event tag displaying information in format "Event + n" where n is
-             * ordinal number of event in specified day (order: 1, 2, ...)
-             */
-            Label taskTag = new Label("Task " + taskNo);
-            taskTag.setWidth(null);
-            taskTag.setHeight("10px");
-            taskTag.getStyle().set("font-weight", "bold");
-
-            infoLayouts[taskIndex].add(taskTag);
-
-            /* Array of break labels to be input between event data fields */
-            Label[] breakLabels = new Label[4];
-
-            /* Array of text labels to display specified event data
-             * (event name, description, start time and end time)
-             */
-            Label[] textLabels = new Label[4];
-
-            /* Set up break labels
-             */
-            for(int i = 0; i < 4; ++i) {
-                breakLabels[i] = new Label("");
-                breakLabels[i].setWidth(null);
-                breakLabels[i].setHeight("0.1px");
-            }
-
-            /* Set up text labels
-             */
-            textLabels[0] = new Label("Name: " + e.getTaskName());
-            textLabels[1] = new Label("Description: " + e.getTaskDescription());
-            textLabels[2] = new Label("Tags: " + e.getTaskTags());
-            textLabels[3] = new Label("Duration: " + e.getDuration());
-            /* Set width and height of text labels and add both break and text labels
-             * to the display
-             */
-            for(int i = 0; i < 4; ++i) {
-                textLabels[i].setWidth("30%");
-                textLabels[i].setHeight("10px");
-
-                infoLayouts[taskIndex].add(textLabels[i]);
-                infoLayouts[taskIndex].add(breakLabels[i]);
-            }
-
-            taskIndex++;
-            taskNo++;
-        }
-    }
-
     private void dateChangeHandler() throws SQLException, IOException, ClassNotFoundException {
         getEventsInfo();
-        getTasksInfo();
 
         /*  Clear layouts which display information about the events */
         for(int i = 0; i < 2*DAILY_EVENTS_LIMIT; i++) {
@@ -380,42 +233,15 @@ public class CalendarOverview extends Div {
         else {
         	tasksInfoStartingIndex = setEventsInfo();
         }
-        
-        /* Display appropriate message instead of tasks data when no tasks are scheduled
-         * for the specified day
-         */
-        if(tasksList.isEmpty()) {
-            Label noTasksInfoLabel = new Label("No tasks on specified date.");
-            noTasksInfoLabel.setWidth(null);
-            noTasksInfoLabel.setHeight("5px");
-
-            infoLayouts[tasksInfoStartingIndex].add(noTasksInfoLabel);
-
-        }
-        /* Display information about the tasks scheduled for specified day
-         */
-        else {
-        	setTasksInfo(tasksInfoStartingIndex);
-        }
     }
 
     public CalendarOverview() {
         addClassName("overview-view");
 
         eventsList = new ArrayList<>();
-        tasksList = new ArrayList<>();
 
-        try {
-            Notification.show("Establishing connection to db and initializing data");
-            ConnectionManager.initialize();
-            Notification.show("Connection established");
-        }
-        catch(IOException e) {
-            Notification.show("IOException occurred: " + e.getMessage());
-        }
-        catch(SQLException | ClassNotFoundException e) {
-            Notification.show("SQLException occurred: " + e.getMessage());
-        }
+        Notification.show("Establishing connection to db and initializing data");
+        Notification.show("Connection established");
 
         datePickerLayout = new HorizontalLayout();
 
@@ -425,7 +251,6 @@ public class CalendarOverview extends Div {
         targetDatePicker.addValueChangeListener(e -> {
             if(targetDatePicker.getValue() != null) {
                 eventsList.clear();
-                tasksList.clear();
                 
                 try {
                     dateChangeHandler();
