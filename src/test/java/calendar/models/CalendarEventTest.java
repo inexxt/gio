@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 public class CalendarEventTest {
 	
@@ -21,6 +22,25 @@ public class CalendarEventTest {
 
 		assertEquals("NAME", c.getEventName());
 	}
+
+	@org.junit.Test
+	public void testUpdate() {
+		CalendarEvent c = new CalendarEvent("NAME",  "DESC",
+				LocalDate.now(),
+				LocalTime.now(), LocalTime.now(),
+				"first, second",
+				"Warsaw","p1@wp.pl,p2@wp.pl");
+
+		CalendarEvent c2 = new CalendarEvent("NAME2",  "DESC2",
+				LocalDate.now(),
+				LocalTime.now(), LocalTime.now(),
+				"dasdas, vadadsa",
+				"Berlin","p3@wp.pl,p4@wp.pl");
+		assertNotEquals(c, c2);
+		c.update(c2);
+		assertEquals(c, c2);
+	}
+
 
 	@org.junit.Test
 	public void testStartTimeString() {
