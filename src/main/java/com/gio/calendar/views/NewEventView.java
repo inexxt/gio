@@ -3,7 +3,7 @@ package com.gio.calendar.views;
 import com.gio.calendar.models.CalendarEvent;
 import com.gio.calendar.models.Person;
 import com.gio.calendar.models.Tag;
-import com.gio.calendar.persistance.CalendarEventRepo;
+import com.gio.calendar.persistance.CalendarEventRepository;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -64,39 +64,45 @@ public class NewEventView extends Div {
         Notification.show("SQLException occurred: " + Arrays.toString(e.getStackTrace()));
     }
 
+    private void handleError(String e) {
+        Notification.show("Error occured: " + e);
+    }
+
+
     private void addEventHandler() {
         try {
-            CalendarEvent event = new CalendarEvent(
-                    eventNameArea.getValue(),
-                    eventDescriptionArea.getValue(),
-                    eventDatePicker.getValue(),
-                    eventStartTimePicker.getValue(),
-                    eventEndTimePicker.getValue(),
-                    tagsField.getValue(),
-                    eventPlaceField.getValue(),
-                    peopleField.getValue());
-            CalendarEventRepo.save(event);
+            CalendarEvent event = getEventFromForm();
+            CalendarEventRepository.save(event);
         }
         catch(IllegalArgumentException e) {
             handleSqlException(e);
         }
     }
 
-    private void modifyEventHandler(String eventIdString) {
-    	boolean operationSuccess = true;
-    	
-    	try {
-    		CalendarEventRepo.deleteById(Integer.parseInt(eventIdString));
-    	}
-    	catch(IllegalArgumentException e) {
-    		operationSuccess = false;
-    		handleSqlException(e);
-    	}
-        if(operationSuccess) {
-            addEventHandler();
-    	}
+    private CalendarEvent getEventFromForm() {
+        return new CalendarEvent(
+                eventNameArea.getValue(),
+                eventDescriptionArea.getValue(),
+                eventDatePicker.getValue(),
+                eventStartTimePicker.getValue(),
+                eventEndTimePicker.getValue(),
+                tagsField.getValue(),
+                eventPlaceField.getValue(),
+                peopleField.getValue());
     }
-    
+
+    private void modifyEventHandler(String eventIdString) {
+        Optional<String> err = Optional.empty();
+        try {
+            err = CalendarEventRepository.update(eventIdString, getEventFromForm());
+        } catch (Exception e) {
+            handleSqlException(e);
+        }
+        finally {
+            err.ifPresent(this::handleError);
+        }
+    }
+
     private void clearForm() {
         eventNameArea.clear();
         eventDescriptionArea.clear();
@@ -180,7 +186,7 @@ public class NewEventView extends Div {
         if(eventIdString != null) {
             Optional<CalendarEvent> event = Optional.empty();
             try {
-                event = CalendarEventRepo.findById(Integer.parseInt(eventIdString));
+                event = CalendarEventRepository.findById(Integer.parseInt(eventIdString));
         	} catch (IllegalArgumentException e) {
         	    handleSqlException(e);
             }

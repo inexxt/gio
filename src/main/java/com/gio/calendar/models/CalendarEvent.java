@@ -3,6 +3,7 @@ package com.gio.calendar.models;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -98,12 +99,33 @@ public class CalendarEvent {
 
     public CalendarEvent() { } // for persistance
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CalendarEvent that = (CalendarEvent) o;
+        return eventId == that.eventId &&
+                Objects.equals(eventDate, that.eventDate) &&
+                Objects.equals(eventStartTime, that.eventStartTime) &&
+                Objects.equals(eventEndTime, that.eventEndTime) &&
+                Objects.equals(eventTags, that.eventTags) &&
+                Objects.equals(eventPeople, that.eventPeople) &&
+                Objects.equals(eventDescription, that.eventDescription) &&
+                Objects.equals(eventName, that.eventName) &&
+                Objects.equals(eventPlace, that.eventPlace);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(eventId, eventDate, eventStartTime, eventEndTime, eventTags, eventPeople, eventDescription, eventName, eventPlace);
+    }
+
     public CalendarEvent(String eventName,
-    					 String eventDescription, 
-    					 LocalDate eventDate, 
-    					 LocalTime eventStartTime, 
-    					 LocalTime eventEndTime, 
-    					 String tags,
+                         String eventDescription,
+                         LocalDate eventDate,
+                         LocalTime eventStartTime,
+                         LocalTime eventEndTime,
+                         String tags,
                          String place,
                          String people) {
         this.eventDate = eventDate;
@@ -127,5 +149,16 @@ public class CalendarEvent {
     }
     public String getEventEndTimeString() {
         return timeToString(eventEndTime);
+    }
+
+    public void update(CalendarEvent newEvent) {
+        this.eventDate = newEvent.getEventDate();
+        this.eventStartTime = newEvent.getEventStartTime();
+        this.eventEndTime = newEvent.getEventEndTime();
+        this.eventTags = newEvent.getEventTags();
+        this.eventDescription = newEvent.getEventDescription();
+        this.eventName = newEvent.getEventName();
+        this.eventPeople = newEvent.getEventPeople();
+        this.eventPlace = newEvent.getEventPlace();
     }
 }
