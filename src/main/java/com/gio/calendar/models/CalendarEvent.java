@@ -128,4 +128,15 @@ public class CalendarEvent {
     public String getEventEndTimeString() {
         return timeToString(eventEndTime);
     }
+
+    public void update(CalendarEvent newEvent) {
+        this.eventDate = newEvent.getEventDate();
+        this.eventStartTime = newEvent.getEventStartTime();
+        this.eventEndTime = newEvent.getEventEndTime();
+        this.eventTags = newEvent.getEventTags();
+        this.eventDescription = newEvent.getEventDescription();
+        this.eventName = newEvent.getEventName();
+        this.eventPeople = newEvent.getEventPeople();
+        this.eventPlace = newEvent.getEventPlace();
+    }
 }

@@ -3,7 +3,7 @@ package com.gio.calendar.views;
 import com.gio.calendar.models.CalendarEvent;
 import com.gio.calendar.models.Person;
 import com.gio.calendar.models.Tag;
-import com.gio.calendar.persistance.CalendarEventRepo;
+import com.gio.calendar.persistance.CalendarEventRepository;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.notification.Notification;
@@ -44,7 +44,7 @@ public class CalendarOverview extends Div {
      */
     private void getEventsInfo() throws SQLException {
         LocalDate targetDateStart = targetDatePicker.getValue();
-        eventsList = CalendarEventRepo.findByDate(targetDateStart);
+        eventsList = CalendarEventRepository.findByDate(targetDateStart);
     }
 
     /* Sets events info for display on page.
@@ -159,7 +159,7 @@ public class CalendarOverview extends Div {
             		LocalDate saveDate = targetDatePicker.getValue();
             		
             		try {
-                        CalendarEventRepo.deleteById(e.getEventId());
+                        CalendarEventRepository.deleteById(e.getEventId());
             		}
             		catch(IllegalArgumentException ex) {
             			/* Mark deletion as unsuccessful and issue proper notification informing
