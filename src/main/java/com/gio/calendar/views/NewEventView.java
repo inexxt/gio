@@ -118,9 +118,9 @@ public class NewEventView extends Div {
         /* Offset (in days) from the original date (provided in form).
          * User for inserting repetitions of the event
          */
-        Long deltaDays = 0L;
+        long deltaDays = 0L;
 
-        for(Integer i = 0; i < repetitionsNumber; i++) {
+        for(int i = 0; i < repetitionsNumber; i++) {
             addEventHandler(deltaDays);
 
             /* Update days offset from provided event date
@@ -147,9 +147,7 @@ public class NewEventView extends Div {
     }
 
     private CalendarEvent getEventFromForm(long daysDeltaFromOrigin) {
-        LocalDate eventDate = eventDatePicker.getValue();
-        eventDate.plusDays(daysDeltaFromOrigin);
-
+        LocalDate eventDate = eventDatePicker.getValue().plusDays(daysDeltaFromOrigin);
         return new CalendarEvent(
                 eventNameArea.getValue(),
                 eventDescriptionArea.getValue(),
