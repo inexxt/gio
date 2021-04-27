@@ -4,10 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
@@ -43,7 +40,7 @@ public class Person {
     }
 
     public static Set<Person> peopleFromString(String people) {
-        return Arrays.stream(people.split(",")).map(Person::new).collect(Collectors.toSet());
+        return people.equals("") ? new HashSet<Person>() : Arrays.stream(people.split(",")).map(Person::new).collect(Collectors.toSet());
     }
 
     @Override

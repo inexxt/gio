@@ -71,6 +71,7 @@ public class NewEventView extends Div {
     private void handleError(String e) {
         Notification.show("Error occurred: " + e);
     }
+<<<<<<< Updated upstream
 
     private void handleAfterInitialCheck(String eventIdString) {
         /* Non-null eventIdString indicates that we are interested in modifying
@@ -135,13 +136,15 @@ public class NewEventView extends Div {
     }
 
     private void addEventHandler(long daysDeltaFromOrigin) {
+        Optional<String> err = Optional.empty();
         try {
             CalendarEvent event = getEventFromForm(daysDeltaFromOrigin);
-            CalendarEventRepository.save(event);
+            err = CalendarEventRepository.save(event);
         }
         catch(IllegalArgumentException e) {
             handleSqlException(e);
         }
+        err.ifPresent(this::handleError);
     }
 
     private CalendarEvent getEventFromForm(long daysDeltaFromOrigin) {

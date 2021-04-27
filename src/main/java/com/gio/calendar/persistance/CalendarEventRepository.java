@@ -9,6 +9,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import javax.persistence.EntityManager;
+import javax.swing.text.html.Option;
 import java.util.List;
 
 @Repository
@@ -33,11 +34,19 @@ public class CalendarEventRepository {
                 .getResultList();
     }
 
-    public static Optional<CalendarEvent> save(CalendarEvent event) {
-        getEntityManager().getTransaction().begin();
-        getEntityManager().persist(event);
-        getEntityManager().getTransaction().commit();
-        return Optional.of(event);
+    public static Optional<String> save(CalendarEvent event) {
+        Optional<String> ret = Optional.empty();
+        try {
+            getEntityManager().getTransaction().begin();
+            getEntityManager().merge(event);
+        }
+        catch (Exception e) {
+            ret = Optional.of(e.getMessage());
+        }
+        finally {
+            getEntityManager().getTransaction().commit();
+        }
+        return ret;
     }
 
     public static void deleteById(int eventId) {

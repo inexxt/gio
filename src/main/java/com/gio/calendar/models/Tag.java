@@ -1,10 +1,7 @@
 package com.gio.calendar.models;
 
 import javax.persistence.*;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
@@ -40,7 +37,7 @@ public class Tag {
     }
 
     public static Set<Tag> tagsFromString(String tags) {
-        return Arrays.stream(tags.split(",")).map(Tag::new).collect(Collectors.toSet());
+        return tags.equals("") ? new HashSet<Tag>() : Arrays.stream(tags.split(",")).map(Tag::new).collect(Collectors.toSet());
     }
 
     @Override
