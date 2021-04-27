@@ -16,6 +16,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.component.dependency.CssImport;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @Route(value = "new_event", layout = MainView.class)
@@ -46,6 +47,8 @@ public class NewEventView extends Div {
     private final TextArea tagsField;
     private final TextArea peopleField;
     private final TextArea eventPlaceField;
+    private final TextArea eventRepNumField;
+    private final TextArea eventRepBreakField;
 
     private final HorizontalLayout eventDateLayout;
     private final HorizontalLayout eventDescriptionLayout;
@@ -53,25 +56,87 @@ public class NewEventView extends Div {
 
     private final HorizontalLayout eventStartTimeLayout;
     private final HorizontalLayout eventEndTimeLayout;
+    private final HorizontalLayout eventRepetitionNumberLayout;
+    private final HorizontalLayout eventRepetitionBreakLayout;
     private final HorizontalLayout tagsFieldLayout;
     private final HorizontalLayout peopleFieldLayout;
     private final HorizontalLayout eventPlaceFieldLayout;
 
-
     private void handleSqlException(Exception e) {
-        Notification.show("SQLException occured. Event has not been added.");
+        Notification.show("SQLException occurred. Event has not been added.");
         Notification.show("SQLException occurred: " + e.getMessage());
         Notification.show("SQLException occurred: " + Arrays.toString(e.getStackTrace()));
     }
 
     private void handleError(String e) {
-        Notification.show("Error occured: " + e);
+        Notification.show("Error occurred: " + e);
     }
 
+    private void handleAfterInitialCheck(String eventIdString) {
+        /* Non-null eventIdString indicates that we are interested in modifying
+         * event data
+         */
+        if(eventIdString != null) {
+            modifyEventHandler(eventIdString);
+            Notification.show("Event successfully modified!");
 
-    private void addEventHandler() {
+            /* Only modifying the event, we can exit the function now
+             */
+            return;
+        }
+
+        Integer repetitionsNumber = 1;
+        Integer daysBetweenEventRepetitions = 0;
+
         try {
-            CalendarEvent event = getEventFromForm();
+            if(eventRepNumField.isEmpty()) {
+                Notification.show("Error: number of event repetitions has not been provided");
+                return;
+            }
+
+            repetitionsNumber = Integer.parseInt(eventRepNumField.getValue());
+
+            /* If event is to be repeated more than once, information about days interval
+             * between event repetitions is needed
+             */
+            if(repetitionsNumber > 1) {
+                if(eventRepBreakField.isEmpty()) {
+                    Notification.show("Error: number of days between event repetitions has not been provided");
+                    return;
+                }
+
+                daysBetweenEventRepetitions = Integer.parseInt(eventRepBreakField.getValue());
+            }
+        }
+        /* Incorrect characters in field(s)
+         */
+        catch(NumberFormatException ex) {
+            Notification.show("Error: incorrect value provided at repetitions / days break number field");
+            return;
+        }
+
+        /* Offset (in days) from the original date (provided in form).
+         * User for inserting repetitions of the event
+         */
+        Long deltaDays = 0L;
+
+        for(Integer i = 0; i < repetitionsNumber; i++) {
+            addEventHandler(deltaDays);
+
+            /* Update days offset from provided event date
+             */
+            deltaDays += daysBetweenEventRepetitions.longValue();
+        }
+
+        Notification.show("Event " + eventNameArea.getValue() + " was created!");
+
+        clearForm();
+
+    }
+
+    private void addEventHandler(long daysDeltaFromOrigin) {
+        try {
+            CalendarEvent event = getEventFromForm(daysDeltaFromOrigin);
             CalendarEventRepository.save(event);
         }
         catch(IllegalArgumentException e) {
@@ -79,11 +144,14 @@ public class NewEventView extends Div {
         }
     }
 
-    private CalendarEvent getEventFromForm() {
+    private CalendarEvent getEventFromForm(long daysDeltaFromOrigin) {
+        LocalDate eventDate = eventDatePicker.getValue();
+        eventDate.plusDays(daysDeltaFromOrigin);
+
         return new CalendarEvent(
                 eventNameArea.getValue(),
                 eventDescriptionArea.getValue(),
-                eventDatePicker.getValue(),
+                eventDate,
                 eventStartTimePicker.getValue(),
                 eventEndTimePicker.getValue(),
                 tagsField.getValue(),
@@ -94,7 +162,7 @@ public class NewEventView extends Div {
     private void modifyEventHandler(String eventIdString) {
         Optional<String> err = Optional.empty();
         try {
-            err = CalendarEventRepository.update(eventIdString, getEventFromForm());
+            err = CalendarEventRepository.update(eventIdString, getEventFromForm(0));
         } catch (Exception e) {
             handleSqlException(e);
         }
@@ -155,12 +223,22 @@ public class NewEventView extends Div {
         eventPlaceField = new TextArea("Event place (optional). Maximum length: " + EVENT_TAGS_CHARACTERS_LIMIT);
         eventPlaceField.setMaxLength(EVENT_TAGS_CHARACTERS_LIMIT);
 
+        eventRepNumField = new TextArea("Number of event repetitions (required). Default: 1 " +
+                "(do not change if you wish that the event occurs only once");
+        eventRepNumField.setMaxLength(4);
+        eventRepNumField.setValue(Integer.toString(1));
+
+        eventRepBreakField = new TextArea("Time interval (in days) between repetitions of event, required for more than event " +
+                "repetition");
+
         /* Layouts creating */
         eventDateLayout = new HorizontalLayout();
         eventDescriptionLayout = new HorizontalLayout();
         eventNameLayout = new HorizontalLayout();
         eventStartTimeLayout = new HorizontalLayout();
         eventEndTimeLayout = new HorizontalLayout();
+        eventRepetitionNumberLayout = new HorizontalLayout();
+        eventRepetitionBreakLayout = new HorizontalLayout();
         tagsFieldLayout = new HorizontalLayout();
         peopleFieldLayout = new HorizontalLayout();
         eventPlaceFieldLayout = new HorizontalLayout();
@@ -174,14 +252,17 @@ public class NewEventView extends Div {
         eventNameLayout.addAndExpand(eventNameArea);
         eventStartTimeLayout.addAndExpand(eventStartTimePicker);
         eventEndTimeLayout.addAndExpand(eventEndTimePicker);
+        eventRepetitionNumberLayout.addAndExpand(eventRepNumField);
+        eventRepetitionBreakLayout.addAndExpand(eventRepBreakField);
         tagsFieldLayout.addAndExpand(tagsField);
         peopleFieldLayout.addAndExpand(peopleField);
         eventPlaceFieldLayout.addAndExpand(eventPlaceField);
 
         /* Add all layouts */
         add(eventDateLayout, eventNameLayout, eventDescriptionLayout,
-            eventStartTimeLayout, eventEndTimeLayout, tagsFieldLayout,
-                peopleFieldLayout, eventPlaceFieldLayout, addEventButton);
+            eventStartTimeLayout, eventEndTimeLayout, eventRepetitionNumberLayout,
+            eventRepetitionBreakLayout, tagsFieldLayout, peopleFieldLayout,
+            eventPlaceFieldLayout, addEventButton);
         
         if(eventIdString != null) {
             Optional<CalendarEvent> event = Optional.empty();
@@ -199,6 +280,9 @@ public class NewEventView extends Div {
                 eventPlaceField.setValue(event.get().getEventPlace());
                 tagsField.setValue(Tag.tagsToString(event.get().getEventTags()));
                 peopleField.setValue(Person.peopleToString(event.get().getEventPeople()));
+                /* Disable options of event repetitions */
+                eventRepNumField.setEnabled(false);
+                eventRepBreakField.setEnabled(false);
             }
             else {
                 Notification.show("Event with id " + eventIdString + " not found.");
@@ -232,16 +316,9 @@ public class NewEventView extends Div {
                 Notification.show("Error: event date has not been provided.");
             }
             else {
-            	if(eventIdString == null) {
-	                addEventHandler();
-	                Notification.show("Event " + eventNameArea.getValue() + " was created!");
-            	}
-            	else {
-            		modifyEventHandler(eventIdString);
-            		Notification.show("Event successfully modified!");
-            	}
-                clearForm();
-                
+                /* Initial checks passed, further actions can be taken
+                 */
+                handleAfterInitialCheck(eventIdString);
             }
         });
     }
