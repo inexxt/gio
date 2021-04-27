@@ -5,3 +5,4 @@ webpack.config.js
 webpack.generated.js
 calendar_sqlite.db
 Autocalendar_db.trace.db
+Autocalendar_db.mv.db
