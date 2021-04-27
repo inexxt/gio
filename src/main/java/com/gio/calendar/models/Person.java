@@ -40,7 +40,7 @@ public class Person {
     }
 
     public static Set<Person> peopleFromString(String people) {
-        if (people.equals(""))
+        if (people.equals("") || people.equals("None"))
             return new HashSet<Person>();
         return Arrays.stream(people.split(",")).map(Person::new).collect(Collectors.toSet());
     }
