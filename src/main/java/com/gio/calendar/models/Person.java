@@ -40,7 +40,9 @@ public class Person {
     }
 
     public static Set<Person> peopleFromString(String people) {
-        return people.equals("") ? new HashSet<Person>() : Arrays.stream(people.split(",")).map(Person::new).collect(Collectors.toSet());
+        if (people.equals(""))
+            return new HashSet<Person>();
+        return Arrays.stream(people.split(",")).map(Person::new).collect(Collectors.toSet());
     }
 
     @Override

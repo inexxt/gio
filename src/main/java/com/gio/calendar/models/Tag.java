@@ -37,7 +37,9 @@ public class Tag {
     }
 
     public static Set<Tag> tagsFromString(String tags) {
-        return tags.equals("") ? new HashSet<Tag>() : Arrays.stream(tags.split(",")).map(Tag::new).collect(Collectors.toSet());
+        if (tags.equals(""))
+            return new HashSet<Tag>();
+        return Arrays.stream(tags.split(",")).map(Tag::new).collect(Collectors.toSet());
     }
 
     @Override

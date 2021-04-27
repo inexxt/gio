@@ -71,7 +71,6 @@ public class NewEventView extends Div {
     private void handleError(String e) {
         Notification.show("Error occurred: " + e);
     }
-<<<<<<< Updated upstream
 
     private void handleAfterInitialCheck(String eventIdString) {
         /* Non-null eventIdString indicates that we are interested in modifying
