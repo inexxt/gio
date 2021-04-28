@@ -5,7 +5,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
-@Table(name="Tag")
+@Table(name = "Tag")
 public class Tag {
     @Id
     private String tagId;
@@ -17,15 +17,16 @@ public class Tag {
         return tagId;
     }
 
-    public Tag() { } // for persistance
+    public Tag() {
+    } // for persistance
 
     public Tag(String tagId) {
         this.tagId = tagId;
     }
-    
+
     @Override
     public String toString() {
-    	return tagId;
+        return tagId;
     }
 
     public static String tagsToString(Set<Tag> tags) {

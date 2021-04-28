@@ -17,9 +17,7 @@ import org.vaadin.artur.helpers.LaunchUtil;
 @EnableAutoConfiguration
 @EntityScan("com.gio.calendar.models")
 public class Application extends SpringBootServletInitializer {
-
     public static void main(String[] args) {
         LaunchUtil.launchBrowserInDevelopmentMode(SpringApplication.run(Application.class, args));
     }
-
 }

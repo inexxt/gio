@@ -7,9 +7,7 @@ import javax.persistence.PersistenceContext;
 
 import static java.lang.System.exit;
 
-/* Singleton class managing the connection */
-public class ConnectionManager
-{
+public class ConnectionManager {
     private static final String unitName = "Autocalendar"; // Has to match the name in the persistence.xml
 
     @PersistenceContext

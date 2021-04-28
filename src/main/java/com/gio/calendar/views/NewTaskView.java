@@ -60,19 +60,19 @@ public class NewTaskView extends Div {
 
         /* Text area for new task name */
         taskNameArea = new TextArea("Task name (optional). Maximum length: " +
-                                     TASK_NAME_CHARACTERS_LIMIT.toString());
+                TASK_NAME_CHARACTERS_LIMIT.toString());
 
         taskNameArea.setMaxLength(TASK_NAME_CHARACTERS_LIMIT);
 
         /* Text area for new task description */
         taskDescriptionArea = new TextArea("Task description (optional). Maximum length: " +
-                                            TASK_DESCRIPTION_CHARACTERS_LIMIT.toString());
+                TASK_DESCRIPTION_CHARACTERS_LIMIT.toString());
 
         taskDescriptionArea.setMaxLength(TASK_DESCRIPTION_CHARACTERS_LIMIT);
 
         /* Tags area for */
         tagsField = new TextArea("Task tags (optional). Should be separated by ','. Maximum length: " +
-                                    TASK_TAGS_CHARACTERS_LIMIT.toString());
+                TASK_TAGS_CHARACTERS_LIMIT.toString());
 
         tagsField.setMaxLength(TASK_TAGS_CHARACTERS_LIMIT);
 
@@ -98,30 +98,33 @@ public class NewTaskView extends Div {
 
         /* Add all layouts */
         add(taskDateLayout, taskNameLayout, taskDescriptionLayout, tagsFieldLayout, taskDurationLayout, addTaskButton);
+        setupListeners();
+    }
 
+    private void setupListeners() {
         /* Listener for the Button object which is to add the task on click after
-        *  checking correctness of task input data
-        */
+         *  checking correctness of task input data
+         */
         addTaskButton.addClickListener(e -> {
             /*  Check if no task date has been provided and issue an error message in such case
              */
             try {
                 if (taskDatePicker.getValue() == null) {
                     Notification.show("Error: task date has not been provided.");
-                }
-                else if (taskDuration.getValue() != null && (Integer.parseInt(taskDuration.getValue()) < 1 || Integer.parseInt(taskDuration.getValue()) > 24)) {
+                } else if (taskDuration.getValue() != null
+                        && (Integer.parseInt(taskDuration.getValue()) < 1
+                        || Integer.parseInt(taskDuration.getValue()) > 24)) {
                     Notification.show("Error: Wrong duration format");
-                }
-                else{
+                } else {
                     addTaskHandler();
                     Notification.show("Task " + taskNameArea.getValue() + " was created!");
                     clearForm();
                 }
-            }
-            catch (Exception exc) {
+            } catch (Exception exc) {
                 Notification.show("Error: " + exc);
             }
         });
+
     }
 
     private void clearForm() {

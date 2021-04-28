@@ -8,7 +8,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
-@Table(name="Person")
+@Table(name = "Person")
 public class Person {
     public String getPersonName() {
         return personName;
@@ -20,7 +20,9 @@ public class Person {
     @ManyToMany(mappedBy = "eventPeople")
     private Set<CalendarEvent> personEvents;
 
-    public Person() { } // for persistance
+    public Person() {
+    } // for persistance
+
     public Person(String personName) {
         this.personName = personName;
     }
