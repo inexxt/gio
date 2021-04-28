@@ -100,9 +100,8 @@ public class NewTaskView extends Div {
 
             List<CalendarEvent> eventsList;
             try {
-                 eventsList = CalendarEventRepository.findByDate(i);
-            }
-            catch (Exception e) {
+                eventsList = CalendarEventRepository.findByDate(i);
+            } catch (Exception e) {
                 return false;
             }
             for (CalendarEvent event : eventsList) {
@@ -114,15 +113,15 @@ public class NewTaskView extends Div {
             for (int j = Math.min(duration, Integer.parseInt(maximalContinuousLength.getValue()));
                  j >= Math.min(duration, Integer.parseInt(minimalContinuousLength.getValue())); --j) {
                 boolean ok = false;
-                for (int x = 6; x < 24-j; ++x) {
-                    for (int y = x;  y < x+j; ++y) {
+                for (int x = 6; x < 24 - j; ++x) {
+                    for (int y = x; y < x + j; ++y) {
                         if (blocked[y])
                             break;
-                        ok = (y + 1 == x +j);
+                        ok = (y + 1 == x + j);
                     }
                     if (ok) {
                         starts.add(x);
-                        ends.add(x+j);
+                        ends.add(x + j);
                         duration -= j;
                         days.add(i);
                         break;
@@ -142,7 +141,7 @@ public class NewTaskView extends Div {
                     CalendarEventRepository.save(event);
                 } catch (IllegalArgumentException e) {
                     handleSqlException(e);
-		    return false;
+                    return false;
                 }
             }
         }
@@ -155,14 +154,13 @@ public class NewTaskView extends Div {
         for (int i = 0; i < Integer.parseInt(taskRepNumField.getValue()); ++i) {
             if (heuristic(startDay, endDay)) {
                 Notification.show("Task " + i + "occurrence " + taskNameArea.getValue() + " was created!");
-            }
-            else {
+            } else {
                 Notification.show("Task " + i + "occurrence " + taskNameArea.getValue() + " can not be created with this heuristic!");
             }
-	    if (i + 1 != Integer.parseInt(taskRepNumField.getValue())) {
-            	startDay = startDay.plusDays(Integer.parseInt(taskRepBreakField.getValue()));
-            	endDay = endDay.plusDays(Integer.parseInt(taskRepBreakField.getValue()));
-		}
+            if (i + 1 != Integer.parseInt(taskRepNumField.getValue())) {
+                startDay = startDay.plusDays(Integer.parseInt(taskRepBreakField.getValue()));
+                endDay = endDay.plusDays(Integer.parseInt(taskRepBreakField.getValue()));
+            }
         }
     }
 
@@ -176,19 +174,19 @@ public class NewTaskView extends Div {
 
         /* Text area for new task name */
         taskNameArea = new TextArea("Task name (optional). Maximum length: " +
-                                     TASK_NAME_CHARACTERS_LIMIT.toString());
+                TASK_NAME_CHARACTERS_LIMIT.toString());
 
         taskNameArea.setMaxLength(TASK_NAME_CHARACTERS_LIMIT);
 
         /* Text area for new task description */
         taskDescriptionArea = new TextArea("Task description (optional). Maximum length: " +
-                                            TASK_DESCRIPTION_CHARACTERS_LIMIT.toString());
+                TASK_DESCRIPTION_CHARACTERS_LIMIT.toString());
 
         taskDescriptionArea.setMaxLength(TASK_DESCRIPTION_CHARACTERS_LIMIT);
 
         /* Tags area for */
         tagsField = new TextArea("Task tags (optional). Should be separated by ','. Maximum length: " +
-                                    TASK_TAGS_CHARACTERS_LIMIT.toString());
+                TASK_TAGS_CHARACTERS_LIMIT.toString());
 
         tagsField.setMaxLength(TASK_TAGS_CHARACTERS_LIMIT);
 
@@ -242,39 +240,33 @@ public class NewTaskView extends Div {
         add(taskDateLayout, taskNameLayout, taskDescriptionLayout, tagsFieldLayout,
                 taskRepetitionNumberLayout, taskRepetitionBreakLayout,
                 taskDurationLayout, minimalLengthLayout, maximalLengthLayout, addTaskButton);
+    }
 
+    private void setupListeners() {
         /* Listener for the Button object which is to add the task on click after
-        *  checking correctness of task input data
-        */
+         *  checking correctness of task input data
+         */
         addTaskButton.addClickListener(e -> {
             /*  Check if no task date has been provided and issue an error message in such case
              */
             try {
                 if (taskDatePicker.getValue() == null) {
                     Notification.show("Error: task date has not been provided.");
-                }
-                else if (taskDuration.getValue() == null || Integer.parseInt(taskDuration.getValue()) < 1) {
+                } else if (taskDuration.getValue() == null || Integer.parseInt(taskDuration.getValue()) < 1) {
                     Notification.show("Error: Wrong duration format");
-                }
-                else if (minimalContinuousLength.getValue() == null || Integer.parseInt(minimalContinuousLength.getValue()) < 1) {
+                } else if (minimalContinuousLength.getValue() == null || Integer.parseInt(minimalContinuousLength.getValue()) < 1) {
                     Notification.show("Error: Wrong minimal length format");
-                }
-                else if (maximalContinuousLength.getValue() == null || Integer.parseInt(maximalContinuousLength.getValue()) < 1) {
+                } else if (maximalContinuousLength.getValue() == null || Integer.parseInt(maximalContinuousLength.getValue()) < 1) {
                     Notification.show("Error: Wrong maximal length format");
-                }
-                else if (taskRepNumField.getValue().equals("1") && taskRepBreakField.getValue()!= null && taskRepBreakField.getValue() != "" && Integer.parseInt(taskRepBreakField.getValue()) <= 0) {
+                } else if (taskRepNumField.getValue().equals("1") && taskRepBreakField.getValue() != null && taskRepBreakField.getValue() != "" && Integer.parseInt(taskRepBreakField.getValue()) <= 0) {
                     Notification.show("Error: Wrong repetition values");
-                }
-		else if (!taskRepNumField.getValue().equals("1") && Integer.parseInt(taskRepBreakField.getValue()) <= 0 || Integer.parseInt(taskRepNumField.getValue()) <=0) {
-		    Notification.show("Error: Wrong repetition values");			
-		}
-                else{
+                } else if (!taskRepNumField.getValue().equals("1") && Integer.parseInt(taskRepBreakField.getValue()) <= 0 || Integer.parseInt(taskRepNumField.getValue()) <= 0) {
+                    Notification.show("Error: Wrong repetition values");
+                } else {
                     addTaskHandler();
-
                     clearForm();
                 }
-            }
-            catch (Exception exc) {
+            } catch (Exception exc) {
                 Notification.show("Error: " + exc);
             }
         });

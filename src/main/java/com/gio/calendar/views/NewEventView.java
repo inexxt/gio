@@ -76,20 +76,17 @@ public class NewEventView extends Div {
         /* Non-null eventIdString indicates that we are interested in modifying
          * event data
          */
-        if(eventIdString != null) {
+        if (eventIdString != null) {
             modifyEventHandler(eventIdString);
             Notification.show("Event successfully modified!");
-
-            /* Only modifying the event, we can exit the function now
-             */
-            return;
+            return; // Only modifying the event, we can exit the function now
         }
 
         Integer repetitionsNumber = 1;
         Integer daysBetweenEventRepetitions = 0;
 
         try {
-            if(eventRepNumField.isEmpty()) {
+            if (eventRepNumField.isEmpty()) {
                 Notification.show("Error: number of event repetitions has not been provided");
                 return;
             }
@@ -99,18 +96,16 @@ public class NewEventView extends Div {
             /* If event is to be repeated more than once, information about days interval
              * between event repetitions is needed
              */
-            if(repetitionsNumber > 1) {
-                if(eventRepBreakField.isEmpty()) {
+            if (repetitionsNumber > 1) {
+                if (eventRepBreakField.isEmpty()) {
                     Notification.show("Error: number of days between event repetitions has not been provided");
                     return;
                 }
-
                 daysBetweenEventRepetitions = Integer.parseInt(eventRepBreakField.getValue());
             }
         }
-        /* Incorrect characters in field(s)
-         */
-        catch(NumberFormatException ex) {
+        // Incorrect characters in field(s)
+        catch (NumberFormatException ex) {
             Notification.show("Error: incorrect value provided at repetitions / days break number field");
             return;
         }
@@ -120,18 +115,13 @@ public class NewEventView extends Div {
          */
         long deltaDays = 0L;
 
-        for(int i = 0; i < repetitionsNumber; i++) {
+        for (int i = 0; i < repetitionsNumber; i++) {
             addEventHandler(deltaDays);
-
-            /* Update days offset from provided event date
-             */
+            // Update days offset from provided event date
             deltaDays += daysBetweenEventRepetitions.longValue();
         }
-
         Notification.show("Event " + eventNameArea.getValue() + " was created!");
-
         clearForm();
-
     }
 
     private void addEventHandler(long daysDeltaFromOrigin) {
@@ -139,8 +129,7 @@ public class NewEventView extends Div {
         try {
             CalendarEvent event = getEventFromForm(daysDeltaFromOrigin);
             err = CalendarEventRepository.save(event);
-        }
-        catch(IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             handleSqlException(e);
         }
         err.ifPresent(this::handleError);
@@ -165,8 +154,7 @@ public class NewEventView extends Div {
             err = CalendarEventRepository.update(eventIdString, getEventFromForm(0));
         } catch (Exception e) {
             handleSqlException(e);
-        }
-        finally {
+        } finally {
             err.ifPresent(this::handleError);
         }
     }
@@ -184,9 +172,9 @@ public class NewEventView extends Div {
 
     public NewEventView() {
         addClassName("newevent-view");
-        
+
         String eventIdString = VaadinService.getCurrentRequest().getParameter("event_id");
-        
+
         /* Picker of the new event start time */
         eventStartTimePicker = new TimePicker();
         eventStartTimePicker.setLabel("Choose or type in event start time (required):");
@@ -204,13 +192,13 @@ public class NewEventView extends Div {
 
         /* Text area for new event name */
         eventNameArea = new TextArea("Event name (optional). Maximum length: " +
-                                     EVENT_NAME_CHARACTERS_LIMIT.toString());
+                EVENT_NAME_CHARACTERS_LIMIT.toString());
 
         eventNameArea.setMaxLength(EVENT_NAME_CHARACTERS_LIMIT);
 
         /* Text area for new event description */
         eventDescriptionArea = new TextArea("Event description (optional). Maximum length: " +
-                                            EVENT_DESCRIPTION_CHARACTERS_LIMIT.toString());
+                EVENT_DESCRIPTION_CHARACTERS_LIMIT.toString());
 
         eventDescriptionArea.setMaxLength(EVENT_DESCRIPTION_CHARACTERS_LIMIT);
 
@@ -260,18 +248,18 @@ public class NewEventView extends Div {
 
         /* Add all layouts */
         add(eventDateLayout, eventNameLayout, eventDescriptionLayout,
-            eventStartTimeLayout, eventEndTimeLayout, eventRepetitionNumberLayout,
-            eventRepetitionBreakLayout, tagsFieldLayout, peopleFieldLayout,
-            eventPlaceFieldLayout, addEventButton);
-        
-        if(eventIdString != null) {
+                eventStartTimeLayout, eventEndTimeLayout, eventRepetitionNumberLayout,
+                eventRepetitionBreakLayout, tagsFieldLayout, peopleFieldLayout,
+                eventPlaceFieldLayout, addEventButton);
+
+        if (eventIdString != null) {
             Optional<CalendarEvent> event = Optional.empty();
             try {
                 event = CalendarEventRepository.findById(Integer.parseInt(eventIdString));
-        	} catch (IllegalArgumentException e) {
-        	    handleSqlException(e);
+            } catch (IllegalArgumentException e) {
+                handleSqlException(e);
             }
-            if(event.isPresent()) {
+            if (event.isPresent()) {
                 eventNameArea.setValue(event.get().getEventName());
                 eventDescriptionArea.setValue(event.get().getEventDescription());
                 eventStartTimePicker.setValue(event.get().getEventStartTime());
@@ -283,39 +271,40 @@ public class NewEventView extends Div {
                 /* Disable options of event repetitions */
                 eventRepNumField.setEnabled(false);
                 eventRepBreakField.setEnabled(false);
-            }
-            else {
+            } else {
                 Notification.show("Event with id " + eventIdString + " not found.");
             }
         }
+        addCreateButtonListener(eventIdString);
+    }
 
+    private void addCreateButtonListener(String eventIdString) {
         /* Listener for the Button object which is to add the event on click after
-        *  checking correctness of event input data
-        */
+         *  checking correctness of event input data
+         */
         addEventButton.addClickListener(e -> {
-        	/* Check for the case when event start time has not been provided.
-        	 */
-        	if(eventStartTimePicker.getValue() == null) {
-        		Notification.show("Error: event start time has not been provided.");
-        	}
-        	/* Check for the case when event end time has not been provided.
-        	 */
-        	else if(eventEndTimePicker.getValue() == null) {
-        		Notification.show("Error: event end time has not been provided.");
-        	}
+            /* Check for the case when event start time has not been provided.
+             */
+            if (eventStartTimePicker.getValue() == null) {
+                Notification.show("Error: event start time has not been provided.");
+            }
+            /* Check for the case when event end time has not been provided.
+             */
+            else if (eventEndTimePicker.getValue() == null) {
+                Notification.show("Error: event end time has not been provided.");
+            }
             /*  Check for the case when both start and event end time were provided but according
              *  to the information given, event is to end before or the moment it starts.
              *  Prevent event adding by issuing an error message.
              */
-        	else if(eventStartTimePicker.getValue().compareTo(eventEndTimePicker.getValue()) >= 0) {
+            else if (eventStartTimePicker.getValue().compareTo(eventEndTimePicker.getValue()) >= 0) {
                 Notification.show("Error: event start time later or just the event end time.");
             }
             /*  Check if no event date has been provided and issue an error message in such case
              */
-            else if(eventDatePicker.getValue() == null) {
+            else if (eventDatePicker.getValue() == null) {
                 Notification.show("Error: event date has not been provided.");
-            }
-            else {
+            } else {
                 /* Initial checks passed, further actions can be taken
                  */
                 handleAfterInitialCheck(eventIdString);

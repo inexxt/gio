@@ -31,11 +31,11 @@ import java.util.*;
 public class CalendarOverview extends Div {
     private static LocalDate dateToSet = null;
     private static boolean forceDatePickerValue = false;
-    
+
     private static final int DAILY_EVENTS_LIMIT = 120;
 
     private final DatePicker targetDatePicker;
-	private final HorizontalLayout datePickerLayout;
+    private final HorizontalLayout datePickerLayout;
     private final VerticalLayout[] infoLayouts;
     private List<CalendarEvent> eventsList;
 
@@ -49,7 +49,7 @@ public class CalendarOverview extends Div {
 
     /* Sets events info for display on page.
      * Returns the index (in infoLayouts array) of first non-occupied layout
-     * that can (as well as successive layouts in array) be further filled 
+     * that can (as well as successive layouts in array) be further filled
      * with informations about tasks scheduled for specified day
      */
     private int setEventsInfo() {
@@ -58,7 +58,7 @@ public class CalendarOverview extends Div {
 
         eventsList.sort(Comparator.comparing(CalendarEvent::getEventStartTime));
 
-        for(CalendarEvent e: eventsList) {
+        for (CalendarEvent e : eventsList) {
             /* Event tag displaying information in format "Event + n" where n is
              * ordinal number of event in specified day (order: 1, 2, ...)
              */
@@ -79,7 +79,7 @@ public class CalendarOverview extends Div {
 
             /* Set up break labels
              */
-            for(int i = 0; i < 7; ++i) {
+            for (int i = 0; i < 7; ++i) {
                 breakLabels[i] = new Label("");
                 breakLabels[i].setWidth(null);
                 breakLabels[i].setHeight("0.1px");
@@ -97,141 +97,139 @@ public class CalendarOverview extends Div {
             /* Set width and height of text labels and add both break and text labels
              * to the display
              */
-            for(int i = 0; i < 7; ++i) {
+            for (int i = 0; i < 7; ++i) {
                 textLabels[i].setWidth("30%");
                 textLabels[i].setHeight("10px");
 
                 infoLayouts[eventIndex].add(textLabels[i]);
                 infoLayouts[eventIndex].add(breakLabels[i]);
             }
-            
+
             /* Layout for displaying buttons which are to handle available actions
              * concerning the specified event:
              * Event data modification
              * Event deletion
              */
             HorizontalLayout eventActionsLayout = new HorizontalLayout();
-            
+
             Button eventModificationButton = new Button("Modify event data");
             Button eventDeleteButton = new Button("Delete event");
-            
+
             eventActionsLayout.add(eventModificationButton, eventDeleteButton);
             infoLayouts[eventIndex].add(eventActionsLayout);
-            
-            eventModificationButton.addClickListener(v -> { 
-            	UI.getCurrent().getPage().setLocation("new_event" + "?" + "event_id=" + e.getEventId());
+
+            eventModificationButton.addClickListener(v -> {
+                UI.getCurrent().getPage().setLocation("new_event" + "?" + "event_id=" + e.getEventId());
             });
 
-            eventDeleteButton.addClickListener(v -> { 
-            	Dialog deleteDialog = new Dialog();
-            	
-            	/* Layouts with following purposes:
-            	 * queryLayout - stores Label with query text
-            	 * buttonsLayout - stores Buttons which execute further actions
-            	 */
-            	HorizontalLayout queryLayout = new HorizontalLayout();
-            	HorizontalLayout buttonsLayout = new HorizontalLayout();
-            	
-            	Label deleteConfirmationQuery = new Label("Please confirm operation");
-                Button eventDeleteConfirmation = new Button("Confirm event deletion");
-            	Button eventDeleteCancellation = new Button("Cancel event deletion");
-            	
-            	queryLayout.add(deleteConfirmationQuery);
-            	buttonsLayout.add(eventDeleteCancellation, eventDeleteConfirmation);
-                
-            	deleteDialog.add(queryLayout, buttonsLayout);
-            	
-            	deleteDialog.setVisible(true);
-            	deleteDialog.open();
-            	
-            	eventDeleteCancellation.addClickListener(w -> {
-            		deleteDialog.close();
-            	});
-            	
-            	eventDeleteConfirmation.addClickListener(w -> {
-            		/* Flag to indicate whether event deletion was successful
-            		 */
-            		boolean okDeletion = true;
-            		/* Store current date stored in targetDatePicker to set it as 
-            		 * targetDatePicker value after the page refresh which occurs
-            		 * after successful event deletion
-            		 */
-            		LocalDate saveDate = targetDatePicker.getValue();
-            		
-            		try {
-                        CalendarEventRepository.deleteById(e.getEventId());
-            		}
-            		catch(IllegalArgumentException ex) {
-            			/* Mark deletion as unsuccessful and issue proper notification informing
-            			 * about the exception that has occurred
-            			 */
-            			okDeletion = false;
-            			Notification.show("Exception occured. Event has not been deleted.");
-            		}
-            		finally {
-            			/* Proceed with page update on successful deletion of event data
-            			 * from the database
-            			 */
-            			if(okDeletion) {
-            				Notification.show("Event has been successfully deleted.");
-            				/* Update class data with values that will force the page to display
-            				 * current date (the one in targetDatePicker) after the page has been
-            				 * reloaded
-            				 */
-            				dateToSet = saveDate;
-            				forceDatePickerValue = true;
-            				UI.getCurrent().getPage().reload();
-            			}
-            		}
-            		/* Close the dialog
-            		 */
-            		deleteDialog.close();
-            	});
-            	
-            });
-            
+            addDeleteConfirmation(eventDeleteButton, e);
             eventIndex++;
             eventNo++;
         }
-        
+
         return eventIndex;
+    }
+
+    private void addDeleteConfirmation(Button eventDeleteButton, CalendarEvent e) {
+        eventDeleteButton.addClickListener(v -> {
+            Dialog deleteDialog = new Dialog();
+
+            /* Layouts with following purposes:
+             * queryLayout - stores Label with query text
+             * buttonsLayout - stores Buttons which execute further actions
+             */
+            HorizontalLayout queryLayout = new HorizontalLayout();
+            HorizontalLayout buttonsLayout = new HorizontalLayout();
+
+            Label deleteConfirmationQuery = new Label("Please confirm operation");
+            Button eventDeleteConfirmation = new Button("Confirm event deletion");
+            Button eventDeleteCancellation = new Button("Cancel event deletion");
+
+            queryLayout.add(deleteConfirmationQuery);
+            buttonsLayout.add(eventDeleteCancellation, eventDeleteConfirmation);
+
+            deleteDialog.add(queryLayout, buttonsLayout);
+
+            deleteDialog.setVisible(true);
+            deleteDialog.open();
+
+            eventDeleteCancellation.addClickListener(w -> {
+                deleteDialog.close();
+            });
+
+            eventDeleteConfirmation.addClickListener(w -> {
+                /* Flag to indicate whether event deletion was successful
+                 */
+                boolean okDeletion = true;
+                /* Store current date stored in targetDatePicker to set it as
+                 * targetDatePicker value after the page refresh which occurs
+                 * after successful event deletion
+                 */
+                LocalDate saveDate = targetDatePicker.getValue();
+
+                try {
+                    CalendarEventRepository.deleteById(e.getEventId());
+                } catch (IllegalArgumentException ex) {
+                    /* Mark deletion as unsuccessful and issue proper notification informing
+                     * about the exception that has occurred
+                     */
+                    okDeletion = false;
+                    Notification.show("Exception occured. Event has not been deleted.");
+                } finally {
+                    /* Proceed with page update on successful deletion of event data
+                     * from the database
+                     */
+                    if (okDeletion) {
+                        Notification.show("Event has been successfully deleted.");
+                        /* Update class data with values that will force the page to display
+                         * current date (the one in targetDatePicker) after the page has been
+                         * reloaded
+                         */
+                        dateToSet = saveDate;
+                        forceDatePickerValue = true;
+                        UI.getCurrent().getPage().reload();
+                    }
+                }
+                deleteDialog.close(); // Close the dialog
+            });
+        });
     }
 
     private void dateChangeHandler() throws SQLException, IOException, ClassNotFoundException {
         getEventsInfo();
 
         /*  Clear layouts which display information about the events */
-        for(int i = 0; i < 2*DAILY_EVENTS_LIMIT; i++) {
+        for (int i = 0; i < 2 * DAILY_EVENTS_LIMIT; i++) {
             /* Check if current layout is used (contains at least one component) and
              * clear it then
              */
-            if(infoLayouts[i].getComponentCount() > 0) {
-               infoLayouts[i].removeAll();
+            if (infoLayouts[i].getComponentCount() > 0) {
+                infoLayouts[i].removeAll();
             }
             /* Break from the loop as remaining layouts are not used at all
              */
-            else if(infoLayouts[i].getComponentCount() == 0){
+            else if (infoLayouts[i].getComponentCount() == 0) {
                 break;
             }
         }
-        
+
         int tasksInfoStartingIndex = 1;
-        
+
         /* Display appropriate message instead of events data when no events are scheduled
          * for the specified day
          */
-        if(eventsList.isEmpty()) {
-        	Label noEventsInfoLabel = new Label("No events on specified date.");
-        	noEventsInfoLabel.setWidth(null);
-        	noEventsInfoLabel.setHeight("5px");
-        	
-        	infoLayouts[0].add(noEventsInfoLabel);
+        if (eventsList.isEmpty()) {
+            Label noEventsInfoLabel = new Label("No events on specified date.");
+            noEventsInfoLabel.setWidth(null);
+            noEventsInfoLabel.setHeight("5px");
+
+            infoLayouts[0].add(noEventsInfoLabel);
         }
         /* Display information about the tasks scheduled for specified day and obtain
          * (return value) the index of first non-used layout that can store tasks data
          */
         else {
-        	tasksInfoStartingIndex = setEventsInfo();
+            tasksInfoStartingIndex = setEventsInfo();
         }
     }
 
@@ -249,9 +247,9 @@ public class CalendarOverview extends Div {
         targetDatePicker.setLabel("Choose date to view");
 
         targetDatePicker.addValueChangeListener(e -> {
-            if(targetDatePicker.getValue() != null) {
+            if (targetDatePicker.getValue() != null) {
                 eventsList.clear();
-                
+
                 try {
                     dateChangeHandler();
                 } catch (SQLException | ClassNotFoundException | IOException throwables) {
@@ -263,23 +261,23 @@ public class CalendarOverview extends Div {
         datePickerLayout.addAndExpand(targetDatePicker);
         add(datePickerLayout);
 
-        infoLayouts = new VerticalLayout[2*DAILY_EVENTS_LIMIT];
+        infoLayouts = new VerticalLayout[2 * DAILY_EVENTS_LIMIT];
 
-        for(int i = 0; i < 2*DAILY_EVENTS_LIMIT; ++i) {
+        for (int i = 0; i < 2 * DAILY_EVENTS_LIMIT; ++i) {
             infoLayouts[i] = new VerticalLayout();
             add(infoLayouts[i]);
         }
 
-        if(forceDatePickerValue) {
-        	targetDatePicker.setValue(dateToSet);
-        	/* Now after the value has been changed, the valueChangeListener associated
-        	 * with the targetDatePicker object will do its action
-        	 */
-        	
-        	/* Restore original flags values for further possible deletions of events
-        	 */
-        	forceDatePickerValue = false;
-        	dateToSet = null;
+        if (forceDatePickerValue) {
+            targetDatePicker.setValue(dateToSet);
+            /* Now after the value has been changed, the valueChangeListener associated
+             * with the targetDatePicker object will do its action
+             */
+
+            /* Restore original flags values for further possible deletions of events
+             */
+            forceDatePickerValue = false;
+            dateToSet = null;
         }
     }
 }

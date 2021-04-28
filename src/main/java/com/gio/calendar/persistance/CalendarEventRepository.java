@@ -39,11 +39,9 @@ public class CalendarEventRepository {
         try {
             getEntityManager().getTransaction().begin();
             getEntityManager().merge(event);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             ret = Optional.of(e.getMessage());
-        }
-        finally {
+        } finally {
             getEntityManager().getTransaction().commit();
         }
         return ret;

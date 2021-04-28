@@ -7,16 +7,16 @@ import java.util.Objects;
 import java.util.Set;
 
 @Entity
-@Table(name="CalendarEvent")
+@Table(name = "CalendarEvent")
 @NamedQueries({
-@NamedQuery(name = "CalendarEvent.findById",
-        query = "SELECT e FROM CalendarEvent e WHERE e.eventId = :eventId"),
-@NamedQuery(name = "CalendarEvent.findAll",
-        query = "SELECT e FROM CalendarEvent e"),
-@NamedQuery(name = "CalendarEvent.findByTime",
-        query = "SELECT e FROM CalendarEvent e WHERE (e.eventStartTime > :startTime) and (e.eventEndTime < :endTime)"),
-@NamedQuery(name = "CalendarEvent.findByDate",
-        query = "SELECT e FROM CalendarEvent e WHERE e.eventDate = :date")
+        @NamedQuery(name = "CalendarEvent.findById",
+                query = "SELECT e FROM CalendarEvent e WHERE e.eventId = :eventId"),
+        @NamedQuery(name = "CalendarEvent.findAll",
+                query = "SELECT e FROM CalendarEvent e"),
+        @NamedQuery(name = "CalendarEvent.findByTime",
+                query = "SELECT e FROM CalendarEvent e WHERE (e.eventStartTime > :startTime) and (e.eventEndTime < :endTime)"),
+        @NamedQuery(name = "CalendarEvent.findByDate",
+                query = "SELECT e FROM CalendarEvent e WHERE e.eventDate = :date")
 })
 public class CalendarEvent {
     public int getEventId() {
@@ -66,7 +66,7 @@ public class CalendarEvent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int eventId; // Can't be private because persistance needs it
+    private int eventId; // Can't be private because persistance needs it
     private LocalDate eventDate;
 
     private LocalTime eventStartTime;
@@ -97,7 +97,8 @@ public class CalendarEvent {
     private String eventName;
     private String eventPlace;
 
-    public CalendarEvent() { } // for persistance
+    public CalendarEvent() {
+    } // for persistance
 
     @Override
     public boolean equals(Object o) {
@@ -140,13 +141,14 @@ public class CalendarEvent {
 
     /* Returns string representation of event start time in format HH:MM */
     private String timeToString(LocalTime targetTime) {
-    	return (targetTime.getHour() < 10 ? "0" + targetTime.getHour() : targetTime.getHour()) + ":" + 
-     		   (targetTime.getMinute() < 10 ? "0" + targetTime.getMinute() : targetTime.getMinute());
+        return (targetTime.getHour() < 10 ? "0" + targetTime.getHour() : targetTime.getHour()) + ":" +
+                (targetTime.getMinute() < 10 ? "0" + targetTime.getMinute() : targetTime.getMinute());
     }
 
     public String getEventStartTimeString() {
-    	return timeToString(eventStartTime);
+        return timeToString(eventStartTime);
     }
+
     public String getEventEndTimeString() {
         return timeToString(eventEndTime);
     }
