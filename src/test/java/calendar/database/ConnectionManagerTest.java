@@ -3,6 +3,7 @@ package calendar.database;
 import com.gio.calendar.database.ConnectionManager;
 
 import javax.persistence.EntityManager;
+
 import static org.junit.Assert.assertEquals;
 
 public class ConnectionManagerTest {
