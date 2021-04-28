@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>com.gio.calendar</OriginalElement>
+  <nodes>
+    <node x="588.1470555555554" y="284.0">com.gio.calendar.models.CalendarEvent</node>
+    <node x="-392.49119607843124" y="1152.0">com.gio.calendar.views.MainView</node>
+    <node x="1002.1137222222221" y="0.0">com.gio.calendar.models.Tag</node>
+    <node x="-360.25000326797397" y="408.705882352941">com.gio.calendar.views.NewEventView</node>
+    <node x="84.31383333333315" y="440.0">com.gio.calendar.database.ConnectionManager</node>
+    <node x="1322.1137222222221" y="0.0">com.gio.calendar.Application</node>
+    <node x="618.1617614379084" y="1012.0">com.gio.calendar.views.CalendarOverview</node>
+    <node x="88.56383333333315" y="782.0">com.gio.calendar.persistance.CalendarEventRepository</node>
+    <node x="298.87400000000025" y="1316.6470588235293">com.gio.calendar.views.NewTaskView</node>
+    <node x="655.4470555555555" y="0.0">com.gio.calendar.models.Person</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="com.gio.calendar.views.CalendarOverview" target="com.gio.calendar.models.CalendarEvent" relationship="TO_ONE">
+      <point x="206.00023856209168" y="15.0" />
+      <point x="1517.614" y="1105.5" />
+      <point x="1517.614" y="507.0" />
+      <point x="314.4999444444445" y="0.0" />
+    </edge>
+    <edge source="com.gio.calendar.models.CalendarEvent" target="com.gio.calendar.models.Tag" relationship="DEPENDENCY">
+      <point x="14.999944444444623" y="223.0" />
+      <point x="917.647" y="756.0" />
+      <point x="1249.647" y="756.0" />
+      <point x="110.03327777777781" y="115.0" />
+    </edge>
+    <edge source="com.gio.calendar.views.CalendarOverview" target="com.gio.calendar.models.Person" relationship="DEPENDENCY">
+      <point x="206.00023856209168" y="0.0" />
+      <point x="1234.647" y="1090.5" />
+      <point x="1234.647" y="257.0" />
+      <point x="812.947" y="257.0" />
+      <point x="-5.555555549108249E-5" y="115.0" />
+    </edge>
+    <edge source="com.gio.calendar.views.NewEventView" target="com.gio.calendar.persistance.CalendarEventRepository" relationship="DEPENDENCY">
+      <point x="164.50000326797397" y="1.1764705902805872E-4" />
+      <point x="48.0" y="535.206" />
+      <point x="48.0" y="897.0" />
+      <point x="-246.49983333333316" y="0.0" />
+    </edge>
+    <edge source="com.gio.calendar.models.CalendarEvent" target="com.gio.calendar.models.Tag" relationship="TO_ONE">
+      <point x="236.9666666666667" y="-223.0" />
+      <point x="0.0" y="115.0" />
+    </edge>
+    <edge source="com.gio.calendar.models.Tag" target="com.gio.calendar.models.CalendarEvent" relationship="TO_ONE">
+      <point x="-137.4997222222221" y="0.0" />
+      <point x="987.0" y="115.0" />
+      <point x="987.0" y="-17.5" />
+      <point x="1517.614" y="-17.5" />
+      <point x="1517.614" y="507.0" />
+      <point x="314.4999444444445" y="0.0" />
+    </edge>
+    <edge source="com.gio.calendar.views.MainView" target="com.gio.calendar.views.CalendarOverview" relationship="DEPENDENCY">
+      <point x="0.0" y="127.0" />
+      <point x="-190.99119607843124" y="1554.147" />
+      <point x="911.374" y="1554.147" />
+      <point x="87.21223856209167" y="78.5" />
+    </edge>
+    <edge source="com.gio.calendar.views.CalendarOverview" target="com.gio.calendar.views.MainView" relationship="DEPENDENCY">
+      <point x="2.3856209168116038E-4" y="78.5" />
+      <point x="824.162" y="1243.0" />
+      <point x="543.5" y="1243.0" />
+      <point x="543.5" y="1279.0" />
+      <point x="201.50019607843126" y="0.0" />
+    </edge>
+    <edge source="com.gio.calendar.views.CalendarOverview" target="com.gio.calendar.models.CalendarEvent" relationship="DEPENDENCY">
+      <point x="-205.99976143790832" y="0.0" />
+      <point x="600.0" y="1090.5" />
+      <point x="600.0" y="994.5" />
+      <point x="902.647" y="994.5" />
+      <point x="-5.555555537739565E-5" y="223.0" />
+    </edge>
+    <edge source="com.gio.calendar.models.CalendarEvent" target="com.gio.calendar.models.Person" relationship="DEPENDENCY">
+      <point x="-5.555555537739565E-5" y="-223.0" />
+      <point x="902.647" y="257.0" />
+      <point x="812.947" y="257.0" />
+      <point x="-5.555555549108249E-5" y="115.0" />
+    </edge>
+    <edge source="com.gio.calendar.persistance.CalendarEventRepository" target="com.gio.calendar.database.ConnectionManager" relationship="DEPENDENCY">
+      <point x="-123.25" y="-115.0" />
+      <point x="0.0" y="67.0" />
+    </edge>
+    <edge source="com.gio.calendar.models.CalendarEvent" target="com.gio.calendar.models.Person" relationship="TO_ONE">
+      <point x="14.999944444444623" y="-223.0" />
+      <point x="104.69994444444455" y="115.0" />
+    </edge>
+    <edge source="com.gio.calendar.models.Person" target="com.gio.calendar.models.CalendarEvent" relationship="TO_ONE">
+      <point x="157.4999444444445" y="0.0" />
+      <point x="987.0" y="115.0" />
+      <point x="987.0" y="-17.5" />
+      <point x="1517.614" y="-17.5" />
+      <point x="1517.614" y="507.0" />
+      <point x="314.4999444444445" y="0.0" />
+    </edge>
+    <edge source="com.gio.calendar.views.NewTaskView" target="com.gio.calendar.persistance.CalendarEventRepository" relationship="DEPENDENCY">
+      <point x="-290.0000000000002" y="-5.8823529343499104E-5" />
+      <point x="48.0" y="1419.147" />
+      <point x="48.0" y="897.0" />
+      <point x="-246.49983333333316" y="0.0" />
+    </edge>
+    <edge source="com.gio.calendar.views.NewEventView" target="com.gio.calendar.models.Person" relationship="DEPENDENCY">
+      <point x="3.2679739661034546E-6" y="-126.49988235294097" />
+      <point x="-195.75" y="257.0" />
+      <point x="812.947" y="257.0" />
+      <point x="-5.555555549108249E-5" y="115.0" />
+    </edge>
+    <edge source="com.gio.calendar.views.CalendarOverview" target="com.gio.calendar.persistance.CalendarEventRepository" relationship="DEPENDENCY">
+      <point x="72.21223856209167" y="78.5" />
+      <point x="896.374" y="1539.147" />
+      <point x="48.0" y="1539.147" />
+      <point x="48.0" y="897.0" />
+      <point x="-246.49983333333316" y="0.0" />
+    </edge>
+    <edge source="com.gio.calendar.persistance.CalendarEventRepository" target="com.gio.calendar.models.CalendarEvent" relationship="DEPENDENCY">
+      <point x="246.50016666666681" y="0.0" />
+      <point x="600.0" y="897.0" />
+      <point x="600.0" y="994.5" />
+      <point x="902.647" y="994.5" />
+      <point x="-5.555555537739565E-5" y="223.0" />
+    </edge>
+    <edge source="com.gio.calendar.views.NewTaskView" target="com.gio.calendar.views.MainView" relationship="DEPENDENCY">
+      <point x="-45.37400000000025" y="-102.50005882352934" />
+      <point x="543.5" y="1279.0" />
+      <point x="201.50019607843126" y="0.0" />
+    </edge>
+    <edge source="com.gio.calendar.views.MainView" target="com.gio.calendar.views.NewTaskView" relationship="DEPENDENCY">
+      <point x="201.5" y="119.5" />
+      <point x="-290.0" y="-20.647058823529278" />
+    </edge>
+    <edge source="com.gio.calendar.views.NewEventView" target="com.gio.calendar.models.CalendarEvent" relationship="CREATE">
+      <point x="3.2679739661034546E-6" y="126.50011764705903" />
+      <point x="-195.75" y="1029.5" />
+      <point x="600.0" y="1029.5" />
+      <point x="600.0" y="994.5" />
+      <point x="902.647" y="994.5" />
+      <point x="-5.555555537739565E-5" y="223.0" />
+    </edge>
+    <edge source="com.gio.calendar.views.NewEventView" target="com.gio.calendar.views.MainView" relationship="DEPENDENCY">
+      <point x="-29.999996732026034" y="126.50011764705903" />
+      <point x="-225.75" y="1059.5" />
+      <point x="543.5" y="1059.5" />
+      <point x="543.5" y="1279.0" />
+      <point x="201.50019607843126" y="0.0" />
+    </edge>
+    <edge source="com.gio.calendar.views.MainView" target="com.gio.calendar.views.NewEventView" relationship="DEPENDENCY">
+      <point x="-49.758803921568756" y="-127.0" />
+      <point x="-44.999996732026034" y="126.5" />
+    </edge>
+    <edge source="com.gio.calendar.views.NewEventView" target="com.gio.calendar.models.Tag" relationship="DEPENDENCY">
+      <point x="-14.999996732026034" y="126.50011764705903" />
+      <point x="-210.75" y="756.0" />
+      <point x="1249.647" y="756.0" />
+      <point x="110.03327777777781" y="115.0" />
+    </edge>
+    <edge source="com.gio.calendar.views.NewTaskView" target="com.gio.calendar.models.CalendarEvent" relationship="CREATE">
+      <point x="-14.810000000000286" y="-102.50005882352934" />
+      <point x="574.064" y="1029.5" />
+      <point x="600.0" y="1029.5" />
+      <point x="600.0" y="994.5" />
+      <point x="902.647" y="994.5" />
+      <point x="-5.555555537739565E-5" y="223.0" />
+    </edge>
+    <edge source="com.gio.calendar.views.CalendarOverview" target="com.gio.calendar.models.Tag" relationship="DEPENDENCY">
+      <point x="2.3856209168116038E-4" y="-78.5" />
+      <point x="824.162" y="756.0" />
+      <point x="1249.647" y="756.0" />
+      <point x="110.03327777777781" y="115.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic" zoom="0.5505335844318895" showDependencies="true" x="562.5" y="768.5" />
+  <SelectedNodes>
+    <node>com.gio.calendar.models.CalendarEvent</node>
+    <node>com.gio.calendar.views.MainView</node>
+    <node>com.gio.calendar.models.Tag</node>
+    <node>com.gio.calendar.views.NewEventView</node>
+    <node>com.gio.calendar.database.ConnectionManager</node>
+    <node>com.gio.calendar.Application</node>
+    <node>com.gio.calendar.views.CalendarOverview</node>
+    <node>com.gio.calendar.persistance.CalendarEventRepository</node>
+    <node>com.gio.calendar.views.NewTaskView</node>
+    <node>com.gio.calendar.models.Person</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Constructors</Category>
+    <Category>Inner Classes</Category>
+    <Category>Methods</Category>
+    <Category>Properties</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+
