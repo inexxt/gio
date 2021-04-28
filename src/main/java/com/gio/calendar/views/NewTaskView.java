@@ -95,7 +95,10 @@ public class NewTaskView extends Div {
 
         for (LocalDate i = startDay; i.compareTo(endDay) < 0; i = i.plusDays(1)) {
             boolean[] blocked = new boolean[24];
-            for (int j = 0; j < Math.max(6, LocalTime.now().getHour()); ++j)
+            int time = 6;
+	    if (i.compareTo(startDay)==0)
+		time = Math.max(6, LocalTime.now().getHour());
+            for (int j = 0; j < time; ++j)
                 blocked[j] = true;
 
             List<CalendarEvent> eventsList;
