@@ -240,6 +240,8 @@ public class NewTaskView extends Div {
         add(taskDateLayout, taskNameLayout, taskDescriptionLayout, tagsFieldLayout,
                 taskRepetitionNumberLayout, taskRepetitionBreakLayout,
                 taskDurationLayout, minimalLengthLayout, maximalLengthLayout, addTaskButton);
+
+        setupListeners();
     }
 
     private void setupListeners() {
