@@ -97,6 +97,11 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>org.mnode.ical4j</groupId>
+            <artifactId>ical4j</artifactId>
+            <version>1.0.2</version>
+        </dependency>
+        <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-spring-boot-starter</artifactId>
             <exclusions>
@@ -177,7 +182,6 @@
             <version>1.4.200</version>
             <scope>runtime</scope>
         </dependency>
-
     </dependencies>
 
     <build>

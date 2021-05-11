@@ -18,6 +18,40 @@ import static net.fortuna.ical4j.util.CompatibilityHints.*;
 import static net.fortuna.ical4j.util.CompatibilityHints.KEY_OUTLOOK_COMPATIBILITY;
 
 public class IcalParser {
+
+    private static void addEvents(List<CalendarEvent> events, PeriodList periodList, PropertyList propertyList) {
+        String name = propertyList.getProperty("SUMMARY").getValue();
+        String description = propertyList.getProperty("DESCRIPTION").getValue();
+        if (description.length() > 255) {
+            description = description.substring(0, 254);
+        }
+        String tags = "";
+        String location = propertyList.getProperty("LOCATION").getValue();
+        String people = "";
+
+        for (Object po : periodList) {
+            Period per = (Period) po;
+
+            LocalTime startTime = Instant.ofEpochMilli(per.getStart().getTime()).atZone(ZoneId.systemDefault()).toLocalTime();
+            LocalTime endTime = Instant.ofEpochMilli(per.getEnd().getTime()).atZone(ZoneId.systemDefault()).toLocalTime();
+            LocalDate start = Instant.ofEpochMilli(per.getStart().getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate end = Instant.ofEpochMilli(per.getEnd().getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
+
+            if (start.compareTo(end) == 0) {
+                events.add(new CalendarEvent(name, description, start, startTime, endTime, tags, location, people));
+            }
+            else {
+                events.add(new CalendarEvent(name, description, start, startTime, start.atTime(LocalTime.MAX).toLocalTime(), tags, location, people));
+
+                for (LocalDate i = start.plusDays(1); i.compareTo(end) != 0; i = i.plusDays(1)) {
+                    events.add(new CalendarEvent(name, description, i, i.atStartOfDay().toLocalTime(), i.atTime(LocalTime.MAX).toLocalTime(), tags, location, people));
+                }
+
+                events.add(new CalendarEvent(name, description, end, end.atStartOfDay().toLocalTime(), endTime, tags, location, people));
+            }
+        }
+    }
+
     public static List<CalendarEvent> parseFile(InputStream file) throws ParserException, IOException {
         CompatibilityHints.setHintEnabled(KEY_RELAXED_UNFOLDING, true);
         CompatibilityHints.setHintEnabled(KEY_RELAXED_PARSING, true);
@@ -49,32 +83,7 @@ public class IcalParser {
         List<CalendarEvent> events = new ArrayList<CalendarEvent>();
         for (Object o : cal.getComponents("VEVENT")) {
             Component c = (Component) o;
-            PeriodList list = c.calculateRecurrenceSet(period);
-            PropertyList propertyList = c.getProperties();
-            String name = propertyList.getProperty("SUMMARY").getValue();
-            String description = propertyList.getProperty("DESCRIPTION").getValue();
-            if (description.length() > 255) {
-                description = description.substring(0, 254);
-            }
-            String tags = "";
-            String location = propertyList.getProperty("LOCATION").getValue();
-            String people = ""; //TODO
-            for (Object po : list) {
-                Period per = (Period) po;
-                LocalTime startTime = Instant.ofEpochMilli(per.getStart().getTime()).atZone(ZoneId.systemDefault()).toLocalTime();
-                LocalTime endTime = Instant.ofEpochMilli(per.getEnd().getTime()).atZone(ZoneId.systemDefault()).toLocalTime();
-                LocalDate start = Instant.ofEpochMilli(per.getStart().getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
-                LocalDate end = Instant.ofEpochMilli(per.getEnd().getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
-                if (start.compareTo(end) == 0) {
-                    events.add(new CalendarEvent(name, description, start, startTime, endTime, tags, location, people));
-                } else {
-                    events.add(new CalendarEvent(name, description, start, startTime, start.atTime(LocalTime.MAX).toLocalTime(), tags, location, people));
-                    for (LocalDate i = start.plusDays(1); i.compareTo(end) != 0; i = i.plusDays(1)) {
-                        events.add(new CalendarEvent(name, description, i, i.atStartOfDay().toLocalTime(), i.atTime(LocalTime.MAX).toLocalTime(), tags, location, people));
-                    }
-                    events.add(new CalendarEvent(name, description, end, end.atStartOfDay().toLocalTime(), endTime, tags, location, people));
-                }
-            }
+            addEvents(events, c.calculateRecurrenceSet(period), c.getProperties());
         }
         return events;
     }
