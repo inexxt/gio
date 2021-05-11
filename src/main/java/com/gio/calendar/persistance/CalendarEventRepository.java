@@ -27,6 +27,12 @@ public class CalendarEventRepository {
                 .getResultList();
     }
 
+    public static List<CalendarEvent> findAll() {
+        return getEntityManager()
+                .createNamedQuery("CalendarEvent.findAll", CalendarEvent.class)
+                .getResultList();
+    }
+
     public static List<CalendarEvent> findByDate(LocalDate date) {
         return getEntityManager()
                 .createNamedQuery("CalendarEvent.findByDate", CalendarEvent.class)

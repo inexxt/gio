@@ -2,18 +2,24 @@ package com.gio.calendar.views;
 
 import com.gio.calendar.models.CalendarEvent;
 import com.gio.calendar.persistance.CalendarEventRepository;
+import com.gio.calendar.utils.IcalParser;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HtmlComponent;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Paragraph;
 
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.server.StreamResource;
 import net.fortuna.ical4j.data.ParserException;
 
 import java.io.IOException;
@@ -78,6 +84,16 @@ public class IcalView extends Div{
             output.removeAll();
         });
 
-        add(upload, output);
+
+        Anchor anchor =
+                new Anchor(
+                        new StreamResource( "myics.ics" , IcalParser::exportEvents) ,
+                        ""
+                )
+        ;
+        anchor.getElement().setAttribute( "download" , true );
+        Button downloadButton = new Button("Download generated content", new Icon( VaadinIcon.DOWNLOAD_ALT ) );
+        anchor.add( downloadButton );
+        add(upload, output, anchor);
     }
 }
