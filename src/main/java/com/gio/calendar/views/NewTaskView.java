@@ -41,28 +41,30 @@ public class NewTaskView extends Div {
 
     private static final Integer TASK_DURATION_CHARACTERS_LIMIT = 100;
 
-    private final Button addTaskButton;
+    private Button addTaskButton;
 
-    private final DatePicker taskDatePicker;
+    private DatePicker taskDatePicker;
 
-    private final TextArea taskNameArea;
-    private final TextArea taskDescriptionArea;
-    private final TextArea tagsField;
-    private final TextArea taskDuration;
-    private final TextArea minimalContinuousLength;
-    private final TextArea maximalContinuousLength;
-    private final TextArea taskRepNumField;
-    private final TextArea taskRepBreakField;
+    private TextArea taskNameArea;
+    private TextArea taskDescriptionArea;
+    private TextArea tagsField;
+    private TextArea taskDuration;
+    private TextArea minimalContinuousLength;
+    private TextArea maximalContinuousLength;
+    private TextArea taskRepNumField;
+    private TextArea taskRepBreakField;
 
-    private final HorizontalLayout taskDateLayout;
-    private final HorizontalLayout taskDescriptionLayout;
-    private final HorizontalLayout taskNameLayout;
-    private final HorizontalLayout tagsFieldLayout;
-    private final HorizontalLayout taskDurationLayout;
-    private final HorizontalLayout minimalLengthLayout;
-    private final HorizontalLayout maximalLengthLayout;
-    private final HorizontalLayout taskRepetitionNumberLayout;
-    private final HorizontalLayout taskRepetitionBreakLayout;
+    private Div taskDateTimeDiv;
+    private Div taskNameDescDiv;
+    private Div taskRepDiv;
+
+    private HorizontalLayout taskDateTimeDivLayout;
+    private HorizontalLayout taskDateTimeLayout;
+    private HorizontalLayout taskNameDescDivLayout;
+    private HorizontalLayout taskNameDescLayout;
+    private HorizontalLayout taskRepDivLayout;
+    private HorizontalLayout taskRepLayout;
+    private HorizontalLayout tagsFieldLayout;
 
     private void handleSqlException(Exception e) {
         Notification.show("SQLException occurred. Event has not been added.");
@@ -86,7 +88,7 @@ public class NewTaskView extends Div {
         return events;
     }
 
-    private boolean heuristic(LocalDate startDay, LocalDate endDay) {
+    private boolean insertionHeuristic(LocalDate startDay, LocalDate endDay) {
 
         int duration = Integer.parseInt(taskDuration.getValue());
         List<LocalDate> days = new ArrayList<LocalDate>();
@@ -154,12 +156,17 @@ public class NewTaskView extends Div {
     private void addTaskHandler() {
         LocalDate startDay = LocalDate.now();
         LocalDate endDay = taskDatePicker.getValue();
+
         for (int i = 0; i < Integer.parseInt(taskRepNumField.getValue()); ++i) {
-            if (heuristic(startDay, endDay)) {
-                Notification.show("Task " + i + "occurrence " + taskNameArea.getValue() + " was created!");
-            } else {
-                Notification.show("Task " + i + "occurrence " + taskNameArea.getValue() + " can not be created with this heuristic!");
+            if(insertionHeuristic(startDay, endDay)) {
+                Notification.show("Occurrence no. " + i + " of task " + taskNameArea.getValue() +
+                                  " was created!");
             }
+            else {
+                Notification.show("Occurrence no.  " + i + " of task " + taskNameArea.getValue() +
+                                  " can not be created with this heuristic!");
+            }
+
             if (i + 1 != Integer.parseInt(taskRepNumField.getValue())) {
                 startDay = startDay.plusDays(Integer.parseInt(taskRepBreakField.getValue()));
                 endDay = endDay.plusDays(Integer.parseInt(taskRepBreakField.getValue()));
@@ -167,87 +174,15 @@ public class NewTaskView extends Div {
         }
     }
 
-    public NewTaskView() {
-        addClassName("newtask-view");
-
-        /* Picker of the new task date */
-        taskDatePicker = new DatePicker();
-        taskDatePicker.setLabel("Choose task date (required)");
-        taskDatePicker.setRequired(true);
-
-        /* Text area for new task name */
-        taskNameArea = new TextArea("Task name (optional). Maximum length: " +
-                TASK_NAME_CHARACTERS_LIMIT.toString());
-
-        taskNameArea.setMaxLength(TASK_NAME_CHARACTERS_LIMIT);
-
-        /* Text area for new task description */
-        taskDescriptionArea = new TextArea("Task description (optional). Maximum length: " +
-                TASK_DESCRIPTION_CHARACTERS_LIMIT.toString());
-
-        taskDescriptionArea.setMaxLength(TASK_DESCRIPTION_CHARACTERS_LIMIT);
-
-        /* Tags area for */
-        tagsField = new TextArea("Task tags (optional). Should be separated by ','. Maximum length: " +
-                TASK_TAGS_CHARACTERS_LIMIT.toString());
-
-        tagsField.setMaxLength(TASK_TAGS_CHARACTERS_LIMIT);
-
-        taskDuration = new TextArea("Task duration (required) in hours. Maximuum length: " + TASK_DURATION_CHARACTERS_LIMIT.toString());
-        taskDuration.setMaxLength(TASK_DURATION_CHARACTERS_LIMIT);
-        taskDuration.setRequired(true);
-
-        minimalContinuousLength = new TextArea("Task minimal (wanted) continuous length in hours. (required). Maximum length: " + TASK_DESCRIPTION_CHARACTERS_LIMIT);
-        minimalContinuousLength.setMaxLength(TASK_DESCRIPTION_CHARACTERS_LIMIT);
-        minimalContinuousLength.setRequired(true);
-
-        maximalContinuousLength = new TextArea("Task maximal (wanted) continuous length in hours. (required). Maximum length: " + TASK_DESCRIPTION_CHARACTERS_LIMIT);
-        maximalContinuousLength.setMaxLength(TASK_DESCRIPTION_CHARACTERS_LIMIT);
-        maximalContinuousLength.setRequired(true);
-
-        taskRepNumField = new TextArea("Number of task repetitions (required). Default: 1 " +
-                "(do not change if you wish that the task occurs only once");
-        taskRepNumField.setMaxLength(4);
-        taskRepNumField.setValue(Integer.toString(1));
-
-        taskRepBreakField = new TextArea("Time interval (in days) between repetitions of task, required for more than one task " +
-                "repetition");
-
-
-        /* Layouts creating */
-        taskDateLayout = new HorizontalLayout();
-        taskDescriptionLayout = new HorizontalLayout();
-        taskNameLayout = new HorizontalLayout();
-        tagsFieldLayout = new HorizontalLayout();
-        taskDurationLayout = new HorizontalLayout();
-        minimalLengthLayout = new HorizontalLayout();
-        maximalLengthLayout = new HorizontalLayout();
-        taskRepetitionNumberLayout = new HorizontalLayout();
-        taskRepetitionBreakLayout = new HorizontalLayout();
-
-        /* Button for confirming new task add operation */
-        addTaskButton = new Button("Add task");
-
-        /* Enrich layouts with created components */
-        taskDateLayout.addAndExpand(taskDatePicker);
-        taskDescriptionLayout.addAndExpand(taskDescriptionArea);
-        taskNameLayout.addAndExpand(taskNameArea);
-        tagsFieldLayout.addAndExpand(tagsField);
-        taskDurationLayout.addAndExpand(taskDuration);
-        minimalLengthLayout.addAndExpand(minimalContinuousLength);
-        maximalLengthLayout.addAndExpand(maximalContinuousLength);
-        taskRepetitionNumberLayout.addAndExpand(taskRepNumField);
-        taskRepetitionBreakLayout.addAndExpand(taskRepBreakField);
-
-        /* Add all layouts */
-        add(taskDateLayout, taskNameLayout, taskDescriptionLayout, tagsFieldLayout,
-                taskRepetitionNumberLayout, taskRepetitionBreakLayout,
-                taskDurationLayout, minimalLengthLayout, maximalLengthLayout, addTaskButton);
-
-        setupListeners();
+    private void clearForm() {
+        taskNameArea.clear();
+        taskDescriptionArea.clear();
+        taskDatePicker.clear();
+        tagsField.clear();
+        taskDuration.clear();
     }
 
-    private void setupListeners() {
+    private void setupAddTaskButtonListener() {
         /* Listener for the Button object which is to add the task on click after
          *  checking correctness of task input data
          */
@@ -277,11 +212,107 @@ public class NewTaskView extends Div {
         });
     }
 
-    private void clearForm() {
-        taskNameArea.clear();
-        taskDescriptionArea.clear();
-        taskDatePicker.clear();
-        tagsField.clear();
-        taskDuration.clear();
+    private void initialiseAddTaskButton() {
+        addTaskButton = new Button("Add task");
+        setupAddTaskButtonListener();
+    }
+
+    private void initialiseTaskDatePicker() {
+        /* Picker of the new task date */
+        taskDatePicker = new DatePicker();
+        taskDatePicker.setLabel("Choose task deadline date (required)");
+        taskDatePicker.setRequired(true);
+        taskDatePicker.setValue(LocalDate.now());
+    }
+
+    private void initialiseTextAreas() {
+        /* Text area for new task name */
+        taskNameArea = new TextArea("Task name (optional). Maximum length: " +
+                TASK_NAME_CHARACTERS_LIMIT.toString());
+
+        taskNameArea.setMaxLength(TASK_NAME_CHARACTERS_LIMIT);
+
+        /* Text area for new task description */
+        taskDescriptionArea = new TextArea("Task description (optional). Maximum length: " +
+                TASK_DESCRIPTION_CHARACTERS_LIMIT.toString());
+
+        taskDescriptionArea.setMaxLength(TASK_DESCRIPTION_CHARACTERS_LIMIT);
+
+        /* Tags area for */
+        tagsField = new TextArea("Task tags (optional). Should be separated by ','. Maximum length: " +
+                TASK_TAGS_CHARACTERS_LIMIT.toString());
+
+        tagsField.setMaxLength(TASK_TAGS_CHARACTERS_LIMIT);
+
+        taskDuration = new TextArea("Task duration (in hours, required)");
+        taskDuration.setMaxLength(TASK_DURATION_CHARACTERS_LIMIT);
+        taskDuration.setRequired(true);
+        taskDuration.setValue(Integer.toString(2));
+
+        minimalContinuousLength = new TextArea("Minimal wanted task's continuous length (in hours, required)");
+        minimalContinuousLength.setMaxLength(TASK_DESCRIPTION_CHARACTERS_LIMIT);
+        minimalContinuousLength.setRequired(true);
+        minimalContinuousLength.setValue(Integer.toString(1));
+
+        maximalContinuousLength = new TextArea("Maximal wanted task's continuous length (in hours, required)");
+        maximalContinuousLength.setMaxLength(TASK_DESCRIPTION_CHARACTERS_LIMIT);
+        maximalContinuousLength.setRequired(true);
+        maximalContinuousLength.setValue(Integer.toString(2));
+
+        taskRepNumField = new TextArea("Number of task repetitions (required). Default: 1 " +
+                "(do not change if you wish that the task occurs only once)");
+        taskRepNumField.setMaxLength(4);
+        taskRepNumField.setValue(Integer.toString(1));
+
+        taskRepBreakField = new TextArea("Time interval (in days) between repetitions of task, required for more than one task " +
+                "repetition");
+    }
+
+
+    private void initialiseDivs() {
+        taskDateTimeDiv = new Div();
+        taskNameDescDiv = new Div();
+        taskRepDiv = new Div();
+
+        taskDateTimeDiv.getElement().setProperty("innerHTML", "<p><b>Task date and duration");
+        taskNameDescDiv.getElement().setProperty("innerHTML", "<p><b>Task name and description</b></p>");
+        taskRepDiv.getElement().setProperty("innerHTML", "<p><b>Task repetitions</b></p>");
+    }
+
+    private void initialiseLayouts() {
+        taskDateTimeDivLayout = new HorizontalLayout();
+        taskDateTimeLayout = new HorizontalLayout();
+        taskNameDescDivLayout = new HorizontalLayout();
+        taskNameDescLayout = new HorizontalLayout();
+        taskRepDivLayout = new HorizontalLayout();
+        taskRepLayout = new HorizontalLayout();
+        tagsFieldLayout = new HorizontalLayout();
+
+        taskDateTimeDivLayout.add(taskDateTimeDiv);
+        taskDateTimeLayout.addAndExpand(taskDatePicker, taskDuration, minimalContinuousLength, maximalContinuousLength);
+        taskNameDescDivLayout.add(taskNameDescDiv);
+        taskNameDescLayout.addAndExpand(taskNameArea, taskDescriptionArea);
+        taskRepDivLayout.add(taskRepDiv);
+        taskRepLayout.addAndExpand(taskRepNumField, taskRepBreakField);
+        tagsFieldLayout.addAndExpand(tagsField);
+    }
+
+    private void insertViewComponents() {
+        add(taskDateTimeDivLayout, taskDateTimeLayout);
+        add(taskNameDescDivLayout, taskNameDescLayout);
+        add(taskRepDivLayout, taskRepLayout);
+        add(tagsFieldLayout);
+        add(addTaskButton);
+    }
+
+    public NewTaskView() {
+        addClassName("newtask-view");
+
+        initialiseAddTaskButton();
+        initialiseTaskDatePicker();
+        initialiseTextAreas();
+        initialiseDivs();
+        initialiseLayouts();
+        insertViewComponents();
     }
 }
