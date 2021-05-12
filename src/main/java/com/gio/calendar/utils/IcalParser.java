@@ -25,16 +25,24 @@ import static net.fortuna.ical4j.util.CompatibilityHints.KEY_OUTLOOK_COMPATIBILI
 
 public class IcalParser {
 
-    private static void addEvents(List<CalendarEvent> events, PeriodList periodList, PropertyList propertyList) {
+    private static void addEvents(List<CalendarEvent> events, PeriodList periodList, PropertyList propertyList, ZoneId zoneId) {
         String name, description, tags, location, people;
         name = description = tags = location = people = "";
         try {
             name = propertyList.getProperty("SUMMARY").getValue();
+            if (name.length() > 255) {
+                name = name.substring(0, 254);
+            }
+
             description = propertyList.getProperty("DESCRIPTION").getValue();
             if (description.length() > 255) {
                 description = description.substring(0, 254);
             }
+
             location = propertyList.getProperty("LOCATION").getValue();
+            if (location.length() > 255) {
+                location = location.substring(0, 254);
+            }
         }
         catch (Exception ignored) {
 
@@ -44,10 +52,10 @@ public class IcalParser {
             for (Object po : periodList) {
                 Period per = (Period) po;
 
-                LocalTime startTime = Instant.ofEpochMilli(per.getStart().getTime()).atZone(ZoneId.systemDefault()).toLocalTime();
-                LocalTime endTime = Instant.ofEpochMilli(per.getEnd().getTime()).atZone(ZoneId.systemDefault()).toLocalTime();
-                LocalDate start = Instant.ofEpochMilli(per.getStart().getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
-                LocalDate end = Instant.ofEpochMilli(per.getEnd().getTime()).atZone(ZoneId.systemDefault()).toLocalDate();
+                LocalTime startTime = Instant.ofEpochMilli(per.getStart().getTime()).atZone(zoneId).toLocalTime();
+                LocalTime endTime = Instant.ofEpochMilli(per.getEnd().getTime()).atZone(zoneId).toLocalTime();
+                LocalDate start = Instant.ofEpochMilli(per.getStart().getTime()).atZone(zoneId).toLocalDate();
+                LocalDate end = Instant.ofEpochMilli(per.getEnd().getTime()).atZone(zoneId).toLocalDate();
 
                 if (start.compareTo(end) == 0) {
                     events.add(new CalendarEvent(name, description, start, startTime, endTime, tags, location, people));
@@ -107,7 +115,7 @@ public class IcalParser {
         List<CalendarEvent> events = new ArrayList<CalendarEvent>();
         for (Object o : cal.getComponents("VEVENT")) {
             Component c = (Component) o;
-            addEvents(events, c.calculateRecurrenceSet(period), c.getProperties());
+            addEvents(events, c.calculateRecurrenceSet(period), c.getProperties(), zoneId);
         }
         return events;
     }
