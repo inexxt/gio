@@ -10,7 +10,7 @@ import java.util.function.Function;
 
 public abstract class SchedulingHeuristic implements Function<SchedulingDetails, List<CalendarEvent>> {
 
-    protected boolean[] getBlockedSlots(LocalDate day, boolean is_start_day) {
+    public static boolean[] getBlockedSlots(LocalDate day, boolean is_start_day) {
         boolean[] blocked = new boolean[24];
         int time = 6;
         if (is_start_day)

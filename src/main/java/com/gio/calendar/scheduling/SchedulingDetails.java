@@ -3,8 +3,7 @@ package com.gio.calendar.scheduling;
 import java.time.LocalDate;
 
 public class SchedulingDetails {
-    // just a dataclass
-    // no need for specifying getters/setters
+    // just a dataclass, no need for specifying getters/setters
 
     public LocalDate startDay;
     public LocalDate endDay;

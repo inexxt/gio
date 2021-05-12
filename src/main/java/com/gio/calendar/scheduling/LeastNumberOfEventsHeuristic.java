@@ -1,7 +1,6 @@
 package com.gio.calendar.scheduling;
 
 import com.gio.calendar.models.CalendarEvent;
-import org.apache.commons.lang3.tuple.Triple;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

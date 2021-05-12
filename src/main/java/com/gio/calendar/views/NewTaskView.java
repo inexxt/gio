@@ -194,7 +194,7 @@ public class NewTaskView extends Div {
         /* Add all layouts */
         add(taskDateLayout, taskNameLayout, taskDescriptionLayout, tagsFieldLayout,
                 taskRepetitionNumberLayout, taskRepetitionBreakLayout,
-                taskDurationLayout, minimalLengthLayout, maximalLengthLayout, addTaskButton);
+                taskDurationLayout, minimalLengthLayout, maximalLengthLayout, taskHeuristicLayout, addTaskButton);
 
         setupListeners();
     }
