@@ -14,7 +14,7 @@ public class LatestPossibleHeuristc extends SchedulingHeuristic {
         List<Integer> starts = new ArrayList<>();
         List<Integer> ends = new ArrayList<>();
 
-        for (LocalDate i = details.endDay.minusDays(1); i.compareTo(details.startDay) != 0; i = i.minusDays(1)) {
+        for (LocalDate i = details.endDay.minusDays(1); i.compareTo(details.startDay) >= 0; i = i.minusDays(1)) {
             boolean[] blocked = getBlockedSlots(i, i.compareTo(details.startDay) == 0);
 
             for (int j = Math.min(details.duration, details.maximalContinousDuration);
