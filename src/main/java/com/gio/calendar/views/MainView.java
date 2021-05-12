@@ -80,7 +80,7 @@ public class MainView extends AppLayout {
 
     private Component[] createMenuItems() {
         return new Tab[]{createTab("Calendar overview", CalendarOverview.class), createTab("Add event", NewEventView.class),
-                createTab("Add task", NewTaskView.class)};
+                createTab("Add task", NewTaskView.class), createTab("Import/Export Ical", IcalView.class)};
     }
 
     private static Tab createTab(String text, Class<? extends Component> navigationTarget) {
