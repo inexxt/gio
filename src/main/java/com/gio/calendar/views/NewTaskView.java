@@ -2,21 +2,25 @@ package com.gio.calendar.views;
 
 import com.gio.calendar.models.CalendarEvent;
 import com.gio.calendar.persistance.CalendarEventRepository;
+import com.gio.calendar.scheduling.GreedySchedulingHeuristc;
+import com.gio.calendar.scheduling.SchedulingDetails;
+import com.gio.calendar.scheduling.SchedulingHeuristic;
+import com.gio.calendar.scheduling.SchedulingHeuristicManager;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.IntStream;
 
 @Route(value = "new_task", layout = MainView.class)
 @PageTitle("New task")
@@ -47,6 +51,7 @@ public class NewTaskView extends Div {
     private final TextArea taskDescriptionArea;
     private final TextArea tagsField;
     private final TextArea taskDuration;
+    private final Select<String> taskHeuristicSelect;
     private final TextArea minimalContinuousLength;
     private final TextArea maximalContinuousLength;
     private final TextArea taskRepNumField;
@@ -56,6 +61,7 @@ public class NewTaskView extends Div {
     private final HorizontalLayout taskDescriptionLayout;
     private final HorizontalLayout taskNameLayout;
     private final HorizontalLayout tagsFieldLayout;
+    private final HorizontalLayout taskHeuristicLayout;
     private final HorizontalLayout taskDurationLayout;
     private final HorizontalLayout minimalLengthLayout;
     private final HorizontalLayout maximalLengthLayout;
@@ -63,102 +69,46 @@ public class NewTaskView extends Div {
     private final HorizontalLayout taskRepetitionBreakLayout;
 
     private void handleSqlException(Exception e) {
-        Notification.show("SQLException occurred. Event has not been added.");
         Notification.show("SQLException occurred: " + e.getMessage());
         Notification.show("SQLException occurred: " + Arrays.toString(e.getStackTrace()));
     }
 
-    private boolean heuristic(LocalDate startDay,
-                              LocalDate endDay,
-                              int duration,
-                              int maximalContinousDuration,
-                              int minimalContinousDuration,
-                              String eventName,
-                              String eventDescription,
-                              String eventTags) {
-        List<LocalDate> days = new ArrayList<LocalDate>();
-        List<Integer> starts = new ArrayList<Integer>();
-        List<Integer> ends = new ArrayList<Integer>();
+    private static void handleTaskSchedulingFailure(String taskName) {
+        Notification.show("Task occurrence for " + taskName  + " can not be created with this heuristic!");
+    }
 
-        for (LocalDate i = startDay; i.compareTo(endDay) < 0; i = i.plusDays(1)) {
-            boolean[] blocked = new boolean[24];
-            int time = 6;
-	    if (i.compareTo(startDay)==0)
-		time = Math.max(6, LocalTime.now().getHour());
-            for (int j = 0; j < time; ++j)
-                blocked[j] = true;
-
-            List<CalendarEvent> eventsList;
-            try {
-                eventsList = CalendarEventRepository.findByDate(i);
-            } catch (Exception e) {
-                return false;
-            }
-            for (CalendarEvent event : eventsList) {
-                for (int j = event.getEventStartTime().getHour(); j < event.getEventEndTime().getHour(); ++j) {
-                    blocked[j] = true;
-                }
-            }
-
-            for (int j = Math.min(duration, maximalContinousDuration);
-                 j >= Math.min(duration, minimalContinousDuration); --j) {
-                boolean ok = false;
-                for (int x = 6; x < 24 - j; ++x) {
-                    for (int y = x; y < x + j; ++y) {
-                        if (blocked[y])
-                            break;
-                        ok = (y + 1 == x + j);
-                    }
-                    if (ok) {
-                        starts.add(x);
-                        ends.add(x + j);
-                        duration -= j;
-                        days.add(i);
-                        break;
-                    }
-                }
-                if (ok)
-                    break;
-            }
-
+    private static void handleTaskSchedulingSuccess(List<CalendarEvent> events) {
+        for (CalendarEvent event : events) {
+            CalendarEventRepository.save(event);
+            Notification.show("Task occurrence for " + event.getEventName() + " was created!");
         }
-        if (duration != 0)
-            return false;
-        else {
-            List<CalendarEvent> events = CalendarEvent.getRepeatedEvents(days, starts, ends,
-                    eventName, eventDescription, eventTags);
-            for (CalendarEvent event : events) {
-                try {
-                    CalendarEventRepository.save(event);
-                } catch (IllegalArgumentException e) {
-                    handleSqlException(e);
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 
     private void addTaskHandler() {
         LocalDate startDay = LocalDate.now();
         LocalDate endDay = taskDatePicker.getValue();
-        for (int i = 0; i < Integer.parseInt(taskRepNumField.getValue()); ++i) {
-            if (heuristic(startDay, endDay,
-                    Integer.parseInt(taskDuration.getValue()),
-                    Integer.parseInt(maximalContinuousLength.getValue()),
-                    Integer.parseInt(minimalContinuousLength.getValue()),
-                    taskNameArea.getValue(),
-                    taskDescriptionArea.getValue(),
-                    tagsField.getValue())) {
-                Notification.show("Task " + i + "occurrence " + taskNameArea.getValue() + " was created!");
-            } else {
-                Notification.show("Task " + i + "occurrence " + taskNameArea.getValue() + " can not be created with this heuristic!");
-            }
-            if (i + 1 != Integer.parseInt(taskRepNumField.getValue())) {
-                startDay = startDay.plusDays(Integer.parseInt(taskRepBreakField.getValue()));
-                endDay = endDay.plusDays(Integer.parseInt(taskRepBreakField.getValue()));
-            }
-        }
+        SchedulingHeuristic heuristic = SchedulingHeuristicManager.getHeuristicByName(taskHeuristicSelect.getValue());
+
+        int numRepetitions = Integer.parseInt(taskRepNumField.getValue());
+        int duration = Integer.parseInt(taskDuration.getValue());
+        int maxLength = Integer.parseInt(maximalContinuousLength.getValue());
+        int minLength = Integer.parseInt(minimalContinuousLength.getValue());
+        int taskRepBreak = Integer.parseInt(taskRepBreakField.getValue());
+
+        IntStream.range(0, numRepetitions)
+                .mapToObj(i -> new SchedulingDetails(
+                        startDay.plusDays((long) i * taskRepBreak),
+                        endDay.plusDays((long) i * taskRepBreak),
+                        duration,
+                        maxLength,
+                        minLength,
+                        taskNameArea.getValue(),
+                        taskDescriptionArea.getValue(),
+                        tagsField.getValue()))
+                .map(heuristic)
+                .forEach(v -> v.ifPresentOrElse(
+                        NewTaskView::handleTaskSchedulingSuccess,
+                        () -> handleTaskSchedulingFailure(taskNameArea.getValue())));
     }
 
     public NewTaskView() {
@@ -191,6 +141,10 @@ public class NewTaskView extends Div {
         taskDuration.setMaxLength(TASK_DURATION_CHARACTERS_LIMIT);
         taskDuration.setRequired(true);
 
+        taskHeuristicSelect = new Select<>();
+        taskHeuristicSelect.setItems(SchedulingHeuristicManager.getAvailableHeuristicNames());
+        taskHeuristicSelect.setLabel("Task scheduling heuristic");
+
         minimalContinuousLength = new TextArea("Task minimal (wanted) continuous length in hours. (required). Maximum length: " + TASK_DESCRIPTION_CHARACTERS_LIMIT);
         minimalContinuousLength.setMaxLength(TASK_DESCRIPTION_CHARACTERS_LIMIT);
         minimalContinuousLength.setRequired(true);
@@ -219,6 +173,8 @@ public class NewTaskView extends Div {
         taskRepetitionNumberLayout = new HorizontalLayout();
         taskRepetitionBreakLayout = new HorizontalLayout();
 
+        taskHeuristicLayout = new HorizontalLayout();
+
         /* Button for confirming new task add operation */
         addTaskButton = new Button("Add task");
 
@@ -232,6 +188,8 @@ public class NewTaskView extends Div {
         maximalLengthLayout.addAndExpand(maximalContinuousLength);
         taskRepetitionNumberLayout.addAndExpand(taskRepNumField);
         taskRepetitionBreakLayout.addAndExpand(taskRepBreakField);
+
+        taskHeuristicLayout.addAndExpand(taskHeuristicSelect);
 
         /* Add all layouts */
         add(taskDateLayout, taskNameLayout, taskDescriptionLayout, tagsFieldLayout,
@@ -265,6 +223,8 @@ public class NewTaskView extends Div {
                     addTaskHandler();
                     clearForm();
                 }
+            } catch (IllegalArgumentException exc){
+                handleSqlException(exc);
             } catch (Exception exc) {
                 Notification.show("Error: " + exc);
             }
