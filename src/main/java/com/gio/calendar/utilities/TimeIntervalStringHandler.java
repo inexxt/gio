@@ -20,7 +20,8 @@ public class TimeIntervalStringHandler {
 
         try {
             numberOfUnits = Integer.parseInt(integerString);
-        } catch (NumberFormatException e) {
+        }
+        catch(NumberFormatException e) {
             /* Bad integer format */
             return false;
         }
