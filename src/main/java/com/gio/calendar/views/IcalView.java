@@ -2,7 +2,7 @@ package com.gio.calendar.views;
 
 import com.gio.calendar.models.CalendarEvent;
 import com.gio.calendar.persistance.CalendarEventRepository;
-import com.gio.calendar.utils.IcalParser;
+import com.gio.calendar.utilities.IcalParser;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HtmlComponent;
@@ -25,11 +25,9 @@ import net.fortuna.ical4j.data.ParserException;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 
-import static com.gio.calendar.utils.IcalParser.parseFile;
+import static com.gio.calendar.utilities.IcalParser.parseFile;
 
 @Route(value = "ical", layout = MainView.class)
 @RouteAlias(value = "ical", layout = MainView.class)

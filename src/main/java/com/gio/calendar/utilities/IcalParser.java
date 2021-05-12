@@ -1,4 +1,4 @@
-package com.gio.calendar.utils;
+package com.gio.calendar.utilities;
 
 import com.gio.calendar.models.CalendarEvent;
 import net.fortuna.ical4j.data.CalendarBuilder;

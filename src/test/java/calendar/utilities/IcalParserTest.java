@@ -1,8 +1,7 @@
-package calendar.utils;
+package calendar.utilities;
 
-import com.gio.calendar.database.ConnectionManager;
 import com.gio.calendar.models.CalendarEvent;
-import com.gio.calendar.utils.IcalParser;
+import com.gio.calendar.utilities.IcalParser;
 import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.TimeZone;
 import net.fortuna.ical4j.model.TimeZoneRegistry;

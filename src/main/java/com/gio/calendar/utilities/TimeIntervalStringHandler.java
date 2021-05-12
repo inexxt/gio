@@ -35,10 +35,14 @@ public class TimeIntervalStringHandler {
 
     public static int getTimeUnitsNumber(String targetTimeIntervalString) {
         int stringLength = targetTimeIntervalString.length();
-        return Integer.parseInt(targetTimeIntervalString.substring(0, stringLength - 1));
+        if (stringLength > 0)
+            return Integer.parseInt(targetTimeIntervalString.substring(0, stringLength - 1));
+        return 0; // doesn't matter what is the value if the field is empty
     }
 
     public static char getTimeUnitType(String targetTimeIntervalString) {
-        return targetTimeIntervalString.charAt(targetTimeIntervalString.length() - 1);
+        if (targetTimeIntervalString.length() > 0)
+            return targetTimeIntervalString.charAt(targetTimeIntervalString.length() - 1);
+        return '_'; // doesn't matter what is the unit if the field is empty
     }
 }

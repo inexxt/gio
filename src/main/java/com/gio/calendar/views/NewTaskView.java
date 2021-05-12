@@ -182,7 +182,7 @@ public class NewTaskView extends Div {
     private void initialiseTaskDatePicker() {
         /* Picker of the new task date */
         taskDatePicker = new DatePicker();
-        taskDatePicker.setLabel("Choose task deadline date (required)");
+        taskDatePicker.setLabel("Choose task deadline date - not inclusive (required)");
         taskDatePicker.setRequired(true);
         taskDatePicker.setValue(LocalDate.now());
     }
