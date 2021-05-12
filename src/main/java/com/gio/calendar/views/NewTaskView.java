@@ -11,13 +11,11 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.VaadinService;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 @Route(value = "new_task", layout = MainView.class)
@@ -70,25 +68,14 @@ public class NewTaskView extends Div {
         Notification.show("SQLException occurred: " + Arrays.toString(e.getStackTrace()));
     }
 
-    private List<CalendarEvent> getEvents(List<LocalDate> days, List<Integer> starts, List<Integer> ends) {
-        List<CalendarEvent> events = new ArrayList<CalendarEvent>();
-        for (int i = 0; i < days.size(); ++i) {
-            events.add(new CalendarEvent(
-                    taskNameArea.getValue(),
-                    taskDescriptionArea.getValue(),
-                    days.get(i),
-                    LocalTime.of(starts.get(i), 0),
-                    LocalTime.of(ends.get(i), 0),
-                    tagsField.getValue(),
-                    "",
-                    ""));
-        }
-        return events;
-    }
-
-    private boolean heuristic(LocalDate startDay, LocalDate endDay) {
-
-        int duration = Integer.parseInt(taskDuration.getValue());
+    private boolean heuristic(LocalDate startDay,
+                              LocalDate endDay,
+                              int duration,
+                              int maximalContinousDuration,
+                              int minimalContinousDuration,
+                              String eventName,
+                              String eventDescription,
+                              String eventTags) {
         List<LocalDate> days = new ArrayList<LocalDate>();
         List<Integer> starts = new ArrayList<Integer>();
         List<Integer> ends = new ArrayList<Integer>();
@@ -113,8 +100,8 @@ public class NewTaskView extends Div {
                 }
             }
 
-            for (int j = Math.min(duration, Integer.parseInt(maximalContinuousLength.getValue()));
-                 j >= Math.min(duration, Integer.parseInt(minimalContinuousLength.getValue())); --j) {
+            for (int j = Math.min(duration, maximalContinousDuration);
+                 j >= Math.min(duration, minimalContinousDuration); --j) {
                 boolean ok = false;
                 for (int x = 6; x < 24 - j; ++x) {
                     for (int y = x; y < x + j; ++y) {
@@ -138,7 +125,8 @@ public class NewTaskView extends Div {
         if (duration != 0)
             return false;
         else {
-            List<CalendarEvent> events = getEvents(days, starts, ends);
+            List<CalendarEvent> events = CalendarEvent.getRepeatedEvents(days, starts, ends,
+                    eventName, eventDescription, eventTags);
             for (CalendarEvent event : events) {
                 try {
                     CalendarEventRepository.save(event);
@@ -155,7 +143,13 @@ public class NewTaskView extends Div {
         LocalDate startDay = LocalDate.now();
         LocalDate endDay = taskDatePicker.getValue();
         for (int i = 0; i < Integer.parseInt(taskRepNumField.getValue()); ++i) {
-            if (heuristic(startDay, endDay)) {
+            if (heuristic(startDay, endDay,
+                    Integer.parseInt(taskDuration.getValue()),
+                    Integer.parseInt(maximalContinuousLength.getValue()),
+                    Integer.parseInt(minimalContinuousLength.getValue()),
+                    taskNameArea.getValue(),
+                    taskDescriptionArea.getValue(),
+                    tagsField.getValue())) {
                 Notification.show("Task " + i + "occurrence " + taskNameArea.getValue() + " was created!");
             } else {
                 Notification.show("Task " + i + "occurrence " + taskNameArea.getValue() + " can not be created with this heuristic!");

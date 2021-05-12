@@ -3,6 +3,8 @@ package com.gio.calendar.models;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -19,6 +21,7 @@ import java.util.Set;
                 query = "SELECT e FROM CalendarEvent e WHERE e.eventDate = :date")
 })
 public class CalendarEvent {
+
     public int getEventId() {
         return eventId;
     }
@@ -66,7 +69,7 @@ public class CalendarEvent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int eventId; // Can't be private because persistance needs it
+    private int eventId;
     private LocalDate eventDate;
 
     private LocalTime eventStartTime;
@@ -163,4 +166,26 @@ public class CalendarEvent {
         this.eventPeople = newEvent.getEventPeople();
         this.eventPlace = newEvent.getEventPlace();
     }
+
+    public static List<CalendarEvent> getRepeatedEvents(List<LocalDate> days,
+                                                        List<Integer> starts,
+                                                        List<Integer> ends,
+                                                        String eventName,
+                                                        String eventDescription,
+                                                        String eventTags) {
+        List<CalendarEvent> events = new ArrayList<>();
+        for (int i = 0; i < days.size(); ++i) {
+            events.add(new CalendarEvent(
+                    eventName,
+                    eventDescription,
+                    days.get(i),
+                    LocalTime.of(starts.get(i), 0),
+                    LocalTime.of(ends.get(i), 0),
+                    eventTags,
+                    "",
+                    ""));
+        }
+        return events;
+    }
+
 }
