@@ -76,7 +76,7 @@ public class NewTaskView extends Div {
     private List<CalendarEvent> getEvents(List<LocalDate> days, List<Integer> starts, List<Integer> ends) {
         List<CalendarEvent> events = new ArrayList<CalendarEvent>();
         for(int i = 0; i < days.size(); ++i) {
-            System.out.println(days.get(i).toString());
+
             events.add(new CalendarEvent(
                     taskNameArea.getValue(),
                     taskDescriptionArea.getValue(),
