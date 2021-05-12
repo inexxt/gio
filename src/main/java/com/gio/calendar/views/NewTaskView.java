@@ -2,13 +2,10 @@ package com.gio.calendar.views;
 
 import com.gio.calendar.models.CalendarEvent;
 import com.gio.calendar.persistance.CalendarEventRepository;
-<<<<<<< HEAD
 import com.gio.calendar.scheduling.SchedulingDetails;
 import com.gio.calendar.scheduling.SchedulingHeuristic;
 import com.gio.calendar.scheduling.SchedulingHeuristicManager;
-=======
 import com.gio.calendar.utilities.TimeIntervalStringHandler;
->>>>>>> master
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -115,12 +112,11 @@ public class NewTaskView extends Div {
         int duration = Integer.parseInt(taskDuration.getValue());
         int maxLength = Integer.parseInt(maximalContinuousLength.getValue());
         int minLength = Integer.parseInt(minimalContinuousLength.getValue());
-        int taskRepBreak = Integer.parseInt(taskRepBreakField.getValue());
 
         IntStream.range(0, numRepetitions)
                 .mapToObj(i -> new SchedulingDetails(
-                        increaseByUnitType(timeUnitType, startDay, i * taskRepBreak),
-                        increaseByUnitType(timeUnitType, endDay, i * taskRepBreak),
+                        increaseByUnitType(timeUnitType, startDay, i * timeUnits),
+                        increaseByUnitType(timeUnitType, endDay, i * timeUnits),
                         duration,
                         maxLength,
                         minLength,
@@ -177,6 +173,7 @@ public class NewTaskView extends Div {
             }
         });
     }
+
 
     private void initialiseAddTaskButton() {
         addTaskButton = new Button("Add task");
@@ -265,6 +262,7 @@ public class NewTaskView extends Div {
         taskRepDivLayout.add(taskRepDiv);
         taskRepLayout.addAndExpand(taskRepNumField, taskRepBreakField);
         tagsFieldLayout.addAndExpand(tagsField);
+        taskHeuristicLayout.addAndExpand(taskHeuristicSelect);
     }
 
     private void insertViewComponents() {
