@@ -263,7 +263,7 @@ public class NewTaskView extends Div {
 
         taskDescriptionArea.setMaxLength(TASK_DESCRIPTION_CHARACTERS_LIMIT);
 
-        /* Tags area for */
+        /* Text area for task tags */
         tagsField = new TextArea("Task tags (optional). Should be separated by ','. Maximum length: " +
                 TASK_TAGS_CHARACTERS_LIMIT.toString());
 
@@ -289,7 +289,7 @@ public class NewTaskView extends Div {
         taskRepNumField.setMaxLength(4);
         taskRepNumField.setValue(Integer.toString(1));
 
-        taskRepBreakField = new TextArea("Time between event repetitions - integer and D (day), W (week), " +
+        taskRepBreakField = new TextArea("Time between task repetitions - integer and D (day), W (week), " +
                 "M (month) or Y (year). Examples: 13D, 5M.");
     }
 
