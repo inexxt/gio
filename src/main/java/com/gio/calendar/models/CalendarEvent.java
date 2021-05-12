@@ -165,13 +165,13 @@ public class CalendarEvent {
     }
 
     public boolean compareWithoutId(CalendarEvent event) {
-        return  Objects.equals(eventDate, event.eventDate) &&
-                Objects.equals(eventStartTime, event.eventStartTime) &&
-                Objects.equals(eventEndTime, event.eventEndTime) &&
-                Objects.equals(eventTags, event.eventTags) &&
-                Objects.equals(eventPeople, event.eventPeople) &&
-                Objects.equals(eventDescription, event.eventDescription) &&
-                Objects.equals(eventName, event.eventName) &&
-                Objects.equals(eventPlace, event.eventPlace);
+        return  eventDate.equals(event.getEventDate()) &&
+                eventStartTime.equals(event.getEventStartTime()) &&
+                eventEndTime.equals(event.getEventEndTime()) &&
+                eventTags.equals(event.getEventTags()) &&
+                eventPeople.equals(event.getEventPeople()) &&
+                eventDescription.equals(event.getEventDescription()) &&
+                eventName.equals(event.getEventName()) &&
+                eventPlace.equals(event.getEventPlace());
     }
 }
