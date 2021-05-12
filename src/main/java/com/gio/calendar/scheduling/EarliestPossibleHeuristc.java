@@ -38,7 +38,7 @@ public class EarliestPossibleHeuristc extends SchedulingHeuristic {
                     break;
             }
         }
-        if (details.duration != 0){
+        if (details.duration != 0) {
             return Collections.emptyList();
         }
         return CalendarEvent.getRepeatedEvents(days, starts, ends, details.eventName,
