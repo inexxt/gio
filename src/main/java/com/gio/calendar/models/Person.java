@@ -10,9 +10,6 @@ import java.util.stream.Collectors;
 @Entity
 @Table(name = "Person")
 public class Person {
-    public String getPersonName() {
-        return personName;
-    }
 
     @Id
     private String personName;
@@ -25,12 +22,6 @@ public class Person {
 
     public Person(String personName) {
         this.personName = personName;
-    }
-
-
-    @Override
-    public String toString() {
-        return personName;
     }
 
     public static String peopleToString(Set<Person> people) {
@@ -56,7 +47,17 @@ public class Person {
     }
 
     @Override
+    public String toString() {
+        return personName;
+    }
+
+    @Override
     public int hashCode() {
         return Objects.hash(personName);
     }
+
+    public String getPersonName() {
+        return personName;
+    }
+
 }

@@ -22,51 +22,6 @@ import java.util.Set;
 })
 public class CalendarEvent {
 
-    public int getEventId() {
-        return eventId;
-    }
-
-    public void setEventId(int eventId) {
-        this.eventId = eventId;
-    }
-
-    public LocalDate getEventDate() {
-        return eventDate;
-    }
-
-    public LocalTime getEventStartTime() {
-        return eventStartTime;
-    }
-
-    public LocalTime getEventEndTime() {
-        return eventEndTime;
-    }
-
-    public Set<Tag> getEventTags() {
-        return eventTags;
-    }
-
-    public Set<Person> getEventPeople() {
-        return eventPeople;
-    }
-
-    public String getEventDescription() {
-        return eventDescription;
-    }
-
-    public String getEventName() {
-        return eventName;
-    }
-
-    public void setEventName(String eventName) {
-        this.eventName = eventName;
-    }
-
-    public String getEventPlace() {
-        return eventPlace;
-    }
-
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int eventId;
@@ -189,7 +144,7 @@ public class CalendarEvent {
     }
 
     public boolean compareWithoutId(CalendarEvent event) {
-        return  eventDate.equals(event.getEventDate()) &&
+        return eventDate.equals(event.getEventDate()) &&
                 eventStartTime.equals(event.getEventStartTime()) &&
                 eventEndTime.equals(event.getEventEndTime()) &&
                 eventTags.equals(event.getEventTags()) &&
@@ -198,4 +153,49 @@ public class CalendarEvent {
                 eventName.equals(event.getEventName()) &&
                 eventPlace.equals(event.getEventPlace());
     }
+
+    public int getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(int eventId) {
+        this.eventId = eventId;
+    }
+
+    public LocalDate getEventDate() {
+        return eventDate;
+    }
+
+    public LocalTime getEventStartTime() {
+        return eventStartTime;
+    }
+
+    public LocalTime getEventEndTime() {
+        return eventEndTime;
+    }
+
+    public Set<Tag> getEventTags() {
+        return eventTags;
+    }
+
+    public Set<Person> getEventPeople() {
+        return eventPeople;
+    }
+
+    public String getEventDescription() {
+        return eventDescription;
+    }
+
+    public String getEventName() {
+        return eventName;
+    }
+
+    public void setEventName(String eventName) {
+        this.eventName = eventName;
+    }
+
+    public String getEventPlace() {
+        return eventPlace;
+    }
+
 }
