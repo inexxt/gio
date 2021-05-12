@@ -80,6 +80,8 @@ public class IcalParserTest {
             List<CalendarEvent> events = IcalParser.parseFile(new ByteArrayInputStream(icsCalendar.toString().getBytes()));
             assertEquals(1, events.size());
             System.out.println(calendarEvent.compareWithoutId(events.get(0)));
+            System.out.println("NAME:" + events.get(0).getEventName() + "DESC" + events.get(0).getEventDescription() + "DATE" + events.get(0).getEventDate());
+            System.out.println("Start:" + events.get(0).getEventStartTimeString() + "END" + events.get(0).getEventEndTimeString());
             assertTrue(calendarEvent.compareWithoutId(events.get(0)));
         }
         catch (Exception e) {
