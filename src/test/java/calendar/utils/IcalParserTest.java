@@ -85,7 +85,7 @@ public class IcalParserTest {
         try {
             List<CalendarEvent> events = IcalParser.parseFile(new ByteArrayInputStream(icsCalendar.toString().getBytes()));
             assertEquals(1, events.size());
-            Assertions.assertEquals(events.get(0), calendarEvent);
+            assertTrue(calendarEvent.compareWithoutId(events.get(0)));
         }
         catch (Exception e) {
             fail();
@@ -104,10 +104,10 @@ public class IcalParserTest {
         try {
             List<CalendarEvent> exported = IcalParser.parseFile(input);
             assertEquals(1, exported.size());
-            Assertions.assertEquals(exported.get(0), calendarEvent);
+            assertTrue(calendarEvent.compareWithoutId(exported.get(0)));
         }
         catch (Exception e) {
-
+            fail();
         }
     }
 }

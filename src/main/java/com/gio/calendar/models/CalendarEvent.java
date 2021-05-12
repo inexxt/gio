@@ -163,4 +163,15 @@ public class CalendarEvent {
         this.eventPeople = newEvent.getEventPeople();
         this.eventPlace = newEvent.getEventPlace();
     }
+
+    public boolean compareWithoutId(CalendarEvent event) {
+        return  Objects.equals(eventDate, event.eventDate) &&
+                Objects.equals(eventStartTime, event.eventStartTime) &&
+                Objects.equals(eventEndTime, event.eventEndTime) &&
+                Objects.equals(eventTags, event.eventTags) &&
+                Objects.equals(eventPeople, event.eventPeople) &&
+                Objects.equals(eventDescription, event.eventDescription) &&
+                Objects.equals(eventName, event.eventName) &&
+                Objects.equals(eventPlace, event.eventPlace);
+    }
 }
