@@ -214,6 +214,7 @@ public class NewTaskView extends Div {
         taskHeuristicSelect = new Select<>();
         taskHeuristicSelect.setItems(SchedulingHeuristicManager.getAvailableHeuristicNames());
         taskHeuristicSelect.setLabel("Task scheduling heuristic");
+        taskHeuristicSelect.setValue(SchedulingHeuristicManager.getAvailableHeuristicNames().stream().findFirst().orElse(""));
 
         minimalContinuousLength = new TextArea("Task minimal (wanted) continuous length in hours. (required). Maximum length: " + TASK_DESCRIPTION_CHARACTERS_LIMIT);
         minimalContinuousLength = new TextArea("Minimal wanted task's continuous length (in hours, required)");

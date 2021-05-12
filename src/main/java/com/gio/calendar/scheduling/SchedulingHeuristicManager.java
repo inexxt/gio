@@ -6,9 +6,9 @@ import static java.util.Map.entry;
 
 public class SchedulingHeuristicManager {
     static Map<String, SchedulingHeuristic> availableHeuristics = Map.ofEntries(
-            entry(EarliestPossibleHeuristc.class.getName(), new EarliestPossibleHeuristc()),
-            entry(LatestPossibleHeuristc.class.getName(), new LatestPossibleHeuristc()),
-            entry(LeastNumberOfEventsHeuristic.class.getName(), new LeastNumberOfEventsHeuristic())
+            entry("Earliest possible", new EarliestPossibleHeuristc()),
+            entry("Latest possible", new LatestPossibleHeuristc()),
+            entry("Least number of events", new LeastNumberOfEventsHeuristic())
         );
 
     public static Collection<String> getAvailableHeuristicNames() {

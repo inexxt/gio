@@ -15,7 +15,9 @@ public class SchedulingHeuristicManagerTest {
 
     @Test
     public void getAvailableHeuristicNames() {
-        Collection<String> first = Arrays.asList("EarliestPossibleHeuristc","LatestPossibleHeuristc","LeastNumberOfEventsHeuristic");
+        Collection<String> first = Arrays.asList("Earliest possible",
+                "Latest possible",
+                "Least number of events");
         Collection<String> second = SchedulingHeuristicManager.getAvailableHeuristicNames();
         assertTrue(first.size() == second.size() && first.containsAll(second) && second.containsAll(first));
     }
