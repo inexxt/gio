@@ -2,7 +2,6 @@ package com.gio.calendar.views;
 
 import com.gio.calendar.models.CalendarEvent;
 import com.gio.calendar.persistance.CalendarEventRepository;
-import com.gio.calendar.scheduling.GreedySchedulingHeuristc;
 import com.gio.calendar.scheduling.SchedulingDetails;
 import com.gio.calendar.scheduling.SchedulingHeuristic;
 import com.gio.calendar.scheduling.SchedulingHeuristicManager;
@@ -106,9 +105,10 @@ public class NewTaskView extends Div {
                         taskDescriptionArea.getValue(),
                         tagsField.getValue()))
                 .map(heuristic)
-                .forEach(v -> v.ifPresentOrElse(
-                        NewTaskView::handleTaskSchedulingSuccess,
-                        () -> handleTaskSchedulingFailure(taskNameArea.getValue())));
+                .forEach(v -> {
+                    if (v.isEmpty()) handleTaskSchedulingFailure(taskNameArea.getValue());
+                    else handleTaskSchedulingSuccess(v);
+                });
     }
 
     public NewTaskView() {

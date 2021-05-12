@@ -1,19 +1,13 @@
 package com.gio.calendar.scheduling;
 
-import com.gio.calendar.models.CalendarEvent;
-import com.google.common.collect.ImmutableMap;
-import org.apache.commons.lang3.NotImplementedException;
-
-import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.util.Map.entry;
 
 public class SchedulingHeuristicManager {
     static Map<String, SchedulingHeuristic> availableHeuristics = Map.ofEntries(
-            entry(GreedySchedulingHeuristc.class.getName(), new GreedySchedulingHeuristc()),
-            entry(EvenlyDistributedSchedulingHeuristc.class.getName(), new EvenlyDistributedSchedulingHeuristc())
+            entry(EarliestPossibleHeuristc.class.getName(), new EarliestPossibleHeuristc()),
+            entry(LatestPossibleHeuristc.class.getName(), new LatestPossibleHeuristc())
         );
 
     public static Collection<String> getAvailableHeuristicNames() {

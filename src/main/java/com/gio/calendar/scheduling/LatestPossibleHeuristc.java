@@ -6,40 +6,24 @@ import com.gio.calendar.persistance.CalendarEventRepository;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class GreedySchedulingHeuristc extends SchedulingHeuristic {
+public class LatestPossibleHeuristc extends SchedulingHeuristic {
     @Override
-    public Optional<List<CalendarEvent>> apply(SchedulingDetails details) {
+    public List<CalendarEvent> apply(SchedulingDetails details) {
         List<LocalDate> days = new ArrayList<>();
         List<Integer> starts = new ArrayList<>();
         List<Integer> ends = new ArrayList<>();
 
-        for (LocalDate i = details.startDay; i.compareTo(details.endDay) < 0; i = i.plusDays(1)) {
-            boolean[] blocked = new boolean[24];
-            int time = 6;
-	    if (i.compareTo(details.startDay)==0)
-		time = Math.max(6, LocalTime.now().getHour());
-            for (int j = 0; j < time; ++j)
-                blocked[j] = true;
-
-            List<CalendarEvent> eventsList;
-            try {
-                eventsList = CalendarEventRepository.findByDate(i);
-            } catch (Exception e) {
-                return Optional.empty();
-            }
-            for (CalendarEvent event : eventsList) {
-                for (int j = event.getEventStartTime().getHour(); j < event.getEventEndTime().getHour(); ++j) {
-                    blocked[j] = true;
-                }
-            }
+        for (LocalDate i = details.endDay; i.compareTo(details.startDay) != 0; i = i.minusDays(1)) {
+            boolean[] blocked = getBlockedSlots(i, i.compareTo(details.startDay) == 0);
 
             for (int j = Math.min(details.duration, details.maximalContinousDuration);
                  j >= Math.min(details.duration, details.minimalContinousDuration); --j) {
                 boolean ok = false;
-                for (int x = 6; x < 24 - j; ++x) {
+                for (int x = 23 - j; x >= 6; x--) {
                     for (int y = x; y < x + j; ++y) {
                         if (blocked[y])
                             break;
@@ -58,9 +42,10 @@ public class GreedySchedulingHeuristc extends SchedulingHeuristic {
             }
         }
         if (details.duration != 0){
-            return Optional.empty();
+            return Collections.emptyList();
         }
-        return Optional.of(CalendarEvent.getRepeatedEvents(days, starts, ends, details.eventName,
-                details.eventDescription, details.eventTags));
+        return CalendarEvent.getRepeatedEvents(days, starts, ends, details.eventName,
+                details.eventDescription, details.eventTags);
     }
+
 }
