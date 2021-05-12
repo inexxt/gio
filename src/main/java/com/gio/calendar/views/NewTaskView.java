@@ -2,6 +2,7 @@ package com.gio.calendar.views;
 
 import com.gio.calendar.models.CalendarEvent;
 import com.gio.calendar.persistance.CalendarEventRepository;
+import com.gio.calendar.utilities.TimeIntervalStringHandler;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -74,7 +75,8 @@ public class NewTaskView extends Div {
 
     private List<CalendarEvent> getEvents(List<LocalDate> days, List<Integer> starts, List<Integer> ends) {
         List<CalendarEvent> events = new ArrayList<CalendarEvent>();
-        for (int i = 0; i < days.size(); ++i) {
+        for(int i = 0; i < days.size(); ++i) {
+            System.out.println(days.get(i).toString());
             events.add(new CalendarEvent(
                     taskNameArea.getValue(),
                     taskDescriptionArea.getValue(),
@@ -85,6 +87,7 @@ public class NewTaskView extends Div {
                     "",
                     ""));
         }
+
         return events;
     }
 
@@ -95,36 +98,37 @@ public class NewTaskView extends Div {
         List<Integer> starts = new ArrayList<Integer>();
         List<Integer> ends = new ArrayList<Integer>();
 
-        for (LocalDate i = startDay; i.compareTo(endDay) < 0; i = i.plusDays(1)) {
+        for(LocalDate i = startDay; i.compareTo(endDay) < 0; i = i.plusDays(1)) {
             boolean[] blocked = new boolean[24];
             int time = 6;
-	    if (i.compareTo(startDay)==0)
+	    if(i.compareTo(startDay)==0)
 		time = Math.max(6, LocalTime.now().getHour());
-            for (int j = 0; j < time; ++j)
+            for(int j = 0; j < time; ++j)
                 blocked[j] = true;
 
             List<CalendarEvent> eventsList;
             try {
                 eventsList = CalendarEventRepository.findByDate(i);
-            } catch (Exception e) {
+            }
+            catch(Exception e) {
                 return false;
             }
-            for (CalendarEvent event : eventsList) {
-                for (int j = event.getEventStartTime().getHour(); j < event.getEventEndTime().getHour(); ++j) {
+            for(CalendarEvent event : eventsList) {
+                for(int j = event.getEventStartTime().getHour(); j < event.getEventEndTime().getHour(); ++j) {
                     blocked[j] = true;
                 }
             }
 
-            for (int j = Math.min(duration, Integer.parseInt(maximalContinuousLength.getValue()));
+            for(int j = Math.min(duration, Integer.parseInt(maximalContinuousLength.getValue()));
                  j >= Math.min(duration, Integer.parseInt(minimalContinuousLength.getValue())); --j) {
                 boolean ok = false;
-                for (int x = 6; x < 24 - j; ++x) {
-                    for (int y = x; y < x + j; ++y) {
-                        if (blocked[y])
+                for(int x = 6; x < 24 - j; ++x) {
+                    for(int y = x; y < x + j; ++y) {
+                        if(blocked[y])
                             break;
                         ok = (y + 1 == x + j);
                     }
-                    if (ok) {
+                    if(ok) {
                         starts.add(x);
                         ends.add(x + j);
                         duration -= j;
@@ -132,19 +136,20 @@ public class NewTaskView extends Div {
                         break;
                     }
                 }
-                if (ok)
+                if(ok)
                     break;
             }
 
         }
-        if (duration != 0)
+        if(duration != 0)
             return false;
         else {
             List<CalendarEvent> events = getEvents(days, starts, ends);
-            for (CalendarEvent event : events) {
+            for(CalendarEvent event : events) {
                 try {
                     CalendarEventRepository.save(event);
-                } catch (IllegalArgumentException e) {
+                }
+                catch(IllegalArgumentException e) {
                     handleSqlException(e);
                     return false;
                 }
@@ -153,11 +158,12 @@ public class NewTaskView extends Div {
         return true;
     }
 
-    private void addTaskHandler() {
+    private void addTaskHandler(char timeUnitType) {
         LocalDate startDay = LocalDate.now();
         LocalDate endDay = taskDatePicker.getValue();
+        int timeUnits = TimeIntervalStringHandler.getTimeUnitsNumber(taskRepBreakField.getValue());
 
-        for (int i = 0; i < Integer.parseInt(taskRepNumField.getValue()); ++i) {
+        for(int i = 0; i < Integer.parseInt(taskRepNumField.getValue()); ++i) {
             if(insertionHeuristic(startDay, endDay)) {
                 Notification.show("Occurrence no. " + i + " of task " + taskNameArea.getValue() +
                                   " was created!");
@@ -167,9 +173,23 @@ public class NewTaskView extends Div {
                                   " can not be created with this heuristic!");
             }
 
-            if (i + 1 != Integer.parseInt(taskRepNumField.getValue())) {
-                startDay = startDay.plusDays(Integer.parseInt(taskRepBreakField.getValue()));
-                endDay = endDay.plusDays(Integer.parseInt(taskRepBreakField.getValue()));
+            if(i + 1 != Integer.parseInt(taskRepNumField.getValue())) {
+                if(timeUnitType == 'D') {
+                    startDay = startDay.plusDays(timeUnits);
+                    endDay = endDay.plusDays(timeUnits);
+                }
+                else if(timeUnitType == 'W') {
+                    startDay = startDay.plusWeeks(timeUnits);
+                    endDay = endDay.plusWeeks(timeUnits);
+                }
+                else if(timeUnitType == 'M') {
+                    startDay = startDay.plusMonths(timeUnits);
+                    endDay = endDay.plusMonths(timeUnits);
+                }
+                else {
+                    startDay = startDay.plusYears(timeUnits);
+                    endDay = endDay.plusYears(timeUnits);
+                }
             }
         }
     }
@@ -190,31 +210,36 @@ public class NewTaskView extends Div {
             /*  Check if no task date has been provided and issue an error message in such case
              */
             try {
-                if (taskDatePicker.getValue() == null) {
+                if(taskDatePicker.getValue() == null) {
                     Notification.show("Error: task date has not been provided.");
-                } else if (taskDuration.getValue() == null || Integer.parseInt(taskDuration.getValue()) < 1) {
+                }
+                else if(taskDuration.getValue() == null || Integer.parseInt(taskDuration.getValue()) < 1) {
                     Notification.show("Error: Wrong duration format");
-                } else if (minimalContinuousLength.getValue() == null || Integer.parseInt(minimalContinuousLength.getValue()) < 1) {
+                }
+                else if(minimalContinuousLength.getValue() == null || Integer.parseInt(minimalContinuousLength.getValue()) < 1) {
                     Notification.show("Error: Wrong minimal length format");
-                } else if (maximalContinuousLength.getValue() == null || Integer.parseInt(maximalContinuousLength.getValue()) < 1) {
+                }
+                else if(maximalContinuousLength.getValue() == null || Integer.parseInt(maximalContinuousLength.getValue()) < 1) {
                     Notification.show("Error: Wrong maximal length format");
-                } else if (taskRepNumField.getValue().equals("1") && taskRepBreakField.getValue() != null && taskRepBreakField.getValue() != "" && Integer.parseInt(taskRepBreakField.getValue()) <= 0) {
+                }
+                else if(taskRepNumField.getValue().equals("1") && taskRepBreakField.getValue() != null && taskRepBreakField.getValue() != "" && Integer.parseInt(taskRepBreakField.getValue()) <= 0) {
                     Notification.show("Error: Wrong repetition values");
-                } else if (!taskRepNumField.getValue().equals("1") && Integer.parseInt(taskRepBreakField.getValue()) <= 0 || Integer.parseInt(taskRepNumField.getValue()) <= 0) {
+                }
+                else if(!taskRepNumField.getValue().equals("1") && !TimeIntervalStringHandler.checkTimeIntervalString(taskRepBreakField.getValue())) {
                     Notification.show("Error: Wrong repetition values");
                 } else {
-                    addTaskHandler();
+                    addTaskHandler(TimeIntervalStringHandler.getTimeUnitType(taskRepBreakField.getValue()));
                     clearForm();
                 }
-            } catch (Exception exc) {
-                Notification.show("Error: " + exc);
+            }
+            catch(NumberFormatException ex) {
+                Notification.show("Error: bad format of integer strings");
             }
         });
     }
 
     private void initialiseAddTaskButton() {
         addTaskButton = new Button("Add task");
-        setupAddTaskButtonListener();
     }
 
     private void initialiseTaskDatePicker() {
@@ -264,10 +289,9 @@ public class NewTaskView extends Div {
         taskRepNumField.setMaxLength(4);
         taskRepNumField.setValue(Integer.toString(1));
 
-        taskRepBreakField = new TextArea("Time interval (in days) between repetitions of task, required for more than one task " +
-                "repetition");
+        taskRepBreakField = new TextArea("Time between event repetitions - integer and D (day), W (week), " +
+                "M (month) or Y (year). Examples: 13D, 5M.");
     }
-
 
     private void initialiseDivs() {
         taskDateTimeDiv = new Div();
@@ -314,5 +338,6 @@ public class NewTaskView extends Div {
         initialiseDivs();
         initialiseLayouts();
         insertViewComponents();
+        setupAddTaskButtonListener();
     }
 }
