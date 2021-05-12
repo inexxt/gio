@@ -17,10 +17,13 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.component.dialog.*;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.server.VaadinService;
 
 import java.io.IOException;
 import java.sql.*;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 
@@ -233,6 +236,37 @@ public class CalendarOverview extends Div {
         }
     }
 
+    private void setViewedDate() {
+        if (forceDatePickerValue) {
+            targetDatePicker.setValue(dateToSet);
+            /* Now after the value has been changed, the valueChangeListener associated
+             * with the targetDatePicker object will do its action
+             */
+
+            /* Restore original flags values for further possible deletions of events
+             */
+            forceDatePickerValue = false;
+            dateToSet = null;
+            return; /* nothing more to do */
+        }
+
+        String passedDateString = VaadinService.getCurrentRequest().getParameter("date");
+        LocalDate dateToSetInPicker = LocalDate.now();
+
+        if(passedDateString != null) {
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+            try {
+                dateToSetInPicker = LocalDate.parse(passedDateString, dateFormatter);
+            }
+            catch(DateTimeParseException e) {
+                /* suppress */
+            }
+        }
+
+        targetDatePicker.setValue(dateToSetInPicker);
+    }
+
     public CalendarOverview() {
         addClassName("overview-view");
 
@@ -268,16 +302,6 @@ public class CalendarOverview extends Div {
             add(infoLayouts[i]);
         }
 
-        if (forceDatePickerValue) {
-            targetDatePicker.setValue(dateToSet);
-            /* Now after the value has been changed, the valueChangeListener associated
-             * with the targetDatePicker object will do its action
-             */
-
-            /* Restore original flags values for further possible deletions of events
-             */
-            forceDatePickerValue = false;
-            dateToSet = null;
-        }
+        setViewedDate();
     }
 }

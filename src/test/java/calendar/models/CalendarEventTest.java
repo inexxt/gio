@@ -7,8 +7,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.*;
 
 public class CalendarEventTest {
 
@@ -145,5 +144,19 @@ public class CalendarEventTest {
                 "first, second", "Warsaw", "p1@wp.pl,p2@wp.pl");
 
         assertEquals("DESC", c.getEventDescription());
+    }
+
+    @org.junit.Test
+    public void testComparision() {
+        LocalTime time = LocalTime.now();
+        CalendarEvent first = new CalendarEvent("NAME", "DESC",
+                LocalDate.now(),
+                time, time,
+                "first, second", "Warsaw", "p1@wp.pl,p2@wp.pl");
+        CalendarEvent second = new CalendarEvent("NAME", "DESC",
+                LocalDate.now(),
+                time, time,
+                "first, second", "Warsaw", "p1@wp.pl,p2@wp.pl");
+        assertTrue(first.compareWithoutId(second));
     }
 }
