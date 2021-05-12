@@ -1,7 +1,6 @@
 package com.gio.calendar.utils;
 
 import com.gio.calendar.models.CalendarEvent;
-import com.gio.calendar.persistance.CalendarEventRepository;
 import net.fortuna.ical4j.data.CalendarBuilder;
 import net.fortuna.ical4j.data.ParserException;
 import net.fortuna.ical4j.model.*;
@@ -13,7 +12,6 @@ import net.fortuna.ical4j.util.CompatibilityHints;
 import net.fortuna.ical4j.util.UidGenerator;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketException;
@@ -66,6 +64,18 @@ public class IcalParser {
         }
     }
 
+    private static java.util.Calendar getDate(LocalDate date, TimeZone timezone, LocalTime time) {
+        java.util.Calendar outDate = new GregorianCalendar();
+        outDate.setTimeZone(timezone);
+        outDate.set(java.util.Calendar.MONTH, date.getMonthValue() - 1);
+        outDate.set(java.util.Calendar.DAY_OF_MONTH, date.getDayOfMonth());
+        outDate.set(java.util.Calendar.YEAR, date.getYear());
+        outDate.set(java.util.Calendar.HOUR_OF_DAY, time.getHour());
+        outDate.set(java.util.Calendar.MINUTE, time.getMinute());
+        outDate.set(java.util.Calendar.SECOND, time.getSecond());
+        return outDate;
+    }
+
     public static List<CalendarEvent> parseFile(InputStream file) throws ParserException, IOException {
         CompatibilityHints.setHintEnabled(KEY_RELAXED_UNFOLDING, true);
         CompatibilityHints.setHintEnabled(KEY_RELAXED_PARSING, true);
@@ -102,20 +112,8 @@ public class IcalParser {
         return events;
     }
 
-    private static java.util.Calendar getDate(LocalDate date, TimeZone timezone, LocalTime time) {
-        java.util.Calendar outDate = new GregorianCalendar();
-        outDate.setTimeZone(timezone);
-        outDate.set(java.util.Calendar.MONTH, date.getMonthValue() - 1);
-        outDate.set(java.util.Calendar.DAY_OF_MONTH, date.getDayOfMonth());
-        outDate.set(java.util.Calendar.YEAR, date.getYear());
-        outDate.set(java.util.Calendar.HOUR_OF_DAY, time.getHour());
-        outDate.set(java.util.Calendar.MINUTE, time.getMinute());
-        outDate.set(java.util.Calendar.SECOND, time.getSecond());
-        return outDate;
-    }
 
-
-    public static InputStream exportEvents() {
+    public static InputStream exportEvents(List<CalendarEvent> events) {
         // Create a calendar
         net.fortuna.ical4j.model.Calendar icsCalendar = new net.fortuna.ical4j.model.Calendar();
         icsCalendar.getProperties().add(new ProdId("-//Events Calendar//iCal4j 1.0//EN"));
@@ -126,7 +124,6 @@ public class IcalParser {
         TimeZone timezone = registry.getTimeZone("Europe/Paris");
         VTimeZone tz = timezone.getVTimeZone();
 
-        List<CalendarEvent> events = CalendarEventRepository.findAll();
 
         for (CalendarEvent event : events) {
             java.util.Calendar startDate = getDate(event.getEventDate(), timezone, event.getEventStartTime());

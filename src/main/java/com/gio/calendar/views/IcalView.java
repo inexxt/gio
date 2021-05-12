@@ -10,6 +10,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Paragraph;
 
 import com.vaadin.flow.component.icon.Icon;
@@ -23,6 +24,7 @@ import com.vaadin.flow.server.StreamResource;
 import net.fortuna.ical4j.data.ParserException;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,6 +43,10 @@ public class IcalView extends Div{
         p.getElement().setText(text);
         outputContainer.add(p);
         outputContainer.add(content);
+    }
+
+    private InputStream inputStream() {
+        return IcalParser.exportEvents(CalendarEventRepository.findAll());
     }
 
 
@@ -87,13 +93,13 @@ public class IcalView extends Div{
 
         Anchor anchor =
                 new Anchor(
-                        new StreamResource( "myics.ics" , IcalParser::exportEvents) ,
+                        new StreamResource( "myics.ics" , this::inputStream) ,
                         ""
                 )
         ;
         anchor.getElement().setAttribute( "download" , true );
-        Button downloadButton = new Button("Download generated content", new Icon( VaadinIcon.DOWNLOAD_ALT ) );
+        Button downloadButton = new Button("Export calendar", new Icon( VaadinIcon.DOWNLOAD_ALT ) );
         anchor.add( downloadButton );
-        add(upload, output, anchor);
+        add(new H3("Upload your ical file"), upload, output, new H3("Click below to export your calendar"), anchor);
     }
 }
