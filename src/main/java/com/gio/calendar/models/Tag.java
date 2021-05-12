@@ -13,10 +13,6 @@ public class Tag {
     @ManyToMany(mappedBy = "eventTags")
     private Set<CalendarEvent> tagEvents;
 
-    public String getTagId() {
-        return tagId;
-    }
-
     public Tag() {
     } // for persistance
 
@@ -54,5 +50,9 @@ public class Tag {
     @Override
     public int hashCode() {
         return Objects.hash(tagId);
+    }
+
+    public String getTagId() {
+        return tagId;
     }
 }

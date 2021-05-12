@@ -25,6 +25,7 @@ import net.fortuna.ical4j.data.ParserException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,24 +62,15 @@ public class IcalView extends Div{
             String message ="";
             try {
                 List<CalendarEvent> events = parseFile(buffer.getInputStream());
-                boolean full = true;
                 for (CalendarEvent eventCalendar : events) {
-                    Optional<String> err = Optional.empty();
-                    err = CalendarEventRepository.save(eventCalendar);
-                    if (err.isPresent())
-                        full = false;
+                    CalendarEventRepository.save(eventCalendar);
                 }
-                if (full)
-                    message = "Success";
-                else
-                    message = "Some events were not added";
             }
             catch (IOException | ParserException e) {
                 message = e.getMessage();
             }
             finally {
                 output.removeAll();
-                showOutput(message, output);
             }
         });
 

@@ -159,15 +159,13 @@ public class NewEventView extends Div {
     }
 
     private void addEventHandler(long timeUnitDeltaFromOrigin, int timeUnitType) {
-        Optional<String> err = Optional.empty();
         try {
             CalendarEvent event = getEventFromForm(timeUnitDeltaFromOrigin, timeUnitType);
-            err = CalendarEventRepository.save(event);
+            CalendarEventRepository.save(event);
         }
-        catch(IllegalArgumentException e) {
+        catch(Exception e) {
             handleSqlException(e);
         }
-        err.ifPresent(this::handleError);
     }
 
     private CalendarEvent getEventFromForm(long timeUnitDeltaFromOrigin, int timeUnitType) {
@@ -200,7 +198,7 @@ public class NewEventView extends Div {
     private void modifyEventHandler(String eventIdString) {
         Optional<String> err = Optional.empty();
         try {
-            err = CalendarEventRepository.update(eventIdString, getEventFromForm(0, 0));
+            CalendarEventRepository.update(eventIdString, getEventFromForm(0, 0));
         }
         catch(Exception e) {
             handleSqlException(e);

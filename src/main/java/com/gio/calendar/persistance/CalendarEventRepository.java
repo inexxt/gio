@@ -5,6 +5,8 @@ import com.gio.calendar.models.CalendarEvent;
 import jdk.jfr.Event;
 import org.springframework.stereotype.Repository;
 
+import java.sql.SQLDataException;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -40,17 +42,10 @@ public class CalendarEventRepository {
                 .getResultList();
     }
 
-    public static Optional<String> save(CalendarEvent event) {
-        Optional<String> ret = Optional.empty();
-        try {
-            getEntityManager().getTransaction().begin();
-            getEntityManager().merge(event);
-        } catch (Exception e) {
-            ret = Optional.of(e.getMessage());
-        } finally {
-            getEntityManager().getTransaction().commit();
-        }
-        return ret;
+    public static void save(CalendarEvent event) {
+        getEntityManager().getTransaction().begin();
+        getEntityManager().merge(event);
+        getEntityManager().getTransaction().commit();
     }
 
     public static void deleteById(int eventId) {
@@ -64,14 +59,13 @@ public class CalendarEventRepository {
         return ConnectionManager.getEntityManager();
     }
 
-    public static Optional<String> update(String eventIdString, CalendarEvent eventFromForm) {
+    public static void update(String eventIdString, CalendarEvent eventFromForm) throws SQLException {
         CalendarEvent event = getEntityManager().find(CalendarEvent.class, Integer.parseInt(eventIdString));
         if (event == null) {
-            return Optional.of("Could not find event with id=" + eventIdString);
+            throw new SQLException("Event with id " + eventIdString + " not found in database");
         }
         getEntityManager().detach(event);
         event.update(eventFromForm);
         getEntityManager().merge(event);
-        return Optional.empty();
     }
 }

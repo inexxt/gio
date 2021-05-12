@@ -3,6 +3,8 @@ package com.gio.calendar.models;
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -19,54 +21,10 @@ import java.util.Set;
                 query = "SELECT e FROM CalendarEvent e WHERE e.eventDate = :date")
 })
 public class CalendarEvent {
-    public int getEventId() {
-        return eventId;
-    }
-
-    public void setEventId(int eventId) {
-        this.eventId = eventId;
-    }
-
-    public LocalDate getEventDate() {
-        return eventDate;
-    }
-
-    public LocalTime getEventStartTime() {
-        return eventStartTime;
-    }
-
-    public LocalTime getEventEndTime() {
-        return eventEndTime;
-    }
-
-    public Set<Tag> getEventTags() {
-        return eventTags;
-    }
-
-    public Set<Person> getEventPeople() {
-        return eventPeople;
-    }
-
-    public String getEventDescription() {
-        return eventDescription;
-    }
-
-    public String getEventName() {
-        return eventName;
-    }
-
-    public void setEventName(String eventName) {
-        this.eventName = eventName;
-    }
-
-    public String getEventPlace() {
-        return eventPlace;
-    }
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int eventId; // Can't be private because persistance needs it
+    private int eventId;
     private LocalDate eventDate;
 
     private LocalTime eventStartTime;
@@ -164,8 +122,29 @@ public class CalendarEvent {
         this.eventPlace = newEvent.getEventPlace();
     }
 
+    public static List<CalendarEvent> getRepeatedEvents(List<LocalDate> days,
+                                                        List<Integer> starts,
+                                                        List<Integer> ends,
+                                                        String eventName,
+                                                        String eventDescription,
+                                                        String eventTags) {
+        List<CalendarEvent> events = new ArrayList<>();
+        for (int i = 0; i < days.size(); ++i) {
+            events.add(new CalendarEvent(
+                    eventName,
+                    eventDescription,
+                    days.get(i),
+                    LocalTime.of(starts.get(i), 0),
+                    LocalTime.of(ends.get(i), 0),
+                    eventTags,
+                    "",
+                    ""));
+        }
+        return events;
+    }
+
     public boolean compareWithoutId(CalendarEvent event) {
-        return  eventDate.equals(event.getEventDate()) &&
+        return eventDate.equals(event.getEventDate()) &&
                 eventStartTime.equals(event.getEventStartTime()) &&
                 eventEndTime.equals(event.getEventEndTime()) &&
                 eventTags.equals(event.getEventTags()) &&
@@ -174,4 +153,49 @@ public class CalendarEvent {
                 eventName.equals(event.getEventName()) &&
                 eventPlace.equals(event.getEventPlace());
     }
+
+    public int getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(int eventId) {
+        this.eventId = eventId;
+    }
+
+    public LocalDate getEventDate() {
+        return eventDate;
+    }
+
+    public LocalTime getEventStartTime() {
+        return eventStartTime;
+    }
+
+    public LocalTime getEventEndTime() {
+        return eventEndTime;
+    }
+
+    public Set<Tag> getEventTags() {
+        return eventTags;
+    }
+
+    public Set<Person> getEventPeople() {
+        return eventPeople;
+    }
+
+    public String getEventDescription() {
+        return eventDescription;
+    }
+
+    public String getEventName() {
+        return eventName;
+    }
+
+    public void setEventName(String eventName) {
+        this.eventName = eventName;
+    }
+
+    public String getEventPlace() {
+        return eventPlace;
+    }
+
 }
