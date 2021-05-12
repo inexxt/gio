@@ -8,15 +8,9 @@ import net.fortuna.ical4j.model.TimeZone;
 import net.fortuna.ical4j.model.TimeZoneRegistry;
 import net.fortuna.ical4j.model.TimeZoneRegistryFactory;
 import net.fortuna.ical4j.model.component.VEvent;
-import net.fortuna.ical4j.model.component.VTimeZone;
 import net.fortuna.ical4j.model.property.CalScale;
 import net.fortuna.ical4j.model.property.Description;
 import net.fortuna.ical4j.model.property.ProdId;
-import net.fortuna.ical4j.model.property.Uid;
-import net.fortuna.ical4j.util.UidGenerator;
-import org.junit.jupiter.api.Assertions;
-
-import javax.persistence.EntityManager;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -29,7 +23,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertTrue;
 
 public class IcalParserTest {
 
@@ -85,6 +79,7 @@ public class IcalParserTest {
         try {
             List<CalendarEvent> events = IcalParser.parseFile(new ByteArrayInputStream(icsCalendar.toString().getBytes()));
             assertEquals(1, events.size());
+            System.out.println(calendarEvent.compareWithoutId(events.get(0)));
             assertTrue(calendarEvent.compareWithoutId(events.get(0)));
         }
         catch (Exception e) {
