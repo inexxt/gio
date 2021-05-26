@@ -143,7 +143,7 @@ public class NewNoteView extends Div{
 
     private void initialiseTextAreas() {
         /* Task area for new note name */
-        noteNameArea = new TextArea("Task name (optional). Maximum length: " +
+        noteNameArea = new TextArea("Note name (optional). Maximum length: " +
                 NOTE_NAME_CHARACTERS_LIMIT.toString());
 
         noteNameArea.setMaxLength(NOTE_NAME_CHARACTERS_LIMIT);
