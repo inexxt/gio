@@ -1,13 +1,8 @@
 package com.gio.calendar.views;
 
-import com.gio.calendar.models.CalendarEvent;
 import com.gio.calendar.models.CalendarNote;
-import com.gio.calendar.persistance.CalendarEventRepository;
+import com.gio.calendar.models.Tag;
 import com.gio.calendar.persistance.CalendarNoteRepository;
-import com.gio.calendar.scheduling.SchedulingDetails;
-import com.gio.calendar.scheduling.SchedulingHeuristic;
-import com.gio.calendar.scheduling.SchedulingHeuristicManager;
-import com.gio.calendar.utilities.TimeIntervalStringHandler;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -17,11 +12,11 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinService;
 
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.IntStream;
+import java.util.Optional;
 
 @Route(value = "new_note", layout = MainView.class)
 @PageTitle("New note")
@@ -90,19 +85,39 @@ public class NewNoteView extends Div{
         tagsField.clear();
     }
 
-    private void setupAddNoteButtonListener() {
-        /* Listener for the Button object which is to add the task on click after
-         *  checking correctness of task input data
+    private void handleError(String e) {
+        Notification.show("Error occurred: " + e);
+    }
+
+    private void updateNoteHandler(String noteIdString) {
+        Optional<String> err = Optional.empty();
+        try {
+            CalendarNoteRepository.update(noteIdString, getNoteFromForm());
+        }
+        catch(Exception e) {
+            handleSqlException(e);
+        }
+        finally {
+            err.ifPresent(this::handleError);
+        }
+    }
+
+    private void setupAddNoteButtonListener(String noteIdString) {
+        /* Listener for the Button object which is to add the note on click after
+         *  checking correctness of note input data
          */
         addNoteButton.addClickListener(e -> {
-            /*  Check if no task date has been provided and issue an error message in such case
+            /*  Check if no note date has been provided and issue an error message in such case
              */
             try {
                 if(noteDatePicker.getValue() == null) {
-                    Notification.show("Error: task date has not been provided.");
+                    Notification.show("Error: note date has not been provided.");
                 }
-            else {
-                    addNoteHandler();
+                else {
+                    if (noteIdString == null)
+                        addNoteHandler();
+                    else
+                        updateNoteHandler(noteIdString);
                     clearForm();
                 }
             }
@@ -113,8 +128,8 @@ public class NewNoteView extends Div{
     }
 
 
-    private void initialiseAddNoteButton() {
-        addNoteButton = new Button("Add note");
+    private void initialiseAddNoteButton(String noteIdString) {
+        addNoteButton = noteIdString == null ? new Button("Add note") : new Button("Modify note");
     }
 
     private void initialiseNoteDatePicker() {
@@ -173,15 +188,38 @@ public class NewNoteView extends Div{
         add(addNoteButton);
     }
 
+    private void setValuesIfNecessary(String noteIdString) {
+        if (noteIdString != null) {
+            Optional<CalendarNote> note = Optional.empty();
+            try {
+                note = CalendarNoteRepository.findById(Integer.parseInt(noteIdString));
+            }
+            catch(IllegalArgumentException e) {
+                handleSqlException(e);
+            }
+            if(note.isPresent()) {
+                noteNameArea.setValue(note.get().getNoteName());
+                noteDescriptionArea.setValue(note.get().getNoteDescription());
+                noteDatePicker.setValue(note.get().getNoteDate());
+                tagsField.setValue(Tag.tagsToString(note.get().getNoteTags()));
+            }
+            else {
+                Notification.show("Note with id " + noteIdString + " not found.");
+            }
+        }
+    }
+
     public NewNoteView() {
         addClassName("newnote-view");
+        String noteIdString = VaadinService.getCurrentRequest().getParameter("note_id");
 
-        initialiseAddNoteButton();
+        initialiseAddNoteButton(noteIdString);
         initialiseNoteDatePicker();
         initialiseTextAreas();
         initialiseDivs();
         initialiseLayouts();
         insertViewComponents();
-        setupAddNoteButtonListener();
+        setValuesIfNecessary(noteIdString);
+        setupAddNoteButtonListener(noteIdString);
     }
 }
