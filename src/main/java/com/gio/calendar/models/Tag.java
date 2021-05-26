@@ -26,7 +26,7 @@ public class Tag {
     }
 
     public static String tagsToString(Set<Tag> tags) {
-        if (tags.isEmpty()) {
+        if (tags == null || tags.isEmpty()) {
             return "None";
         }
         List<String> ss = tags.stream().map(Tag::getTagId).collect(Collectors.toList());

@@ -3,26 +3,35 @@ package com.gio.calendar.utilities;
 import com.gio.calendar.models.CalendarEvent;
 import com.gio.calendar.models.Person;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
+import javax.mail.*;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.naming.AuthenticationException;
 import java.util.Properties;
 
 public class EmailSender {
     private static String from = "autocalendar@localhost";
     private static Session session;
     private static Properties properties;
+    private static final String username = "f2cc1c9d6586ce";
+    private static final String password = "c83f5babdf43e8";
 
     public static void initialize() {
-        Properties properties = System.getProperties();
-        // Assuming you are sending email from localhost
-        String host = "localhost";
-        properties.setProperty("mail.smtp.host", host);
-        session = Session.getDefaultInstance(properties);
+        Properties props = new Properties();
+        props.put("mail.smtp.host", "smtp.mailtrap.io"); //SMTP Host
+        props.put("mail.smtp.port", "2525"); //TLS Port
+        props.put("mail.smtp.auth", "true"); //enable authentication
+        props.put("mail.smtp.starttls.enable", "true"); //enable STARTTLS
+
+        //create Authenticator object to pass in Session.getInstance argument
+        Authenticator auth = new Authenticator() {
+            //override the getPasswordAuthentication method
+            protected PasswordAuthentication getPasswordAuthentication() {
+                return new PasswordAuthentication(username, password);
+            }
+        };
+        session = Session.getInstance(props, auth);
     }
 
     static boolean sendEmail(String to, String subject, String messageText) {
@@ -32,7 +41,14 @@ public class EmailSender {
             message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));
             message.setSubject(subject);
             message.setText(messageText);
-            Transport.send(message);
+
+            Transport transport;
+            transport = session.getTransport("smtp");
+            transport.connect("smtp.gmail.com", username, password);
+            Address[] addresses = new Address[1];
+            addresses[0] = new InternetAddress(to);
+            transport.sendMessage(message, addresses);
+            transport.close();
             return true;
         } catch (MessagingException mex) {
             mex.printStackTrace();

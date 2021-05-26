@@ -1,5 +1,7 @@
 package com.gio.calendar.models;
 
+import com.gio.calendar.utilities.TimeDateUtils;
+
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -97,18 +99,12 @@ public class CalendarEvent {
         this.eventPlace = place;
     }
 
-    /* Returns string representation of event start time in format HH:MM */
-    private String timeToString(LocalTime targetTime) {
-        return (targetTime.getHour() < 10 ? "0" + targetTime.getHour() : targetTime.getHour()) + ":" +
-                (targetTime.getMinute() < 10 ? "0" + targetTime.getMinute() : targetTime.getMinute());
-    }
-
     public String getEventStartTimeString() {
-        return timeToString(eventStartTime);
+        return TimeDateUtils.timeToString(eventStartTime);
     }
 
     public String getEventEndTimeString() {
-        return timeToString(eventEndTime);
+        return TimeDateUtils.timeToString(eventEndTime);
     }
 
     public void update(CalendarEvent newEvent) {

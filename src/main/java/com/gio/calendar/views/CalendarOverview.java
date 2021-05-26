@@ -4,6 +4,7 @@ import com.gio.calendar.models.CalendarEvent;
 import com.gio.calendar.models.Person;
 import com.gio.calendar.models.Tag;
 import com.gio.calendar.persistance.CalendarEventRepository;
+import com.gio.calendar.utilities.TimeDateUtils;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.notification.Notification;
@@ -21,6 +22,7 @@ import com.vaadin.flow.server.VaadinService;
 
 import java.io.IOException;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -90,10 +92,19 @@ public class CalendarOverview extends Div {
 
             /* Set up text labels
              */
+            LocalDateTime st = e.getEventDate().atTime(e.getEventStartTime());
+            LocalDateTime et = e.getEventDate().atTime(e.getEventEndTime());
+
+            SimpleDateFormat sfd = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+            ZonedDateTime zonedStartTime = st.atZone(ZoneId.systemDefault());
+            ZonedDateTime zonedEndTime = et.atZone(ZoneId.systemDefault());
+
             textLabels[0] = new Label("Name: " + e.getEventName());
             textLabels[1] = new Label("Description: " + e.getEventDescription());
-            textLabels[2] = new Label("Start time: " + e.getEventStartTimeString());
-            textLabels[3] = new Label("End time: " + e.getEventEndTimeString());
+            textLabels[2] = new Label("Start time: " + e.getEventStartTimeString() +
+                    " (your current timezone: " + sfd.format(zonedStartTime) + ")");
+            textLabels[3] = new Label("End time: " + e.getEventEndTimeString() +
+                    " (your current timezone: " + sfd.format(zonedEndTime) + ")");
             textLabels[4] = new Label("Tags: " + Tag.tagsToString(e.getEventTags()));
             textLabels[5] = new Label("Place: " + e.getEventPlace());
             textLabels[6] = new Label("Guests: " + Person.peopleToString(e.getEventPeople()));
@@ -101,7 +112,7 @@ public class CalendarOverview extends Div {
              * to the display
              */
             for (int i = 0; i < 7; ++i) {
-                textLabels[i].setWidth("30%");
+                textLabels[i].setWidth("60%");
                 textLabels[i].setHeight("10px");
 
                 infoLayouts[eventIndex].add(textLabels[i]);

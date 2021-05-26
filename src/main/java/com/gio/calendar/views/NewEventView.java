@@ -166,7 +166,11 @@ public class NewEventView extends Div {
         try {
             CalendarEvent event = getEventFromForm(timeUnitDeltaFromOrigin, timeUnitType);
             CalendarEventRepository.save(event);
-            EmailSender.sendReminderEmail(event, false);
+            if (EmailSender.sendReminderEmail(event, false)) {
+                Notification.show("Successuflly sent notification emails");
+            } else {
+                Notification.show("There was a problem with sending notification emails");
+            }
         }
         catch(Exception e) {
             handleSqlException(e);
@@ -205,7 +209,11 @@ public class NewEventView extends Div {
         try {
             CalendarEvent event = getEventFromForm(0, 0);
             CalendarEventRepository.update(eventIdString, event);
-            EmailSender.sendReminderEmail(event, true);
+            if (EmailSender.sendReminderEmail(event, true)) {
+                Notification.show("Successuflly sent notification emails");
+            } else {
+                Notification.show("There was a problem with sending notification emails");
+            }
         }
         catch(Exception e) {
             handleSqlException(e);
