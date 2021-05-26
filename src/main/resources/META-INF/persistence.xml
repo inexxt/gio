@@ -9,6 +9,7 @@
         <class>com.gio.calendar.models.CalendarEvent</class>
         <class>com.gio.calendar.models.Person</class>
         <class>com.gio.calendar.models.Tag</class>
+        <class>com.gio.calendar.models.Reminder</class>
         <properties>
             <property name="javax.persistence.jdbc.driver" value="org.h2.Driver" />
             <property name="javax.persistence.jdbc.url"    value="jdbc:h2:file:./Autocalendar_db" />
