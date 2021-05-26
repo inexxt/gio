@@ -1,10 +1,12 @@
 package com.gio.calendar.views;
 
 import com.gio.calendar.models.CalendarEvent;
+import com.gio.calendar.models.CalendarNote;
 import com.gio.calendar.models.Person;
 import com.gio.calendar.models.Tag;
 import com.gio.calendar.persistance.CalendarEventRepository;
 import com.gio.calendar.utilities.TimeDateUtils;
+import com.gio.calendar.persistance.CalendarNoteRepository;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.notification.Notification;
@@ -19,6 +21,7 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.component.dialog.*;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.server.VaadinService;
+import org.apache.tomcat.jni.Local;
 
 import java.io.IOException;
 import java.sql.*;
@@ -30,12 +33,12 @@ import java.util.*;
 
 
 @Route(value = "overview", layout = MainView.class)
-@RouteAlias(value = "", layout = MainView.class)
 @PageTitle("Calendar overview")
 @CssImport("./views/overview/overview-view.css")
 public class CalendarOverview extends Div {
     private static LocalDate dateToSet = null;
     private static boolean forceDatePickerValue = false;
+    private static boolean displayCurrentDayEventsNotifications = true;
 
     private static final int DAILY_EVENTS_LIMIT = 120;
 
@@ -43,13 +46,85 @@ public class CalendarOverview extends Div {
     private final HorizontalLayout datePickerLayout;
     private final VerticalLayout[] infoLayouts;
     private List<CalendarEvent> eventsList;
+    private List<CalendarNote> notesList;
 
-    /*  Collects information from database about events that user has planned for the day on
+    /*  Collects information from database about events and notes that user has planned for the day on
      *  the date chosen in targetDatePicker
      */
-    private void getEventsInfo() throws SQLException {
+    private void getInfo() throws SQLException {
         LocalDate targetDateStart = targetDatePicker.getValue();
         eventsList = CalendarEventRepository.findByDate(targetDateStart);
+        notesList = CalendarNoteRepository.findByDate(targetDateStart);
+    }
+
+    /* Sets notes info for display on page.
+     */
+    private void setNotesInfo(int notesIndex) {
+        int notesNo = 1;
+
+        for (CalendarNote e : notesList) {
+            /* Note tag displaying information in format "Note + n" where n is
+             * ordinal number of note in specified day (order: 1, 2, ...)
+             */
+            Label noteTag = new Label("Note " + notesNo);
+            noteTag.setWidth(null);
+            noteTag.setHeight("10px");
+            noteTag.getStyle().set("font-weight", "bold");
+
+            infoLayouts[notesIndex].add(noteTag);
+
+            /* Array of break labels to be input between note data fields */
+            Label[] breakLabels = new Label[3];
+
+            /* Array of text labels to display specified note data
+             */
+            Label[] textLabels = new Label[3];
+
+            /* Set up break labels
+             */
+            for (int i = 0; i < 3; ++i) {
+                breakLabels[i] = new Label("");
+                breakLabels[i].setWidth(null);
+                breakLabels[i].setHeight("0.1px");
+            }
+
+            /* Set up text labels
+             */
+            textLabels[0] = new Label("Name: " + e.getNoteName());
+            textLabels[1] = new Label("Description: " + e.getNoteDescription());
+            textLabels[2] = new Label("Tags: " + Tag.tagsToString(e.getNoteTags()));
+            /* Set width and height of text labels and add both break and text labels
+             * to the display
+             */
+            for (int i = 0; i < 3; ++i) {
+                textLabels[i].setWidth("30%");
+                textLabels[i].setHeight("10px");
+
+                infoLayouts[notesIndex].add(textLabels[i]);
+                infoLayouts[notesIndex].add(breakLabels[i]);
+            }
+
+            /* Layout for displaying buttons which are to handle available actions
+             * concerning the specified note:
+             * Note data modification
+             * Note deletion
+             */
+            HorizontalLayout noteActionsLayout = new HorizontalLayout();
+
+            Button noteModificationButton = new Button("Modify note data");
+            Button noteDeleteButton = new Button("Delete note");
+
+            noteActionsLayout.add(noteModificationButton, noteDeleteButton);
+            infoLayouts[notesIndex].add(noteActionsLayout);
+
+            noteModificationButton.addClickListener(v -> {
+                UI.getCurrent().getPage().setLocation("new_note" + "?" + "note_id=" + e.getNoteId());
+            });
+
+            addNoteDeleteConfirmation(noteDeleteButton, e);
+            notesIndex++;
+            notesNo++;
+        }
     }
 
     /* Sets events info for display on page.
@@ -137,7 +212,7 @@ public class CalendarOverview extends Div {
                 UI.getCurrent().getPage().setLocation("new_event" + "?" + "event_id=" + e.getEventId());
             });
 
-            addDeleteConfirmation(eventDeleteButton, e);
+            addEventDeleteConfirmation(eventDeleteButton, e);
             eventIndex++;
             eventNo++;
         }
@@ -145,7 +220,72 @@ public class CalendarOverview extends Div {
         return eventIndex;
     }
 
-    private void addDeleteConfirmation(Button eventDeleteButton, CalendarEvent e) {
+    private void addNoteDeleteConfirmation(Button noteDeleteButton, CalendarNote e) {
+        noteDeleteButton.addClickListener(v -> {
+            Dialog deleteDialog = new Dialog();
+
+            /* Layouts with following purposes:
+             * queryLayout - stores Label with query text
+             * buttonsLayout - stores Buttons which execute further actions
+             */
+            HorizontalLayout queryLayout = new HorizontalLayout();
+            HorizontalLayout buttonsLayout = new HorizontalLayout();
+
+            Label deleteConfirmationQuery = new Label("Please confirm operation");
+            Button noteDeleteConfirmation = new Button("Confirm note deletion");
+            Button noteDeleteCancellation = new Button("Cancel note deletion");
+
+            queryLayout.add(deleteConfirmationQuery);
+            buttonsLayout.add(noteDeleteCancellation, noteDeleteConfirmation);
+
+            deleteDialog.add(queryLayout, buttonsLayout);
+
+            deleteDialog.setVisible(true);
+            deleteDialog.open();
+
+            noteDeleteCancellation.addClickListener(w -> {
+                deleteDialog.close();
+            });
+
+            noteDeleteConfirmation.addClickListener(w -> {
+                /* Flag to indicate whether note deletion was successful
+                 */
+                boolean okDeletion = true;
+                /* Store current date stored in targetDatePicker to set it as
+                 * targetDatePicker value after the page refresh which occurs
+                 * after successful note deletion
+                 */
+                LocalDate saveDate = targetDatePicker.getValue();
+
+                try {
+                    CalendarNoteRepository.deleteById(e.getNoteId());
+                } catch (IllegalArgumentException ex) {
+                    /* Mark deletion as unsuccessful and issue proper notification informing
+                     * about the exception that has occurred
+                     */
+                    okDeletion = false;
+                    Notification.show("Exception occured. Note has not been deleted.");
+                } finally {
+                    /* Proceed with page update on successful deletion of event data
+                     * from the database
+                     */
+                    if (okDeletion) {
+                        Notification.show("Note has been successfully deleted.");
+                        /* Update class data with values that will force the page to display
+                         * current date (the one in targetDatePicker) after the page has been
+                         * reloaded
+                         */
+                        dateToSet = saveDate;
+                        forceDatePickerValue = true;
+                        UI.getCurrent().getPage().reload();
+                    }
+                }
+                deleteDialog.close(); // Close the dialog
+            });
+        });
+    }
+
+    private void addEventDeleteConfirmation(Button eventDeleteButton, CalendarEvent e) {
         eventDeleteButton.addClickListener(v -> {
             Dialog deleteDialog = new Dialog();
 
@@ -211,7 +351,7 @@ public class CalendarOverview extends Div {
     }
 
     private void dateChangeHandler() throws SQLException, IOException, ClassNotFoundException {
-        getEventsInfo();
+        getInfo();
 
         /*  Clear layouts which display information about the events */
         for (int i = 0; i < 2 * DAILY_EVENTS_LIMIT; i++) {
@@ -228,7 +368,7 @@ public class CalendarOverview extends Div {
             }
         }
 
-        int tasksInfoStartingIndex = 1;
+        int notesInfoStartingIndex = 1;
 
         /* Display appropriate message instead of events data when no events are scheduled
          * for the specified day
@@ -244,7 +384,17 @@ public class CalendarOverview extends Div {
          * (return value) the index of first non-used layout that can store tasks data
          */
         else {
-            tasksInfoStartingIndex = setEventsInfo();
+            notesInfoStartingIndex = setEventsInfo();
+        }
+        
+        if (notesList.isEmpty()) {
+            Label noNotesInfoLabel = new Label("No notes on specified date.");
+            noNotesInfoLabel.setWidth(null);
+            noNotesInfoLabel.setHeight("5px");
+            infoLayouts[notesInfoStartingIndex].add(noNotesInfoLabel);
+        }
+        else {
+            setNotesInfo(notesInfoStartingIndex);
         }
     }
 
@@ -279,10 +429,25 @@ public class CalendarOverview extends Div {
         targetDatePicker.setValue(dateToSetInPicker);
     }
 
+    private void notifyAboutCurrentDayEvents() {
+        List<CalendarEvent> todayEvents = CalendarEventRepository.findByDate(LocalDate.now());
+
+        if(todayEvents.size() == 0) {
+            Notification.show("No events scheduled for today");
+        }
+        else {
+            Notification.show("Events scheduled for today:");
+            for(CalendarEvent e: todayEvents) {
+                Notification.show("Event " + e.getEventName() + " on " + e.getEventStartTimeString());
+            }
+        }
+    }
+
     public CalendarOverview() {
         addClassName("overview-view");
 
         eventsList = new ArrayList<>();
+        notesList = new ArrayList<>();
 
         Notification.show("Establishing connection to db and initializing data");
         Notification.show("Connection established");
@@ -295,7 +460,7 @@ public class CalendarOverview extends Div {
         targetDatePicker.addValueChangeListener(e -> {
             if (targetDatePicker.getValue() != null) {
                 eventsList.clear();
-
+                notesList.clear();
                 try {
                     dateChangeHandler();
                 } catch (SQLException | ClassNotFoundException | IOException throwables) {
@@ -315,5 +480,13 @@ public class CalendarOverview extends Div {
         }
 
         setViewedDate();
+
+        /* Do it only once, when overview is loaded for the first time since
+         * the application has started
+         */
+        if(displayCurrentDayEventsNotifications) {
+            notifyAboutCurrentDayEvents();
+            displayCurrentDayEventsNotifications = false;
+        }
     }
 }

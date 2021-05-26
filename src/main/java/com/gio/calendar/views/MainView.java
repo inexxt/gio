@@ -79,8 +79,9 @@ public class MainView extends AppLayout {
     }
 
     private Component[] createMenuItems() {
-        return new Tab[]{createTab("Calendar overview", CalendarOverview.class), createTab("Add event", NewEventView.class),
-                createTab("Add task", NewTaskView.class), createTab("Import/Export Ical", IcalView.class)};
+        return new Tab[]{createTab("Today overview", TodayOverview.class), createTab("Calendar overview", CalendarOverview.class),
+                createTab("Add event", NewEventView.class), createTab("Add task", NewTaskView.class),
+                createTab("Add reminder", NewReminderView.class), createTab("Add note", NewNoteView.class), createTab("Import/Export Ical", IcalView.class)};
     }
 
     private static Tab createTab(String text, Class<? extends Component> navigationTarget) {
