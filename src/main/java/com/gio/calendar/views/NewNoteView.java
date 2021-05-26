@@ -72,6 +72,7 @@ public class NewNoteView extends Div{
         try {
             CalendarNote note = getNoteFromForm();
             CalendarNoteRepository.save(note);
+            Notification.show("Note successfully added!");
         }
         catch(Exception e) {
             handleSqlException(e);
