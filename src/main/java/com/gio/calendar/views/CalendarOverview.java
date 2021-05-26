@@ -18,6 +18,7 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.component.dialog.*;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.server.VaadinService;
+import org.apache.tomcat.jni.Local;
 
 import java.io.IOException;
 import java.sql.*;
@@ -28,12 +29,12 @@ import java.util.*;
 
 
 @Route(value = "overview", layout = MainView.class)
-@RouteAlias(value = "", layout = MainView.class)
 @PageTitle("Calendar overview")
 @CssImport("./views/overview/overview-view.css")
 public class CalendarOverview extends Div {
     private static LocalDate dateToSet = null;
     private static boolean forceDatePickerValue = false;
+    private static boolean displayCurrentDayEventsNotifications = true;
 
     private static final int DAILY_EVENTS_LIMIT = 120;
 
@@ -267,6 +268,20 @@ public class CalendarOverview extends Div {
         targetDatePicker.setValue(dateToSetInPicker);
     }
 
+    private void notifyAboutCurrentDayEvents() {
+        List<CalendarEvent> todayEvents = CalendarEventRepository.findByDate(LocalDate.now());
+
+        if(todayEvents.size() == 0) {
+            Notification.show("No events scheduled for today");
+        }
+        else {
+            Notification.show("Events scheduled for today:");
+            for(CalendarEvent e: todayEvents) {
+                Notification.show("Event " + e.getEventName() + " on " + e.getEventStartTimeString());
+            }
+        }
+    }
+
     public CalendarOverview() {
         addClassName("overview-view");
 
@@ -303,5 +318,13 @@ public class CalendarOverview extends Div {
         }
 
         setViewedDate();
+
+        /* Do it only once, when overview is loaded for the first time since
+         * the application has started
+         */
+        if(displayCurrentDayEventsNotifications) {
+            notifyAboutCurrentDayEvents();
+            displayCurrentDayEventsNotifications = false;
+        }
     }
 }
