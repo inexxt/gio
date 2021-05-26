@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 public class Person {
 
     @Id
-    private String personName;
+    private String personEmail;
 
     @ManyToMany(mappedBy = "eventPeople")
     private Set<CalendarEvent> personEvents;
@@ -20,15 +20,15 @@ public class Person {
     public Person() {
     } // for persistance
 
-    public Person(String personName) {
-        this.personName = personName;
+    public Person(String personEmail) {
+        this.personEmail = personEmail;
     }
 
     public static String peopleToString(Set<Person> people) {
         if (people.isEmpty()) {
             return "None";
         }
-        List<String> ss = people.stream().map(Person::getPersonName).collect(Collectors.toList());
+        List<String> ss = people.stream().map(Person::getPersonEmail).collect(Collectors.toList());
         return String.join(",", ss);
     }
 
@@ -43,21 +43,21 @@ public class Person {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Person person = (Person) o;
-        return Objects.equals(personName, person.personName);
+        return Objects.equals(personEmail, person.personEmail);
     }
 
     @Override
     public String toString() {
-        return personName;
+        return personEmail;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(personName);
+        return Objects.hash(personEmail);
     }
 
-    public String getPersonName() {
-        return personName;
+    public String getPersonEmail() {
+        return personEmail;
     }
 
 }

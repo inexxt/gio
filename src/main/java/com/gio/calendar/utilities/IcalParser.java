@@ -104,7 +104,7 @@ public class IcalParser {
         // Create the date range which is desired.
         LocalDateTime startDate = LocalDateTime.now().plusYears(-1);
         LocalDateTime endDate = LocalDateTime.now().plusYears(1);
-        ZoneId zoneId = ZoneId.of("Europe/Paris");
+        ZoneId zoneId = ZoneId.of(String.valueOf(ZoneId.systemDefault()));
         DateTime from = new DateTime(startDate.atZone(zoneId).toInstant().toEpochMilli());
         DateTime to = new DateTime(endDate.atZone(zoneId).toInstant().toEpochMilli());
 

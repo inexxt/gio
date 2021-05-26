@@ -4,6 +4,7 @@ import com.gio.calendar.models.CalendarEvent;
 import com.gio.calendar.models.Person;
 import com.gio.calendar.models.Tag;
 import com.gio.calendar.persistance.CalendarEventRepository;
+import com.gio.calendar.utilities.EmailSender;
 import com.gio.calendar.utilities.TimeIntervalStringHandler;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -21,6 +22,9 @@ import com.vaadin.flow.component.dependency.CssImport;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
+import javax.mail.*;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 
 @Route(value = "new_event", layout = MainView.class)
 @PageTitle("New event")
@@ -51,7 +55,7 @@ public class NewEventView extends Div {
     private TextArea eventNameArea;
     private TextArea eventDescriptionArea;
     private TextArea tagsField;
-    private TextArea peopleField;
+    private TextArea guestEmails;
     private TextArea eventPlaceField;
     private TextArea eventRepNumField;
     private TextArea eventRepBreakField;
@@ -162,6 +166,7 @@ public class NewEventView extends Div {
         try {
             CalendarEvent event = getEventFromForm(timeUnitDeltaFromOrigin, timeUnitType);
             CalendarEventRepository.save(event);
+            EmailSender.sendReminderEmail(event, false);
         }
         catch(Exception e) {
             handleSqlException(e);
@@ -192,13 +197,15 @@ public class NewEventView extends Div {
                 eventEndTimePicker.getValue(),
                 tagsField.getValue(),
                 eventPlaceField.getValue(),
-                peopleField.getValue());
+                guestEmails.getValue());
     }
 
     private void modifyEventHandler(String eventIdString) {
         Optional<String> err = Optional.empty();
         try {
-            CalendarEventRepository.update(eventIdString, getEventFromForm(0, 0));
+            CalendarEvent event = getEventFromForm(0, 0);
+            CalendarEventRepository.update(eventIdString, event);
+            EmailSender.sendReminderEmail(event, true);
         }
         catch(Exception e) {
             handleSqlException(e);
@@ -248,8 +255,9 @@ public class NewEventView extends Div {
         tagsField = new TextArea("Event tags (optional). Should be separated by coma. Maximum length: " + EVENT_TAGS_CHARACTERS_LIMIT);
         tagsField.setMaxLength(EVENT_TAGS_CHARACTERS_LIMIT);
 
-        peopleField = new TextArea("Guests (optional). A list of guests separated by coma. Maximum length: " + EVENT_TAGS_CHARACTERS_LIMIT);
-        peopleField.setMaxLength(EVENT_TAGS_CHARACTERS_LIMIT);
+        guestEmails = new TextArea("Guests (optional). A list of guests emails separated by coma. " +
+                "Maximum length: " + EVENT_TAGS_CHARACTERS_LIMIT);
+        guestEmails.setMaxLength(EVENT_TAGS_CHARACTERS_LIMIT);
 
         eventPlaceField = new TextArea("Event place (optional). Maximum length: " + EVENT_TAGS_CHARACTERS_LIMIT);
         eventPlaceField.setMaxLength(EVENT_TAGS_CHARACTERS_LIMIT);
@@ -293,7 +301,7 @@ public class NewEventView extends Div {
         eventRepetitionsDivLayout.add(eventRepDiv);
         eventRepetitionsLayout.addAndExpand(eventRepNumField, eventRepBreakField);
         eventMiscDataDivLayout.add(eventMiscDataDiv);
-        eventMiscDataLayout.addAndExpand(tagsField, peopleField, eventPlaceField);
+        eventMiscDataLayout.addAndExpand(tagsField, guestEmails, eventPlaceField);
     }
 
     private void insertViewComponents() {
@@ -339,6 +347,19 @@ public class NewEventView extends Div {
         });
     }
 
+    private static boolean validateGuestsEmails(String guestEmails) {
+        boolean result = true;
+        for(String email: guestEmails.split(",")) {
+            try {
+                InternetAddress emailAddr = new InternetAddress(email);
+                emailAddr.validate();
+            } catch (AddressException ex) {
+                result = false;
+            }
+        }
+        return result;
+    }
+
     private void setValuesIfNecessary(String eventIdString) {
         if (eventIdString != null) {
             Optional<CalendarEvent> event = Optional.empty();
@@ -356,7 +377,7 @@ public class NewEventView extends Div {
                 eventDatePicker.setValue(event.get().getEventDate());
                 eventPlaceField.setValue(event.get().getEventPlace());
                 tagsField.setValue(Tag.tagsToString(event.get().getEventTags()));
-                peopleField.setValue(Person.peopleToString(event.get().getEventPeople()));
+                guestEmails.setValue(Person.peopleToString(event.get().getEventPeople()));
                 /* Disable options of event repetitions */
                 eventRepNumField.setEnabled(false);
                 eventRepBreakField.setEnabled(false);
@@ -378,6 +399,8 @@ public class NewEventView extends Div {
         initialiseDivs();
         initialiseLayouts();
         insertViewComponents();
+
+        EmailSender.initialize();
 
         setValuesIfNecessary(eventIdString);
         addCreateButtonListener(eventIdString);
