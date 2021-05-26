@@ -1,7 +1,9 @@
 package com.gio.calendar.views;
 
 import com.gio.calendar.models.CalendarEvent;
+import com.gio.calendar.models.CalendarNote;
 import com.gio.calendar.persistance.CalendarEventRepository;
+import com.gio.calendar.persistance.CalendarNoteRepository;
 import com.gio.calendar.scheduling.SchedulingDetails;
 import com.gio.calendar.scheduling.SchedulingHeuristic;
 import com.gio.calendar.scheduling.SchedulingHeuristicManager;
@@ -63,35 +65,22 @@ public class NewNoteView extends Div{
         Notification.show("SQLException occurred: " + Arrays.toString(e.getStackTrace()));
     }
 
-    private static void handleTaskSchedulingFailure(String taskName) {
-        Notification.show("Task occurrence for " + taskName  + " can not be created with this heuristic!");
-    }
-
-    private static void handleTaskSchedulingSuccess(List<CalendarEvent> events) {
-        for (CalendarEvent event : events) {
-            CalendarEventRepository.save(event);
-            Notification.show("Task occurrence for " + event.getEventName() + " was created!");
-        }
-    }
-
-    private LocalDate increaseByUnitType(char timeUnitType, LocalDate day, int timeUnits) {
-        if(timeUnitType == 'D') {
-            day = day.plusDays(timeUnits);
-        }
-        else if(timeUnitType == 'W') {
-            day = day.plusWeeks(timeUnits);
-        }
-        else if(timeUnitType == 'M') {
-            day = day.plusMonths(timeUnits);
-        }
-        else {
-            day = day.plusYears(timeUnits);
-        }
-        return day;
+    private CalendarNote getNoteFromForm() {
+        return new CalendarNote(
+                noteNameArea.getValue(),
+                noteDescriptionArea.getValue(),
+                noteDatePicker.getValue(),
+                tagsField.getValue());
     }
 
     private void addNoteHandler() {
-        //TODO
+        try {
+            CalendarNote note = getNoteFromForm();
+            CalendarNoteRepository.save(note);
+        }
+        catch(Exception e) {
+            handleSqlException(e);
+        }
     }
 
     private void clearForm() {
