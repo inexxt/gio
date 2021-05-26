@@ -44,7 +44,7 @@ public class EmailSender {
 
             Transport transport;
             transport = session.getTransport("smtp");
-            transport.connect("smtp.gmail.com", username, password);
+            transport.connect("smtp.mailtrap.io", username, password);
             Address[] addresses = new Address[1];
             addresses[0] = new InternetAddress(to);
             transport.sendMessage(message, addresses);
