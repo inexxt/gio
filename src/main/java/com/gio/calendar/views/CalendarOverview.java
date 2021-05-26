@@ -95,16 +95,17 @@ public class CalendarOverview extends Div {
             LocalDateTime st = e.getEventDate().atTime(e.getEventStartTime());
             LocalDateTime et = e.getEventDate().atTime(e.getEventEndTime());
 
-            SimpleDateFormat sfd = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-            ZonedDateTime zonedStartTime = st.atZone(ZoneId.systemDefault());
-            ZonedDateTime zonedEndTime = et.atZone(ZoneId.systemDefault());
+            ZonedDateTime zonedStartTime = ZonedDateTime.of(st, ZoneId.of("UTC"));
+            ZonedDateTime zonedEndTime = ZonedDateTime.of(et, ZoneId.of("UTC"));
 
             textLabels[0] = new Label("Name: " + e.getEventName());
             textLabels[1] = new Label("Description: " + e.getEventDescription());
             textLabels[2] = new Label("Start time: " + e.getEventStartTimeString() +
-                    " (your current timezone: " + sfd.format(zonedStartTime) + ")");
+                    " (your current timezone: " +
+                    TimeDateUtils.zonedTimeToString(zonedStartTime.withZoneSameInstant(ZoneId.systemDefault())) + ")");
             textLabels[3] = new Label("End time: " + e.getEventEndTimeString() +
-                    " (your current timezone: " + sfd.format(zonedEndTime) + ")");
+                    " (your current timezone: " +
+                    TimeDateUtils.zonedTimeToString(zonedEndTime.withZoneSameInstant(ZoneId.systemDefault())) + ")");
             textLabels[4] = new Label("Tags: " + Tag.tagsToString(e.getEventTags()));
             textLabels[5] = new Label("Place: " + e.getEventPlace());
             textLabels[6] = new Label("Guests: " + Person.peopleToString(e.getEventPeople()));
