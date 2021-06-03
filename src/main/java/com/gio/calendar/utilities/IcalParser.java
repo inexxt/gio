@@ -129,7 +129,7 @@ public class IcalParser {
 
         // Create a TimeZone
         TimeZoneRegistry registry = TimeZoneRegistryFactory.getInstance().createRegistry();
-        TimeZone timezone = registry.getTimeZone("Europe/Paris");
+        TimeZone timezone = registry.getTimeZone(String.valueOf(ZoneId.systemDefault()));
         VTimeZone tz = timezone.getVTimeZone();
 
 
