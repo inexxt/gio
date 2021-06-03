@@ -72,9 +72,8 @@ public class IcalParser {
         }
     }
 
-    private static java.util.Calendar getDate(LocalDate date, TimeZone timezone, LocalTime time) {
+    private static java.util.Calendar getDate(LocalDate date, LocalTime time) {
         java.util.Calendar outDate = new GregorianCalendar();
-        outDate.setTimeZone(timezone);
         outDate.set(java.util.Calendar.MONTH, date.getMonthValue() - 1);
         outDate.set(java.util.Calendar.DAY_OF_MONTH, date.getDayOfMonth());
         outDate.set(java.util.Calendar.YEAR, date.getYear());
@@ -134,16 +133,13 @@ public class IcalParser {
 
 
         for (CalendarEvent event : events) {
-            java.util.Calendar startDate = getDate(event.getEventDate(), timezone, event.getEventStartTime());
-            java.util.Calendar endDate = getDate(event.getEventDate(), timezone, event.getEventEndTime());
+            java.util.Calendar startDate = getDate(event.getEventDate(), event.getEventStartTime());
+            java.util.Calendar endDate = getDate(event.getEventDate(), event.getEventEndTime());
 
             String eventName = event.getEventName();
             DateTime start = new DateTime(startDate.getTime());
             DateTime end = new DateTime(endDate.getTime());
             VEvent meeting = new VEvent(start, end, eventName);
-
-            // add timezone info..
-            meeting.getProperties().add(tz.getTimeZoneId());
 
             // generate unique identifier..
             Uid uid;
