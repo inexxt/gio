@@ -96,8 +96,15 @@ public class IcalParserTest {
         InputStream input = IcalParser.exportEvents(events);
         try {
             List<CalendarEvent> exported = IcalParser.parseFile(input);
-            assertEquals(1, exported.size());
-            assertTrue(calendarEvent.compareWithoutId(exported.get(0)));
+            CalendarEvent e = exported.get(0);
+            assertEquals(e.getEventDate(), (calendarEvent.getEventDate()));
+            assertEquals(e.getEventStartTime(), calendarEvent.getEventStartTime());
+            assertEquals(e.getEventEndTime(), (calendarEvent.getEventEndTime()));
+            assertEquals(e.getEventTags(), (calendarEvent.getEventTags()));
+            assertEquals(e.getEventPeople(), (calendarEvent.getEventPeople()));
+            assertEquals(e.getEventDescription(), (calendarEvent.getEventDescription()));
+            assertEquals(e.getEventName(), (calendarEvent.getEventName()));
+            assertEquals(e.getEventPlace(), (calendarEvent.getEventPlace()));
         }
         catch (Exception e) {
             fail();
