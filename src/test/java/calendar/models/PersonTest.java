@@ -1,7 +1,6 @@
 package calendar.models;
 
 import com.gio.calendar.models.Person;
-import com.gio.calendar.models.Tag;
 
 import java.util.HashSet;
 
@@ -12,7 +11,7 @@ public class PersonTest {
     @org.junit.Test
     public void getPersonDetails() {
         Person t = new Person("abcd");
-        assertEquals(t.getPersonName(), "abcd");
+        assertEquals(t.getPersonEmail(), "abcd");
     }
 
     @org.junit.Test
