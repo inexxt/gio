@@ -408,8 +408,6 @@ public class NewEventView extends Div {
         initialiseLayouts();
         insertViewComponents();
 
-        EmailSender.initialize();
-
         setValuesIfNecessary(eventIdString);
         addCreateButtonListener(eventIdString);
     }
