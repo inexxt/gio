@@ -7,6 +7,7 @@ import com.gio.calendar.models.Tag;
 import com.gio.calendar.persistance.CalendarEventRepository;
 import com.gio.calendar.utilities.TimeDateUtils;
 import com.gio.calendar.persistance.CalendarNoteRepository;
+import com.gio.calendar.utilities.TimeZoneUtils;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.notification.Notification;
@@ -165,22 +166,14 @@ public class CalendarOverview extends Div {
                 breakLabels[i].setHeight("0.1px");
             }
 
-            /* Set up text labels
-             */
-            LocalDateTime st = e.getEventDate().atTime(e.getEventStartTime());
-            LocalDateTime et = e.getEventDate().atTime(e.getEventEndTime());
-
-            ZonedDateTime zonedStartTime = ZonedDateTime.of(st, ZoneId.of("UTC"));
-            ZonedDateTime zonedEndTime = ZonedDateTime.of(et, ZoneId.of("UTC"));
-
             textLabels[0] = new Label("Name: " + e.getEventName());
             textLabels[1] = new Label("Description: " + e.getEventDescription());
             textLabels[2] = new Label("Start time: " + e.getEventStartTimeString() +
                     " (your current timezone: " +
-                    TimeDateUtils.zonedTimeToString(zonedStartTime.withZoneSameInstant(ZoneId.systemDefault())) + ")");
+                    TimeDateUtils.zonedTimeToString(TimeZoneUtils.atSystemTimezone(e.getEventStartTime(), e.getEventDate())) + ")");
             textLabels[3] = new Label("End time: " + e.getEventEndTimeString() +
                     " (your current timezone: " +
-                    TimeDateUtils.zonedTimeToString(zonedEndTime.withZoneSameInstant(ZoneId.systemDefault())) + ")");
+                    TimeDateUtils.zonedTimeToString(TimeZoneUtils.atSystemTimezone(e.getEventEndTime(), e.getEventDate())) + ")");
             textLabels[4] = new Label("Tags: " + Tag.tagsToString(e.getEventTags()));
             textLabels[5] = new Label("Place: " + e.getEventPlace());
             textLabels[6] = new Label("Guests: " + Person.peopleToString(e.getEventPeople()));

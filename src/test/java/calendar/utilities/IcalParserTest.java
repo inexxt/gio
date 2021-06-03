@@ -2,6 +2,7 @@ package calendar.utilities;
 
 import com.gio.calendar.models.CalendarEvent;
 import com.gio.calendar.utilities.IcalParser;
+import com.gio.calendar.utilities.TimeZoneUtils;
 import net.fortuna.ical4j.model.DateTime;
 import net.fortuna.ical4j.model.TimeZone;
 import net.fortuna.ical4j.model.TimeZoneRegistry;
@@ -15,6 +16,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -26,9 +28,8 @@ import static org.junit.Assert.assertTrue;
 
 public class IcalParserTest {
 
-    private java.util.Calendar getDate(int month, int day, int year, int hour, int minute, int second, TimeZone timezone) {
+    private java.util.Calendar getDate(int month, int day, int year, int hour, int minute, int second) {
         java.util.Calendar date = new GregorianCalendar();
-        date.setTimeZone(timezone);
         date.set(java.util.Calendar.MONTH, month);
         date.set(java.util.Calendar.DAY_OF_MONTH, day);
         date.set(java.util.Calendar.YEAR, year);
@@ -41,13 +42,12 @@ public class IcalParserTest {
     private net.fortuna.ical4j.model.Calendar getCalendar() {
         // Create a TimeZone
         TimeZoneRegistry registry = TimeZoneRegistryFactory.getInstance().createRegistry();
-        TimeZone timezone = registry.getTimeZone("Europe/Paris");
 
         // Start Date is on: April 1, currentYear, 9:00 am
-        java.util.Calendar startDate = getDate(java.util.Calendar.APRIL, 1, LocalDate.now().getYear(), 9, 0, 0, timezone);
+        java.util.Calendar startDate = getDate(Calendar.JUNE, 3, LocalDate.now().getYear(), 9, 0, 0);
 
         // End Date is on: April 1, currentYear, 13:00
-        java.util.Calendar endDate = getDate(Calendar.APRIL, 1, LocalDate.now().getYear(), 13, 0, 0, timezone);
+        java.util.Calendar endDate = getDate(Calendar.JUNE, 3, LocalDate.now().getYear(), 13, 0, 0);
 
         // Create the event
         String eventName = "Progress Meeting";
@@ -70,7 +70,7 @@ public class IcalParserTest {
     @org.junit.Test
     public void testFileParser() {
         net.fortuna.ical4j.model.Calendar icsCalendar = getCalendar();
-        LocalDate date = LocalDate.of(LocalDate.now().getYear(), 4, 1);
+        LocalDate date = LocalDate.of(LocalDate.now().getYear(), 6, 3);
         LocalTime timeStart = LocalTime.of(9, 0, 0);
         LocalTime endTime = LocalTime.of(13, 0, 0);
         CalendarEvent calendarEvent = new CalendarEvent("Progress Meeting", "description", date, timeStart, endTime, "", "", "");
