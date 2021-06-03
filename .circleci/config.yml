@@ -6,9 +6,12 @@ orbs:
 
 jobs:
   build:
+
     docker:
       # specify the version you desire here
       - image: circleci/openjdk:11-jdk
+        environment:
+          TZ: "UTC"
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -20,6 +23,7 @@ jobs:
     environment:
       # Customize the JVM maximum heap limit
       MAVEN_OPTS: -Xmx3200m
+      TZ: "UTC"
 
     steps:
       - checkout
