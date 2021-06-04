@@ -8,6 +8,8 @@ import com.gio.calendar.persistance.CalendarEventRepository;
 import com.gio.calendar.utilities.TimeDateUtils;
 import com.gio.calendar.persistance.CalendarNoteRepository;
 import com.gio.calendar.utilities.TimeZoneUtils;
+import com.helger.commons.io.IHasOutputStreamAndWriter;
+import com.vaadin.flow.component.charts.model.HorizontalAlign;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.notification.Notification;
@@ -19,6 +21,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.dialog.*;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.server.VaadinService;
@@ -41,27 +44,28 @@ public class CalendarOverview extends Div {
     private static boolean forceDatePickerValue = false;
     private static boolean displayCurrentDayEventsNotifications = true;
 
+    private static final int OPT_DAILY = 0;
+    private static final int OPT_WEEKLY = 1;
+    private static final int OPT_MONTHLY = 2;
+
+    private static int overviewType = OPT_DAILY; /* Default - daily overview */
+
     private static final int DAILY_EVENTS_LIMIT = 120;
 
-    private final DatePicker targetDatePicker;
-    private final HorizontalLayout datePickerLayout;
-    private final VerticalLayout[] infoLayouts;
-    private List<CalendarEvent> eventsList;
-    private List<CalendarNote> notesList;
+    private DatePicker targetDatePicker = null;
 
-    /*  Collects information from database about events and notes that user has planned for the day on
-     *  the date chosen in targetDatePicker
-     */
-    private void getInfo() throws SQLException {
-        LocalDate targetDateStart = targetDatePicker.getValue();
-        eventsList = CalendarEventRepository.findByDate(targetDateStart);
-        notesList = CalendarNoteRepository.findByDate(targetDateStart);
-    }
+    private static final List<String> dayLabels = Arrays.asList("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
+    private Select<String> overviewOptionsSelect;
+
 
     /* Sets notes info for display on page.
      */
-    private void setNotesInfo(int notesIndex) {
+    private void setNotesInfo(int notesIndex, VerticalLayout[] infoLayouts, List<CalendarNote> notesList) {
         int notesNo = 1;
+
+        if(notesList.size() == 0) {
+            infoLayouts[notesIndex].add(new Label("No notes for specified day"));
+        }
 
         for (CalendarNote e : notesList) {
             /* Note tag displaying information in format "Note + n" where n is
@@ -133,9 +137,16 @@ public class CalendarOverview extends Div {
      * that can (as well as successive layouts in array) be further filled
      * with informations about tasks scheduled for specified day
      */
-    private int setEventsInfo() {
+    private int setEventsInfo(VerticalLayout[] infoLayouts, List<CalendarEvent> eventsList) {
         int eventIndex = 0;
         int eventNo = 1;
+
+        if(eventsList.size() == 0) {
+            infoLayouts[eventIndex].add(new Label("No events scheduled for specified day"));
+            eventIndex++;
+
+            return eventIndex;
+        }
 
         eventsList.sort(Comparator.comparing(CalendarEvent::getEventStartTime));
 
@@ -343,83 +354,27 @@ public class CalendarOverview extends Div {
         });
     }
 
-    private void dateChangeHandler() throws SQLException, IOException, ClassNotFoundException {
-        getInfo();
-
-        /*  Clear layouts which display information about the events */
-        for (int i = 0; i < 2 * DAILY_EVENTS_LIMIT; i++) {
-            /* Check if current layout is used (contains at least one component) and
-             * clear it then
-             */
-            if (infoLayouts[i].getComponentCount() > 0) {
-                infoLayouts[i].removeAll();
-            }
-            /* Break from the loop as remaining layouts are not used at all
-             */
-            else if (infoLayouts[i].getComponentCount() == 0) {
-                break;
-            }
-        }
-
-        int notesInfoStartingIndex = 1;
-
-        /* Display appropriate message instead of events data when no events are scheduled
-         * for the specified day
-         */
-        if (eventsList.isEmpty()) {
-            Label noEventsInfoLabel = new Label("No events on specified date.");
-            noEventsInfoLabel.setWidth(null);
-            noEventsInfoLabel.setHeight("5px");
-
-            infoLayouts[0].add(noEventsInfoLabel);
-        }
-        /* Display information about the tasks scheduled for specified day and obtain
-         * (return value) the index of first non-used layout that can store tasks data
-         */
-        else {
-            notesInfoStartingIndex = setEventsInfo();
-        }
-        
-        if (notesList.isEmpty()) {
-            Label noNotesInfoLabel = new Label("No notes on specified date.");
-            noNotesInfoLabel.setWidth(null);
-            noNotesInfoLabel.setHeight("5px");
-            infoLayouts[notesInfoStartingIndex].add(noNotesInfoLabel);
-        }
-        else {
-            setNotesInfo(notesInfoStartingIndex);
-        }
-    }
-
-    private void setViewedDate() {
+    private LocalDate getDateToView() {
         if (forceDatePickerValue) {
-            targetDatePicker.setValue(dateToSet);
-            /* Now after the value has been changed, the valueChangeListener associated
-             * with the targetDatePicker object will do its action
-             */
-
-            /* Restore original flags values for further possible deletions of events
-             */
             forceDatePickerValue = false;
-            dateToSet = null;
-            return; /* nothing more to do */
+            return dateToSet;
         }
 
         String passedDateString = VaadinService.getCurrentRequest().getParameter("date");
-        LocalDate dateToSetInPicker = LocalDate.now();
+        LocalDate dateToReturn = LocalDate.now();
 
         if(passedDateString != null) {
             DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
             try {
-                dateToSetInPicker = LocalDate.parse(passedDateString, dateFormatter);
+                dateToReturn = LocalDate.parse(passedDateString, dateFormatter);
             }
             catch(DateTimeParseException e) {
                 /* suppress */
             }
         }
 
-        targetDatePicker.setValue(dateToSetInPicker);
+        return dateToReturn;
     }
 
     private void notifyAboutCurrentDayEvents() {
@@ -436,47 +391,192 @@ public class CalendarOverview extends Div {
         }
     }
 
+    private void initialiseDatePickerDaily() {
+        targetDatePicker.addValueChangeListener(e -> {
+            if(targetDatePicker.getValue() != null) {
+                renderDailyOverview(targetDatePicker.getValue());
+            }
+        });
+    }
+
+    private void initialiseDatePickerWeekly() {
+        targetDatePicker.addValueChangeListener(e -> {
+            if(targetDatePicker.getValue() != null) {
+                renderWeeklyOverview(targetDatePicker.getValue());
+            }
+        });
+    }
+
+    private void initialiseDatePickerMonthly() {
+        targetDatePicker.addValueChangeListener(e -> {
+            if(targetDatePicker.getValue() != null) {
+                renderMonthlyOverview(targetDatePicker.getValue());
+            }
+        });
+    }
+
+    private void renderDailyOverview(LocalDate targetDate) {
+        removeAll();
+        addBasicComponentsAfresh();
+        initialiseDatePickerDaily();
+
+        List<CalendarEvent> eventsOnDate = CalendarEventRepository.findByDate(targetDate);
+        List<CalendarNote> notesOnDate = CalendarNoteRepository.findByDate(targetDate);
+
+        int layoutsCount = eventsOnDate.size() + notesOnDate.size();
+
+        if(eventsOnDate.size() == 0) {
+            layoutsCount++;
+        }
+
+        if(notesOnDate.size() == 0) {
+            layoutsCount++;
+        }
+
+        VerticalLayout[] layoutsArray = new VerticalLayout[layoutsCount];
+
+        /* Instantiate the vertical layouts in array */
+        for(int i = 0; i < layoutsCount; ++i) {
+            layoutsArray[i] = new VerticalLayout();
+        }
+
+        int firstForNotes = setEventsInfo(layoutsArray, eventsOnDate);
+        setNotesInfo(firstForNotes, layoutsArray, notesOnDate);
+
+        for(VerticalLayout v: layoutsArray) {
+            add(v);
+        }
+    }
+
+    private void renderMonthlyOverview(LocalDate targetDate) {
+        removeAll();
+        addBasicComponentsAfresh();
+        initialiseDatePickerMonthly();
+
+
+    }
+
+    private void renderWeeklyOverview(LocalDate targetDate) {
+        removeAll();
+        addBasicComponentsAfresh();
+        initialiseDatePickerWeekly();
+
+        HorizontalLayout weekLayout = new HorizontalLayout();
+
+        int dayNumber = targetDate.getDayOfWeek().getValue();
+
+        for(int i = 0; i < 7; ++i) {
+            VerticalLayout currentDayLayout = new VerticalLayout();
+
+            LocalDate dayDate = targetDate.plusDays(i + 1 - dayNumber);
+
+            Button dayButton = new Button();
+            dayButton.setText(dayLabels.get(i) + ", " + dayDate);
+
+            dayButton.addClickListener(e -> {
+                targetDatePicker.setValue(dayDate);
+                overviewOptionsSelect.setValue("Daily");
+            });
+
+            currentDayLayout.add(dayButton);
+
+            List<CalendarEvent> eventsForCurrentDay = CalendarEventRepository.findByDate(dayDate);
+
+            if(eventsForCurrentDay.size() != 0) {
+                currentDayLayout.add(new Label("Events scheduled:"));
+
+                for(CalendarEvent c: eventsForCurrentDay) {
+                    currentDayLayout.add(new Label(c.getEventName()));
+                }
+            }
+            else {
+                currentDayLayout.add(new Label("No events"));
+            }
+
+            List<CalendarNote> notesForCurrentDay = CalendarNoteRepository.findByDate(dayDate);
+
+            if(notesForCurrentDay.size() != 0) {
+                currentDayLayout.add(new Label("Notes:"));
+
+                for(CalendarNote n: notesForCurrentDay) {
+                    currentDayLayout.add(new Label(n.getNoteName()));
+                }
+            }
+            else {
+                currentDayLayout.add(new Label("No notes"));
+            }
+
+            weekLayout.add(currentDayLayout);
+        }
+
+        add(weekLayout);
+    }
+
+
+    private void initialiseSelect() {
+        overviewOptionsSelect = new Select<>();
+
+        overviewOptionsSelect.setLabel("Overview type");
+        overviewOptionsSelect.setItems("Daily", "Weekly", "Monthly");
+
+        overviewOptionsSelect.addValueChangeListener(e -> {
+            String selectValue = overviewOptionsSelect.getValue();
+            if(selectValue != null && targetDatePicker.getValue() != null) {
+                if(selectValue.compareTo("Daily") == 0) {
+                    overviewType = OPT_DAILY;
+                    renderDailyOverview(targetDatePicker.getValue());
+                }
+                else if(selectValue.compareTo("Weekly") == 0) {
+                    overviewType = OPT_WEEKLY;
+                    renderWeeklyOverview(targetDatePicker.getValue());
+                }
+                else {
+                    overviewType = OPT_MONTHLY;
+                    renderMonthlyOverview(targetDatePicker.getValue());
+                }
+            }
+        });
+    }
+
+    private void addBasicComponentsAfresh() {
+        HorizontalLayout forBasicComponents = new HorizontalLayout(overviewOptionsSelect,
+                                                                   targetDatePicker);
+        add(forBasicComponents);
+    }
+
+    private void addBasicComponents() {
+        HorizontalLayout forBasicComponents = new HorizontalLayout();
+
+        initialiseSelect();
+
+        targetDatePicker = new DatePicker();
+        targetDatePicker.setLabel("Select date to view");
+
+        forBasicComponents.add(overviewOptionsSelect, targetDatePicker);
+
+        add(forBasicComponents);
+    }
+
     public CalendarOverview() {
         addClassName("overview-view");
-
-        eventsList = new ArrayList<>();
-        notesList = new ArrayList<>();
 
         Notification.show("Establishing connection to db and initializing data");
         Notification.show("Connection established");
 
-        datePickerLayout = new HorizontalLayout();
+        addBasicComponents();
 
-        targetDatePicker = new DatePicker();
-        targetDatePicker.setLabel("Choose date to view");
+        targetDatePicker.setValue(getDateToView());
 
-        targetDatePicker.addValueChangeListener(e -> {
-            if (targetDatePicker.getValue() != null) {
-                eventsList.clear();
-                notesList.clear();
-                try {
-                    dateChangeHandler();
-                } catch (SQLException | ClassNotFoundException | IOException throwables) {
-                    throwables.printStackTrace();
-                }
-            }
-        });
-
-        datePickerLayout.addAndExpand(targetDatePicker);
-        add(datePickerLayout);
-
-        infoLayouts = new VerticalLayout[2 * DAILY_EVENTS_LIMIT];
-
-        for (int i = 0; i < 2 * DAILY_EVENTS_LIMIT; ++i) {
-            infoLayouts[i] = new VerticalLayout();
-            add(infoLayouts[i]);
+        if(overviewType == OPT_DAILY) {
+            overviewOptionsSelect.setValue("Daily");
+        }
+        else if(overviewType == OPT_WEEKLY) {
+            overviewOptionsSelect.setValue("Weekly");
+        }
+        else if(overviewType == OPT_MONTHLY) {
+            overviewOptionsSelect.setValue("Monthly");
         }
 
-        setViewedDate();
-
-        /* Do it only once, when overview is loaded for the first time since
-         * the application has started
-         */
         if(displayCurrentDayEventsNotifications) {
             notifyAboutCurrentDayEvents();
             displayCurrentDayEventsNotifications = false;
