@@ -8,8 +8,10 @@ import com.gio.calendar.persistance.CalendarEventRepository;
 import com.gio.calendar.utilities.TimeDateUtils;
 import com.gio.calendar.persistance.CalendarNoteRepository;
 import com.gio.calendar.utilities.TimeZoneUtils;
-import com.helger.commons.io.IHasOutputStreamAndWriter;
-import com.vaadin.flow.component.charts.model.HorizontalAlign;
+
+import com.vaadin.flow.component.board.Board;
+import com.vaadin.flow.component.board.Row;
+import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.notification.Notification;
@@ -20,16 +22,11 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.dialog.*;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.server.VaadinService;
-import org.apache.tomcat.jni.Local;
 
-import java.io.IOException;
-import java.sql.*;
-import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -50,13 +47,10 @@ public class CalendarOverview extends Div {
 
     private static int overviewType = OPT_DAILY; /* Default - daily overview */
 
-    private static final int DAILY_EVENTS_LIMIT = 120;
-
-    private DatePicker targetDatePicker = null;
+    private DatePicker targetDatePicker;
 
     private static final List<String> dayLabels = Arrays.asList("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
     private Select<String> overviewOptionsSelect;
-
 
     /* Sets notes info for display on page.
      */
@@ -448,14 +442,6 @@ public class CalendarOverview extends Div {
         }
     }
 
-    private void renderMonthlyOverview(LocalDate targetDate) {
-        removeAll();
-        addBasicComponentsAfresh();
-        initialiseDatePickerMonthly();
-
-
-    }
-
     private void renderWeeklyOverview(LocalDate targetDate) {
         removeAll();
         addBasicComponentsAfresh();
@@ -486,7 +472,10 @@ public class CalendarOverview extends Div {
                 currentDayLayout.add(new Label("Events scheduled:"));
 
                 for(CalendarEvent c: eventsForCurrentDay) {
-                    currentDayLayout.add(new Label(c.getEventName()));
+                    Label forCurrentEvent = new Label(c.getEventName());
+                    forCurrentEvent.setTitle(c.getEventDescription());
+
+                    currentDayLayout.add(forCurrentEvent);
                 }
             }
             else {
@@ -499,7 +488,10 @@ public class CalendarOverview extends Div {
                 currentDayLayout.add(new Label("Notes:"));
 
                 for(CalendarNote n: notesForCurrentDay) {
-                    currentDayLayout.add(new Label(n.getNoteName()));
+                    Label forCurrentNote = new Label(n.getNoteName());
+                    forCurrentNote.setTitle(n.getNoteDescription());
+
+                    currentDayLayout.add(forCurrentNote);
                 }
             }
             else {
@@ -512,6 +504,83 @@ public class CalendarOverview extends Div {
         add(weekLayout);
     }
 
+    private void addDayLabelsInMonthlyOverview() {
+        HorizontalLayout forDaysLabels = new HorizontalLayout();
+
+        for(int i = 0; i < 7; ++i) {
+            forDaysLabels.add(new VerticalLayout(new Label(dayLabels.get(i))));
+        }
+
+        add(forDaysLabels);
+    }
+
+    private void renderMonthlyOverview(LocalDate targetDate) {
+        removeAll();
+        addBasicComponentsAfresh();
+        initialiseDatePickerMonthly();
+
+        addDayLabelsInMonthlyOverview();
+
+        boolean continueInserting = true;
+
+        int currentMonthValue = targetDate.getMonthValue();
+
+        int whichDayInMonth = targetDate.getDayOfMonth();
+
+        LocalDate dateCopy = targetDate.minusDays(whichDayInMonth - 1);
+
+        int whichDayInWeek = dateCopy.getDayOfWeek().getValue();
+        
+        while(continueInserting) {
+            HorizontalLayout currentRow = new HorizontalLayout();
+
+            for(int i = 0; i < 7; ++i) {
+                VerticalLayout forCurrentDay = new VerticalLayout();
+
+                LocalDate iterationDate = dateCopy.plusDays(i + 1 - whichDayInWeek);
+
+                if(iterationDate.getMonthValue() == currentMonthValue) {
+                    Button currentDayButton = new Button();
+
+                    Integer dayNumber = iterationDate.getDayOfMonth();
+
+                    currentDayButton.setText(dayNumber.toString());
+                    currentDayButton.addClickListener(e -> {
+
+                        targetDatePicker.setValue(iterationDate);
+                        overviewOptionsSelect.setValue("Daily");
+                    });
+
+
+                    Label[] labelsForDay = { new Label(""), new Label("") };
+                    int labelIndex = 0;
+
+                    int numberOfEventsForCurrentDay = CalendarEventRepository.findByDate(iterationDate).size();
+                    int numberOfNotesForCurrentDay = CalendarNoteRepository.findByDate(iterationDate).size();
+
+                    if(numberOfEventsForCurrentDay != 0) {
+                        labelsForDay[labelIndex].setText("Events: " + numberOfEventsForCurrentDay);
+                        labelIndex++;
+                    }
+
+                    if(numberOfNotesForCurrentDay != 0) {
+                        labelsForDay[labelIndex].setText("Notes: " + numberOfNotesForCurrentDay);
+                    }
+
+                    forCurrentDay.add(currentDayButton, labelsForDay[0], labelsForDay[1]);
+                }
+
+                currentRow.add(forCurrentDay);
+            }
+
+            add(currentRow);
+
+            dateCopy = dateCopy.plusWeeks(1);
+
+            continueInserting = (dateCopy.minusDays(whichDayInWeek - 1).getMonthValue() ==
+                                 targetDate.getMonthValue());
+        }
+    }
 
     private void initialiseSelect() {
         overviewOptionsSelect = new Select<>();
