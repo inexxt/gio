@@ -15,13 +15,15 @@ $_documentContainer.innerHTML = `
 
 document.head.appendChild($_documentContainer.content);
 
-function applyTheme() {
-    let theme = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    document.documentElement.setAttribute("theme", theme);
+window.changeColor = function() {
+    if (typeof changeColor.color == 'undefined')
+        changeColor.color = 'dark';
+    else if (changeColor.color == 'dark')
+        changeColor.color = 'light';
+    else
+        changeColor.color = 'dark';
+
+    document.documentElement.setAttribute("theme", changeColor.color);
 }
-
-matchMedia("(prefers-color-scheme: dark)").addEventListener("change", applyTheme);
-
-applyTheme();
 
 
