@@ -8,10 +8,6 @@ import com.gio.calendar.persistance.CalendarEventRepository;
 import com.gio.calendar.utilities.TimeDateUtils;
 import com.gio.calendar.persistance.CalendarNoteRepository;
 import com.gio.calendar.utilities.TimeZoneUtils;
-
-import com.vaadin.flow.component.board.Board;
-import com.vaadin.flow.component.board.Row;
-import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.notification.Notification;
@@ -26,6 +22,7 @@ import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.dialog.*;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.server.VaadinService;
+
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -530,7 +527,7 @@ public class CalendarOverview extends Div {
         LocalDate dateCopy = targetDate.minusDays(whichDayInMonth - 1);
 
         int whichDayInWeek = dateCopy.getDayOfWeek().getValue();
-        
+
         while(continueInserting) {
             HorizontalLayout currentRow = new HorizontalLayout();
 
