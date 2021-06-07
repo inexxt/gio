@@ -14,3 +14,16 @@ $_documentContainer.innerHTML = `
 `;
 
 document.head.appendChild($_documentContainer.content);
+
+window.changeColor = function() {
+    if (typeof changeColor.color == 'undefined')
+        changeColor.color = 'dark';
+    else if (changeColor.color == 'dark')
+        changeColor.color = 'light';
+    else
+        changeColor.color = 'dark';
+
+    document.documentElement.setAttribute("theme", changeColor.color);
+}
+
+

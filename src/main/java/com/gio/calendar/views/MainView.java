@@ -4,11 +4,14 @@ import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.avatar.Avatar;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -31,6 +34,7 @@ public class MainView extends AppLayout {
 
     private final Tabs menu;
     private H1 viewTitle;
+    private Button changeColor;
 
     public MainView() {
         setPrimarySection(Section.DRAWER);
@@ -65,7 +69,11 @@ public class MainView extends AppLayout {
         logoLayout.setAlignItems(FlexComponent.Alignment.CENTER);
         logoLayout.add(new Image("images/logo.png", "My App logo"));
         logoLayout.add(new H1("Auto calendar"));
-        layout.add(logoLayout, menu);
+        changeColor = new Button("Change color");
+        changeColor.addClickListener(e -> {
+            UI.getCurrent().getPage().executeJs("changeColor()");
+        });
+        layout.add(logoLayout, menu, changeColor);
         return layout;
     }
 
