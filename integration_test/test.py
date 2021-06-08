@@ -291,8 +291,4 @@ class CalendarTests(unittest.TestCase):
         self.driver = webdriver.Chrome()
 
 if __name__ == "__main__":
-    subprocess.Popen(["rm","-f","../Autocalendar_db.mv.db"])
-    sleep(1)
-    # subprocess.Popen(["cd", "..", "&&", "mvn"], shell=True)
-    # sleep(30)
     unittest.main()
