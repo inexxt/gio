@@ -33,6 +33,10 @@ public class NewReminderView extends Div {
 
     private Button addButton;
 
+    /**
+     * Initialises details of specified components
+     * (date picker, time picker, text area, button).
+     */
     private void initialiseDetails() {
         reminderDatePicker = new DatePicker();
         reminderDatePicker.setLabel("Date of reminder");
@@ -49,6 +53,10 @@ public class NewReminderView extends Div {
         addButton = new Button("Add reminder");
     }
 
+    /**
+     * Initialises the layouts and adds (initialised before function call)
+     * appropriate components.
+     */
     private void initialiseLayouts() {
         reminderDateDivLayout = new HorizontalLayout();
         reminderDateLayout = new HorizontalLayout();
@@ -57,12 +65,18 @@ public class NewReminderView extends Div {
         reminderDateLayout.add(reminderDatePicker, reminderTimePicker, areaForReminderContent);
     }
 
+    /**
+     * Initialises the Div components.
+     */
     private void initialiseDivs() {
         reminderDiv = new Div();
 
         reminderDiv.getElement().setProperty("innerHTML", "<p><b>Reminder details</b></p>");
     }
 
+    /**
+     * Adds components to the view.
+     */
     private void addComponents() {
         add(reminderDateDivLayout);
         add(reminderDateLayout);
@@ -70,6 +84,10 @@ public class NewReminderView extends Div {
         add(addButton);
     }
 
+    /**
+     * Gets Reminder object according to the data stored in form.
+     * @return Reminder object
+     */
     private Reminder getReminderFromForm() {
         return new Reminder(reminderDatePicker.getValue(),
                             reminderTimePicker.getValue(),
@@ -78,12 +96,19 @@ public class NewReminderView extends Div {
                             areaForReminderContent.getValue());
     }
 
+    /**
+     * Clears the form.
+     */
     private void clearForms() {
         reminderDatePicker.setValue(LocalDate.now());
         reminderTimePicker.setValue(LocalTime.of(12, 0));
         areaForReminderContent.setValue("");
     }
 
+    /**
+     * Adds click listener to the button which is responsible for handling
+     * reminder adding.
+     */
     private void addCreateButtonListener() {
         addButton.addClickListener(event -> {
             if(reminderDatePicker.getValue() == null) {
@@ -103,6 +128,10 @@ public class NewReminderView extends Div {
         });
     }
 
+    /**
+     * Constructor of the view. Initialises components and
+     * listeners. Adds the components to the view.
+     */
     public NewReminderView() {
         addClassName("newreminder-view");
 
