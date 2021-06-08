@@ -3,7 +3,7 @@ echo "Removing database"
 rm -f Autocalendar_db.*
 echo "Running MVN"
 mvn &
-sleep 45
+sleep 75
 echo "MVN is up"
 echo "Running python tests"
 python integration_test/test.py > out.txt 2>&1
