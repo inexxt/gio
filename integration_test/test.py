@@ -3,6 +3,8 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from time import sleep
 import datetime
+import os
+import subprocess
 
 def set_date(driver, date):
     e = driver.find_element_by_tag_name("vaadin-date-picker")
@@ -27,8 +29,8 @@ def create_event(driver, time, date, name, desc, tags, guests):
     sleep(2)
     assert "New event" == driver.title
 
-    set_time(time)
-    set_date(date)
+    set_time(driver, time)
+    set_date(driver, date)
     sleep(2)
 
     elem = driver.find_element_by_xpath("//vaadin-text-area")
@@ -48,7 +50,7 @@ def create_event(driver, time, date, name, desc, tags, guests):
     elem.send_keys(guests)
 
     # Submit
-    driver.find_element_by_xpath("//vaadin-button").click()
+    driver.find_element_by_xpath("//div/vaadin-button").click()
 
 
 def create_reminder(driver, time, date, text):
@@ -56,14 +58,14 @@ def create_reminder(driver, time, date, text):
     sleep(2)
     assert "New reminder" == driver.title
 
-    set_date(date)
-    set_time(time)
+    set_date(driver, date)
+    set_time(driver, time)
     elem = driver.find_element_by_xpath("//vaadin-text-area")
     elem.click()
-    elem.send_keys(name)
+    elem.send_keys(text)
 
     # Submit
-    driver.find_element_by_xpath("//vaadin-button").click()
+    driver.find_element_by_xpath("//div/vaadin-button").click()
 
 
 def create_note(driver, date, name, desc, tags):
@@ -71,7 +73,7 @@ def create_note(driver, date, name, desc, tags):
     sleep(2)
     assert "New note" == driver.title
 
-    set_date(date)
+    set_date(driver, date)
 
     elem = driver.find_element_by_xpath("//vaadin-text-area")
     elem.click()
@@ -86,15 +88,49 @@ def create_note(driver, date, name, desc, tags):
     elem.send_keys(tags)
 
     # Submit
-    driver.find_element_by_xpath("//vaadin-button").click()
+    driver.find_element_by_xpath("//div/vaadin-button").click()
 
+def create_task(driver, date, **values):
+    driver.find_element_by_link_text("Add task").click()
+    sleep(2)
+    assert "New task" == driver.title
+
+    set_date(driver, date)
+    sleep(2)
+    
+    params = {
+        "duration": "//vaadin-text-area",
+        "minimal": "//vaadin-text-area[2]",
+        "maximal": "//vaadin-text-area[3]",
+        "name": "//vaadin-horizontal-layout[4]/vaadin-text-area",
+        "desc": "//vaadin-horizontal-layout[4]/vaadin-text-area[2]",
+        "reps": "//vaadin-horizontal-layout[6]/vaadin-text-area",
+        "time_between_reps": "//vaadin-horizontal-layout[6]/vaadin-text-area[2]",
+        "tags": "//vaadin-horizontal-layout[7]/vaadin-text-area"
+    }
+    
+    for elem_name in params.keys():
+        elem = driver.find_element_by_xpath(params[elem_name])
+        elem.click()
+        for _ in range(10):
+            elem.send_keys(Keys.BACKSPACE)
+        
+        elem.send_keys(values[elem_name])
+    
+#     elem =  driver.find_element_by_xpath("//vaadin-select")
+#     for _ in range(values["heuristic"] - 1):
+#         elem.send_keys(Keys.DOWN)
+#     sleep(1)
+#     elem.send_keys(Keys.ENTER)
+    
+    # Submit
+    
+    driver.find_element_by_xpath("//div/vaadin-button").click()
+    
 
 class CalendarTests(unittest.TestCase):
-
-    def setUp(self):
-        self.driver = webdriver.Chrome()
-
-    def test_create_task_today(self):
+    
+    def test_create_event_today(self):
         driver = self.driver
         driver.get("http://localhost:8080/")
         sleep(3)
@@ -104,31 +140,28 @@ class CalendarTests(unittest.TestCase):
         name = "Event1"
         desc = "Desc1"
         tags = "t1,t2"
-        guests = "jac.karwowski@gmail.com"
+        guests = ""
 
         create_event(driver, time, date, name, desc, tags, guests)
+        sleep(3)
         driver.find_element_by_link_text("Calendar overview").click()
         sleep(5)
-        self.assertIn("Calendar overview", driver.title)
-        set_date(date)
+        assert "Calendar overview" == driver.title
+        set_date(driver, date)
         assert name in driver.page_source
         assert desc in driver.page_source
         assert tags in driver.page_source
-        assert time in driver.page_source
-        assert guests in driver.page_source
 
         driver.find_element_by_link_text("Today overview").click()
         assert name in driver.page_source
         assert desc in driver.page_source
         assert tags in driver.page_source
-        assert time in driver.page_source
-        assert guests in driver.page_source
 
-    def test_create_task_tomorrow(self):
+    def test_create_event_tomorrow(self):
         driver = self.driver
         driver.get("http://localhost:8080/")
         sleep(3)
-        time = "03:00 PM"
+        time = "11:00 AM"
         d = datetime.datetime.today() + datetime.timedelta(days=1)
         date = f"{d.month}/{d.day}/{d.year}"
         name = "Event2"
@@ -137,43 +170,45 @@ class CalendarTests(unittest.TestCase):
         guests = ""
 
         create_event(driver, time, date, name, desc, tags, guests)
+        sleep(3)
         driver.find_element_by_link_text("Calendar overview").click()
         sleep(5)
-        self.assertIn("Calendar overview", driver.title)
-        set_date(date)
+        assert "Calendar overview" == driver.title
+        set_date(driver, date)
         assert name in driver.page_source
         assert desc in driver.page_source
         assert tags in driver.page_source
-        assert time in driver.page_source
         assert guests in driver.page_source
 
         driver.find_element_by_link_text("Today overview").click()
-        assert name not in driver.page_source
-        assert desc not in driver.page_source
+        sleep(2)
+        assert f"Event {name} starting at" not in driver.page_source
 
     def test_create_reminder_today(self):
         driver = self.driver
         driver.get("http://localhost:8080/")
         sleep(3)
-        time = "11:59 PM"
+        time = "11:00 PM"
         d = datetime.datetime.today()
-        name = "Reminder1"
+        date = f"{d.month}/{d.day}/{d.year}"
+        text = "Reminder1"
         create_reminder(driver, time, date, text)
         driver.find_element_by_link_text("Today overview").click()
         sleep(5)
-        assert name in driver.page_source
+        assert text in driver.page_source
 
     def test_create_reminder_tomorrow(self):
         driver = self.driver
         driver.get("http://localhost:8080/")
         sleep(3)
-        time = "11:59 PM"
+        time = "11:00 PM"
         d = datetime.datetime.today() + datetime.timedelta(days=1)
-        name = "Reminder2"
+        date = f"{d.month}/{d.day}/{d.year}"
+        text = "Reminder2"
         create_reminder(driver, time, date, text)
         driver.find_element_by_link_text("Today overview").click()
         sleep(5)
-        assert name not in driver.page_source
+        assert text not in driver.page_source
 
     def test_create_reminder_earlier(self):
         driver = self.driver
@@ -181,24 +216,26 @@ class CalendarTests(unittest.TestCase):
         sleep(3)
         time = "00:01 AM"
         d = datetime.datetime.today()
-        name = "Reminder3"
+        date = f"{d.month}/{d.day}/{d.year}"
+        text = "Reminder3"
         create_reminder(driver, time, date, text)
         driver.find_element_by_link_text("Today overview").click()
         sleep(5)
-        assert name not in driver.page_source
+        assert text not in driver.page_source
 
     def test_create_note_today(self):
         driver = self.driver
         driver.get("http://localhost:8080/")
         sleep(3)
         d = datetime.datetime.today()
+        date = f"{d.month}/{d.day}/{d.year}"
         name = "Note1"
         desc = "NoteDesc1"
         tags = "n1, n2"
         create_note(driver, date, name, desc, tags)
         driver.find_element_by_link_text("Calendar overview").click()
         sleep(5)
-        set_date(date)
+        set_date(driver, date)
         assert name in driver.page_source
         assert desc in driver.page_source
         assert tags in driver.page_source
@@ -208,19 +245,54 @@ class CalendarTests(unittest.TestCase):
         driver.get("http://localhost:8080/")
         sleep(3)
         d = datetime.datetime.today() + datetime.timedelta(days=1)
+        date = f"{d.month}/{d.day}/{d.year}"
         name = "Note1"
         desc = "NoteDesc1"
         tags = "n1, n2"
         create_note(driver, date, name, desc, tags)
         driver.find_element_by_link_text("Calendar overview").click()
         sleep(5)
-        set_date(date)
+        set_date(driver, date)
         assert name in driver.page_source
         assert desc in driver.page_source
         assert tags in driver.page_source
+        
+    def test_create_task_one_day(self):
+        driver = self.driver
+        driver.get("http://localhost:8080/")
+        sleep(3)
+        params = {
+            "duration": "4",
+            "minimal": "1",
+            "maximal": "5",
+            "name": "Task1",
+            "desc": "TaskDesc1",
+            "reps": "1",
+            "time_between_reps": "",
+            "tags": "t3,t4",
+            "heuristic": 1
+        }
+        d = datetime.datetime.today() + datetime.timedelta(days=1)
+        date = f"{d.month}/{d.day}/{d.year}"
+        create_task(self.driver, date, **params)
+        sleep(2)
+        driver.find_element_by_link_text("Calendar overview").click()
+        sleep(5)
+        d = datetime.datetime.today()
+        today = f"{d.month}/{d.day}/{d.year}"
+        set_date(driver, today)
+        assert params["name"] in driver.page_source
+        assert params["desc"] in driver.page_source
 
     def tearDown(self):
         self.driver.close()
 
+    def setUp(self):
+        self.driver = webdriver.Chrome()
+
 if __name__ == "__main__":
+    subprocess.Popen(["rm","-f","../Autocalendar_db.mv.db"])
+    sleep(1)
+    # subprocess.Popen(["cd", "..", "&&", "mvn"], shell=True)
+    # sleep(30)
     unittest.main()
