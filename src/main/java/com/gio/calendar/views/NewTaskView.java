@@ -41,6 +41,9 @@ public class NewTaskView extends Div {
      */
     private static final Integer TASK_TAGS_CHARACTERS_LIMIT = 180;
 
+    /**
+     * Maximum number of characters that task's duration can contain
+     */
     private static final Integer TASK_DURATION_CHARACTERS_LIMIT = 100;
 
     private Button addTaskButton;
@@ -75,10 +78,20 @@ public class NewTaskView extends Div {
         Notification.show("SQLException occurred: " + Arrays.toString(e.getStackTrace()));
     }
 
+    /**
+     * Handles event of scheduling failure. Displays appropriate error
+     * notification.
+     * @param taskName - name of the task which could not be scheduled
+     */
     private static void handleTaskSchedulingFailure(String taskName) {
         Notification.show("Task occurrence for " + taskName  + " can not be created with this heuristic!");
     }
 
+    /**
+     * Handles event of scheduling success. Adds scheduled events to the database and
+     * displays appropriate notification on addition of each of these events.
+     * @param events - collection of events that are to be inserted into database
+     */
     private static void handleTaskSchedulingSuccess(List<CalendarEvent> events) {
         for (CalendarEvent event : events) {
             CalendarEventRepository.save(event);
@@ -86,6 +99,15 @@ public class NewTaskView extends Div {
         }
     }
 
+    /**
+     * Increases the date according to passed unit type.
+     * @param timeUnitType - character representing the time unit of time break between
+     * task repetitions ('D' - day, 'W' - week, 'M' - month, 'Y' - year)
+     * @param day - LocalDate object which represents the date which is to be increased
+     * @param timeUnits - number of time units (specified in timeUnitType) that is to
+     * be added to increased date
+     * @return LocalDate object representing increased date
+     */
     private LocalDate increaseByUnitType(char timeUnitType, LocalDate day, int timeUnits) {
         if(timeUnitType == 'D') {
             day = day.plusDays(timeUnits);
@@ -102,6 +124,11 @@ public class NewTaskView extends Div {
         return day;
     }
 
+    /**
+     * Handles task adding (including the repetitions).
+     * @param timeUnitType - character representing the time unit of time break between
+     * task repetitions ('D' - day, 'W' - week, 'M' - month, 'Y' - year)
+     */
     private void addTaskHandler(char timeUnitType) {
         LocalDate startDay = LocalDate.now();
         LocalDate endDay = taskDatePicker.getValue();
@@ -130,6 +157,9 @@ public class NewTaskView extends Div {
                 });
     }
 
+    /**
+     * Clears the form.
+     */
     private void clearForm() {
         taskNameArea.clear();
         taskDescriptionArea.clear();
@@ -138,6 +168,9 @@ public class NewTaskView extends Div {
         taskDuration.clear();
     }
 
+    /**
+     * Adds click listener to button which handles task adding.
+     */
     private void setupAddTaskButtonListener() {
         /* Listener for the Button object which is to add the task on click after
          *  checking correctness of task input data
@@ -174,11 +207,16 @@ public class NewTaskView extends Div {
         });
     }
 
-
+    /**
+     * Initialises task add button.
+     */
     private void initialiseAddTaskButton() {
         addTaskButton = new Button("Add task");
     }
 
+    /**
+     * Initialises task date picker.
+     */
     private void initialiseTaskDatePicker() {
         /* Picker of the new task date */
         taskDatePicker = new DatePicker();
@@ -187,6 +225,9 @@ public class NewTaskView extends Div {
         taskDatePicker.setValue(LocalDate.now());
     }
 
+    /**
+     * Initialises text areas.
+     */
     private void initialiseTextAreas() {
         /* Text area for new task name */
         taskNameArea = new TextArea("Task name (optional). Maximum length: " +
@@ -236,6 +277,9 @@ public class NewTaskView extends Div {
                 "M (month) or Y (year). Examples: 13D, 5M.");
     }
 
+    /**
+     * Initialises the Div components.
+     */
     private void initialiseDivs() {
         taskDateTimeDiv = new Div();
         taskNameDescDiv = new Div();
@@ -246,6 +290,9 @@ public class NewTaskView extends Div {
         taskRepDiv.getElement().setProperty("innerHTML", "<p><b>Task repetitions</b></p>");
     }
 
+    /**
+     * Initialises overview layouts.
+     */
     private void initialiseLayouts() {
         taskDateTimeDivLayout = new HorizontalLayout();
         taskDateTimeLayout = new HorizontalLayout();
@@ -266,6 +313,9 @@ public class NewTaskView extends Div {
         taskHeuristicLayout.addAndExpand(taskHeuristicSelect);
     }
 
+    /**
+     * Inserts view components (time pickers, text fields, etc...)
+     */
     private void insertViewComponents() {
         add(taskDateTimeDivLayout, taskDateTimeLayout);
         add(taskNameDescDivLayout, taskNameDescLayout);
@@ -275,6 +325,9 @@ public class NewTaskView extends Div {
         add(addTaskButton);
     }
 
+    /**
+     * View constructor. Initialises components and inserts them on the page
+     */
     public NewTaskView() {
         addClassName("newtask-view");
 
