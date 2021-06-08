@@ -2,6 +2,9 @@ package com.gio.calendar.scheduling;
 
 import java.time.LocalDate;
 
+/**
+ * All the details that are needed to schedule events for a task.
+ */
 public class SchedulingDetails {
     // just a dataclass, no need for specifying getters/setters
 

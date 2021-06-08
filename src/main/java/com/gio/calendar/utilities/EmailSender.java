@@ -11,6 +11,9 @@ import javax.naming.AuthenticationException;
 import java.util.Properties;
 import java.util.function.Function;
 
+/**
+ * Class managing sending reminder emails
+ */
 public class EmailSender {
     private static String from = "autocalendar@mailtrap.io";
     private static Session session;
@@ -21,11 +24,17 @@ public class EmailSender {
     private static final String SMTP_HOST = "smtp.mailtrap.io";
     private static CheckedFunction<Session, Transport> transportProvider;
 
-    // For testing
+    /**
+     * Setter for transport provider - useful for mocking
+     * @param tp - Transport to use
+     */
     public static void setTransportProvider(CheckedFunction<Session, Transport> tp) {
         transportProvider = tp;
     }
 
+    /**
+     * Initialize email sender with the relevant details (SMTP host, port, etc).
+     */
     public static void initialize() {
         if (is_initialized)
             return;
@@ -52,6 +61,13 @@ public class EmailSender {
         is_initialized = true;
     }
 
+    /**
+     * Sends an email to a recepient using SMTP.
+     * @param to - email recepient
+     * @param subject - subject of the email
+     * @param messageText - text of the email
+     * @return true if sending went successfully, otherwise false
+     */
     private static boolean sendEmail(String to, String subject, String messageText) {
         try {
             MimeMessage message = new MimeMessage(session);
@@ -72,6 +88,12 @@ public class EmailSender {
         }
     }
 
+    /**
+     * Send a reminder email about an event being created or modified
+     * @param c - calendar event details
+     * @param is_modified - boolean flag set if the event was already scheduled and is being modified
+     * @return true if sending went successfully, otherwise false
+     */
     public static boolean sendReminderEmail(CalendarEvent c, boolean is_modified) {
         if (!is_initialized)
             initialize();

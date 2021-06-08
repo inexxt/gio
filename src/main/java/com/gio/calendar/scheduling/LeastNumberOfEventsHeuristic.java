@@ -8,7 +8,19 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+/**
+ * A heuristic that tries to schedule task to be done such that it consists
+ * of as few events as possible.
+ */
 public class LeastNumberOfEventsHeuristic extends SchedulingHeuristic {
+
+    /**
+     * Apply the heuristic to try to schedule task events in such a way that
+     * it consists of as few events as possible (e.g. is divided into as few
+     * sessions as possible).
+     * @param details of the task
+     * @return list of CalendarEvent to be scheduled (empty if not successful)
+     */
     @Override
     public List<CalendarEvent> apply(SchedulingDetails details) {
         List<List<CalendarEvent>> repetitions = new ArrayList<>();
