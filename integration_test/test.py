@@ -1,6 +1,7 @@
 import unittest
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.options import Options
 from time import sleep
 import datetime
 import os
@@ -288,7 +289,9 @@ class CalendarTests(unittest.TestCase):
         self.driver.close()
 
     def setUp(self):
-        self.driver = webdriver.Chrome()
+        options = Options()
+        options.headless = True
+        self.driver = webdriver.Chrome(options=options)
 
 if __name__ == "__main__":
     unittest.main()
