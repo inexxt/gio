@@ -1,6 +1,7 @@
 import unittest
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.options import Options
 from time import sleep
 import datetime
 import os
@@ -36,10 +37,12 @@ def create_event(driver, time, date, name, desc, tags, guests):
     elem = driver.find_element_by_xpath("//vaadin-text-area")
     elem.click()
     elem.send_keys(name)
+    sleep(1)
 
     elem = driver.find_element_by_xpath("//vaadin-text-area[2]")
     elem.click()
     elem.send_keys(desc)
+    sleep(1)
 
     elem = driver.find_element_by_xpath("//vaadin-horizontal-layout[8]/vaadin-text-area")
     elem.click()
@@ -288,7 +291,13 @@ class CalendarTests(unittest.TestCase):
         self.driver.close()
 
     def setUp(self):
-        self.driver = webdriver.Chrome()
+        options = Options()
+        options.headless = True
+        options.add_argument("--no-sandbox")
+        options.add_argument("--window-size=1280,720")
+        options.add_argument("--disable-gpu")
+
+        self.driver = webdriver.Chrome(options=options)
 
 if __name__ == "__main__":
     unittest.main()

@@ -6,3 +6,4 @@ webpack.generated.js
 calendar_sqlite.db
 Autocalendar_db.trace.db
 Autocalendar_db.mv.db
+out.txt
