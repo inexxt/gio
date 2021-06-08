@@ -41,10 +41,20 @@ public class TodayOverview extends Div {
     private List<HorizontalLayout> eventsLayouts;
     private List<HorizontalLayout> remindersLayouts;
 
+    /**
+     * Gets the info about days scheduled for current day.
+     * @throws SQLException - in case of database exception while
+     * retrieving event data
+     */
     private void getTodayEventsInfo() throws SQLException {
         eventsList = CalendarEventRepository.findByDate(LocalDate.now());
     }
 
+    /**
+     * Gets the info about notes added for current day.
+     * @throws SQLException - in case of database exception while
+     * retrieving notes dta
+     */
     private void getTodayRemindersInfo() throws SQLException {
         remindersList = ReminderRepository.findByDate(LocalDate.now());
 
@@ -52,6 +62,9 @@ public class TodayOverview extends Div {
         remindersList.removeIf(r -> LocalTime.now().isAfter(r.getReminderTime().plusMinutes(30)));
     }
 
+    /**
+     * Initialises the Div components.
+     */
     private void initialiseDivs() {
         todayDateDiv = new Div();
         remindersDiv = new Div();
@@ -87,6 +100,9 @@ public class TodayOverview extends Div {
         }
     }
 
+    /**
+     * Initialises the overview layouts.
+     */
     private void initialiseLayouts() {
         todayDateDivLayout = new HorizontalLayout();
         overallEventsDivLayout = new HorizontalLayout();
@@ -125,6 +141,9 @@ public class TodayOverview extends Div {
         }
     }
 
+    /**
+     * Inserts the view components.
+     */
     private void insertViewComponents() {
         add(todayDateDivLayout);
         add(overallEventsDivLayout);
@@ -140,6 +159,11 @@ public class TodayOverview extends Div {
         }
     }
 
+    /**
+     * Overview constructor.
+     * Initialises the components (layouts, divs, ...) and adds
+     * them to the view.
+     */
     public TodayOverview() {
         eventsList = new ArrayList<>();
         remindersList = new ArrayList<>();
