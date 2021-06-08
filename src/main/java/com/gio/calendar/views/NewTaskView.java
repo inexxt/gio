@@ -314,7 +314,7 @@ public class NewTaskView extends Div {
     }
 
     /**
-     * Inserts view components (time pickers, text fields, etc...)
+     * Inserts view components (layouts, buttons)
      */
     private void insertViewComponents() {
         add(taskDateTimeDivLayout, taskDateTimeLayout);
