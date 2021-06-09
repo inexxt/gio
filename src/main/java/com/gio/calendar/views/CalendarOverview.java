@@ -16,12 +16,14 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.component.dialog.*;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.server.VaadinService;
+import org.apache.tomcat.jni.Local;
 
 
 import java.time.*;
@@ -45,6 +47,10 @@ public class CalendarOverview extends Div {
     private static int overviewType = OPT_DAILY; /* Default - daily overview */
 
     private DatePicker targetDatePicker;
+
+    private TextArea tagsField;
+
+    private Set<Tag> tagsForFiltering = null;
 
     private static final List<String> dayLabels = Arrays.asList("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
     private Select<String> overviewOptionsSelect;
@@ -406,13 +412,70 @@ public class CalendarOverview extends Div {
         });
     }
 
+    private List<CalendarEvent> getFilteredEventsOnDate(LocalDate date) {
+        List<CalendarEvent> eventsOnDate = CalendarEventRepository.findByDate(date);
+
+        if(tagsForFiltering == null || tagsForFiltering.size() == 0) {
+            return eventsOnDate;
+        }
+
+        Iterator<CalendarEvent> iterator = eventsOnDate.iterator();
+
+        while(iterator.hasNext()) {
+            CalendarEvent e = iterator.next();
+            boolean containsAtLeastOneTag = false;
+
+            for(Tag t: e.getEventTags()) {
+                if(tagsForFiltering.contains(t)) {
+                    containsAtLeastOneTag = true;
+                    break;
+                }
+            }
+
+            if(!containsAtLeastOneTag) {
+                iterator.remove();
+            }
+        }
+
+        return eventsOnDate;
+    }
+
+
+    private List<CalendarNote> getFilteredNotesOnDate(LocalDate date) {
+        List<CalendarNote> notesOnDate = CalendarNoteRepository.findByDate(date);
+
+        if(tagsForFiltering == null || tagsForFiltering.size() == 0) {
+            return notesOnDate;
+        }
+
+        Iterator<CalendarNote> iterator = notesOnDate.iterator();
+
+        while(iterator.hasNext()) {
+            CalendarNote n = iterator.next();
+            boolean containsAtLeastOneTag = false;
+
+            for(Tag t: n.getNoteTags()) {
+                if(tagsForFiltering.contains(t)) {
+                    containsAtLeastOneTag = true;
+                    break;
+                }
+            }
+
+            if(!containsAtLeastOneTag) {
+                iterator.remove();
+            }
+        }
+
+        return notesOnDate;
+    }
+
     private void renderDailyOverview(LocalDate targetDate) {
         removeAll();
         addBasicComponentsAfresh();
         initialiseDatePickerDaily();
 
-        List<CalendarEvent> eventsOnDate = CalendarEventRepository.findByDate(targetDate);
-        List<CalendarNote> notesOnDate = CalendarNoteRepository.findByDate(targetDate);
+        List<CalendarEvent> eventsOnDate = getFilteredEventsOnDate(targetDate);
+        List<CalendarNote> notesOnDate = getFilteredNotesOnDate(targetDate);
 
         int layoutsCount = eventsOnDate.size() + notesOnDate.size();
 
@@ -463,7 +526,7 @@ public class CalendarOverview extends Div {
 
             currentDayLayout.add(dayButton);
 
-            List<CalendarEvent> eventsForCurrentDay = CalendarEventRepository.findByDate(dayDate);
+            List<CalendarEvent> eventsForCurrentDay = getFilteredEventsOnDate(dayDate);
 
             if(eventsForCurrentDay.size() != 0) {
                 currentDayLayout.add(new Label("Events scheduled:"));
@@ -479,7 +542,7 @@ public class CalendarOverview extends Div {
                 currentDayLayout.add(new Label("No events"));
             }
 
-            List<CalendarNote> notesForCurrentDay = CalendarNoteRepository.findByDate(dayDate);
+            List<CalendarNote> notesForCurrentDay = getFilteredNotesOnDate(dayDate);
 
             if(notesForCurrentDay.size() != 0) {
                 currentDayLayout.add(new Label("Notes:"));
@@ -552,8 +615,8 @@ public class CalendarOverview extends Div {
                     Label[] labelsForDay = { new Label(""), new Label("") };
                     int labelIndex = 0;
 
-                    int numberOfEventsForCurrentDay = CalendarEventRepository.findByDate(iterationDate).size();
-                    int numberOfNotesForCurrentDay = CalendarNoteRepository.findByDate(iterationDate).size();
+                    int numberOfEventsForCurrentDay = getFilteredEventsOnDate(iterationDate).size();
+                    int numberOfNotesForCurrentDay = getFilteredNotesOnDate(iterationDate).size();
 
                     if(numberOfEventsForCurrentDay != 0) {
                         labelsForDay[labelIndex].setText("Events: " + numberOfEventsForCurrentDay);
@@ -606,8 +669,33 @@ public class CalendarOverview extends Div {
 
     private void addBasicComponentsAfresh() {
         HorizontalLayout forBasicComponents = new HorizontalLayout(overviewOptionsSelect,
-                                                                   targetDatePicker);
+                                                                   targetDatePicker,
+                                                                   tagsField);
         add(forBasicComponents);
+    }
+
+    private void addFiltrationValueChangeListener() {
+        tagsField.addValueChangeListener(e -> {
+            if(tagsField.getValue() == null) {
+                tagsForFiltering = null;
+            }
+            else {
+                /* Initialise the set which contains the tags according to
+                 * which events and notes are filtered
+                 */
+                tagsForFiltering = Tag.tagsFromString(tagsField.getValue());
+
+                if(overviewType == OPT_DAILY) {
+                    renderDailyOverview(targetDatePicker.getValue());
+                }
+                else if(overviewType == OPT_WEEKLY) {
+                    renderWeeklyOverview(targetDatePicker.getValue());
+                }
+                else if(overviewType == OPT_MONTHLY) {
+                    renderMonthlyOverview(targetDatePicker.getValue());
+                }
+            }
+        });
     }
 
     private void addBasicComponents() {
@@ -618,7 +706,13 @@ public class CalendarOverview extends Div {
         targetDatePicker = new DatePicker();
         targetDatePicker.setLabel("Select date to view");
 
-        forBasicComponents.add(overviewOptionsSelect, targetDatePicker);
+        tagsField = new TextArea();
+        tagsField.setValue("None");
+        tagsField.setLabel("Tags for filtration (separated by comma)");
+
+        addFiltrationValueChangeListener();
+
+        forBasicComponents.add(overviewOptionsSelect, targetDatePicker, tagsField);
 
         add(forBasicComponents);
     }
