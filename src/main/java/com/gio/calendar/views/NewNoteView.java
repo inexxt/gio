@@ -55,11 +55,19 @@ public class NewNoteView extends Div{
     private HorizontalLayout noteNameDescLayout;
     private HorizontalLayout tagsFieldLayout;
 
+    /**
+     * Handles SQLException. Displays appropriate error notification.
+     * @param e - exception object
+     */
     private void handleSqlException(Exception e) {
         Notification.show("SQLException occurred: " + e.getMessage());
         Notification.show("SQLException occurred: " + Arrays.toString(e.getStackTrace()));
     }
 
+    /**
+     * Creates CalendarNote object according to data provided in form.
+     * @return CalendarNote object created according to the form data.
+     */
     private CalendarNote getNoteFromForm() {
         return new CalendarNote(
                 noteNameArea.getValue(),
@@ -68,6 +76,9 @@ public class NewNoteView extends Div{
                 tagsField.getValue());
     }
 
+    /**
+     * Handles note adding.
+     */
     private void addNoteHandler() {
         try {
             CalendarNote note = getNoteFromForm();
@@ -79,6 +90,9 @@ public class NewNoteView extends Div{
         }
     }
 
+    /**
+     * Clears form
+     */
     private void clearForm() {
         noteNameArea.clear();
         noteDescriptionArea.clear();
@@ -86,10 +100,18 @@ public class NewNoteView extends Div{
         tagsField.clear();
     }
 
+    /**
+     * Handles  error
+     * @param e - string representing error
+     */
     private void handleError(String e) {
         Notification.show("Error occurred: " + e);
     }
 
+    /**
+     * Handles note updating
+     * @param noteIdString id of note as string
+     */
     private void updateNoteHandler(String noteIdString) {
         Optional<String> err = Optional.empty();
         try {
@@ -103,6 +125,10 @@ public class NewNoteView extends Div{
         }
     }
 
+    /**
+     * Sets up add note button listener
+     * @param noteIdString id of note as string (null if the view does not deal with note modification)
+     */
     private void setupAddNoteButtonListener(String noteIdString) {
         /* Listener for the Button object which is to add the note on click after
          *  checking correctness of note input data
@@ -128,11 +154,17 @@ public class NewNoteView extends Div{
         });
     }
 
-
+    /**
+     * Initialises add note button
+     * @param noteIdString id of note as string (null if the view does not deal with note modification)
+     */
     private void initialiseAddNoteButton(String noteIdString) {
         addNoteButton = noteIdString == null ? new Button("Add note") : new Button("Modify note");
     }
 
+    /**
+     * Initialises note date picker
+     */
     private void initialiseNoteDatePicker() {
         /* Picker of the new note date */
         noteDatePicker = new DatePicker();
@@ -141,6 +173,9 @@ public class NewNoteView extends Div{
         noteDatePicker.setValue(LocalDate.now());
     }
 
+    /**
+     * Initialises text areas
+     */
     private void initialiseTextAreas() {
         /* Task area for new note name */
         noteNameArea = new TextArea("Note name (optional). Maximum length: " +
@@ -160,6 +195,9 @@ public class NewNoteView extends Div{
         tagsField.setMaxLength(NOTE_TAGS_CHARACTERS_LIMIT);
     }
 
+    /**
+     * Initialises divs
+     */
     private void initialiseDivs() {
         noteDateTimeDiv = new Div();
         noteNameDescDiv = new Div();
@@ -168,6 +206,9 @@ public class NewNoteView extends Div{
         noteNameDescDiv.getElement().setProperty("innerHTML", "<p><b>Note name and description</b></p>");
     }
 
+    /**
+     * Initialises layout
+     */
     private void initialiseLayouts() {
         noteDateTimeDivLayout = new HorizontalLayout();
         noteDateTimeLayout = new HorizontalLayout();
@@ -182,6 +223,9 @@ public class NewNoteView extends Div{
         tagsFieldLayout.addAndExpand(tagsField);
     }
 
+    /**
+     * Inserts view components
+     */
     private void insertViewComponents() {
         add(noteDateTimeDivLayout, noteDateTimeLayout);
         add(noteNameDescDivLayout, noteNameDescLayout);
@@ -189,6 +233,13 @@ public class NewNoteView extends Div{
         add(addNoteButton);
     }
 
+    /**
+     * Fills the form with data associated with note (executed for handling note
+     * modification)
+     * @param noteIdString - string representation of id of the note that shall be modified
+     * (null if none - default value, non-null values happen only on redirect from calendar overview -
+     * in such case we are dealing with user request for note data modification)
+     */
     private void setValuesIfNecessary(String noteIdString) {
         if (noteIdString != null) {
             Optional<CalendarNote> note = Optional.empty();
@@ -210,6 +261,10 @@ public class NewNoteView extends Div{
         }
     }
 
+    /**
+     * Constructor of new note view. Performs initialisation of view:
+     * initialises the view components and adds them to the overview.
+     */
     public NewNoteView() {
         addClassName("newnote-view");
         String noteIdString = VaadinService.getCurrentRequest().getParameter("note_id");
