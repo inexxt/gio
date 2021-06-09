@@ -55,7 +55,13 @@ public class CalendarOverview extends Div {
     private static final List<String> dayLabels = Arrays.asList("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday");
     private Select<String> overviewOptionsSelect;
 
-    /* Sets notes info for display on page.
+    /**
+     * Sets notes info in layouts.
+     * @param notesIndex - index of first layout in array that can be filled with
+     * appropriate note info
+     * @param infoLayouts - array of layouts that are to be filled
+     * @param notesList - list of calendar notes whose info shall be
+     * present in layouts
      */
     private void setNotesInfo(int notesIndex, VerticalLayout[] infoLayouts, List<CalendarNote> notesList) {
         int notesNo = 1;
@@ -129,10 +135,13 @@ public class CalendarOverview extends Div {
         }
     }
 
-    /* Sets events info for display on page.
-     * Returns the index (in infoLayouts array) of first non-occupied layout
-     * that can (as well as successive layouts in array) be further filled
-     * with informations about tasks scheduled for specified day
+    /**
+     * Sets events info in layouts.
+     * @param infoLayouts - array of layouts that are to be filled
+     * @param eventsList - list of calendar events whose info shall be
+     * present in layouts
+     * @return integer - first index of layout from the passed array that can be further used as
+     * layout for storing calendar note data
      */
     private int setEventsInfo(VerticalLayout[] infoLayouts, List<CalendarEvent> eventsList) {
         int eventIndex = 0;
@@ -221,6 +230,11 @@ public class CalendarOverview extends Div {
         return eventIndex;
     }
 
+    /**
+     * Adds click listener to button which is to handle note deletion
+     * @param noteDeleteButton - button to which listener shall be added
+     * @param e - which note should be affected by the listener
+     */
     private void addNoteDeleteConfirmation(Button noteDeleteButton, CalendarNote e) {
         noteDeleteButton.addClickListener(v -> {
             Dialog deleteDialog = new Dialog();
@@ -286,6 +300,11 @@ public class CalendarOverview extends Div {
         });
     }
 
+    /**
+     * Adds click listener to button which is to handle event deletion
+     * @param eventDeleteButton - button to which listener shall be added
+     * @param e - which event should be affected by the listener
+     */
     private void addEventDeleteConfirmation(Button eventDeleteButton, CalendarEvent e) {
         eventDeleteButton.addClickListener(v -> {
             Dialog deleteDialog = new Dialog();
@@ -351,6 +370,10 @@ public class CalendarOverview extends Div {
         });
     }
 
+    /**
+     * Gets the date which should be viewed (executed on view loading)
+     * @return LocalDate object representing the date which should be viewed
+     */
     private LocalDate getDateToView() {
         if (forceDatePickerValue) {
             forceDatePickerValue = false;
@@ -374,6 +397,10 @@ public class CalendarOverview extends Div {
         return dateToReturn;
     }
 
+    /**
+     * Displays notification about each event scheduled for
+     * current date
+     */
     private void notifyAboutCurrentDayEvents() {
         List<CalendarEvent> todayEvents = CalendarEventRepository.findByDate(LocalDate.now());
 
@@ -388,6 +415,9 @@ public class CalendarOverview extends Div {
         }
     }
 
+    /**
+     * Initialises date picker for daily overview
+     */
     private void initialiseDatePickerDaily() {
         targetDatePicker.addValueChangeListener(e -> {
             if(targetDatePicker.getValue() != null) {
@@ -396,6 +426,9 @@ public class CalendarOverview extends Div {
         });
     }
 
+    /**
+     * Initialises date picker for weekly overview
+     */
     private void initialiseDatePickerWeekly() {
         targetDatePicker.addValueChangeListener(e -> {
             if(targetDatePicker.getValue() != null) {
@@ -404,6 +437,9 @@ public class CalendarOverview extends Div {
         });
     }
 
+    /**
+     * Initialises date picker for monthly overview
+     */
     private void initialiseDatePickerMonthly() {
         targetDatePicker.addValueChangeListener(e -> {
             if(targetDatePicker.getValue() != null) {
@@ -412,6 +448,13 @@ public class CalendarOverview extends Div {
         });
     }
 
+    /**
+     * Gets collection of calendar events that are scheduled for passed date,
+     * filtered according to possessed collection of tags according to which notes
+     * should be filtered
+     * @param date - on which date calendar events should be filtered
+     * @return list of filtered calendar events
+     */
     private List<CalendarEvent> getFilteredEventsOnDate(LocalDate date) {
         List<CalendarEvent> eventsOnDate = CalendarEventRepository.findByDate(date);
 
@@ -440,7 +483,13 @@ public class CalendarOverview extends Div {
         return eventsOnDate;
     }
 
-
+    /**
+     * Gets collection of notes that are scheduled for passed date, filtered
+     * according to possessed collection of tags according to which notes
+     * should be filtered
+     * @param date - on which date notes should be filtered
+     * @return list of filtered notes
+     */
     private List<CalendarNote> getFilteredNotesOnDate(LocalDate date) {
         List<CalendarNote> notesOnDate = CalendarNoteRepository.findByDate(date);
 
@@ -469,6 +518,11 @@ public class CalendarOverview extends Div {
         return notesOnDate;
     }
 
+    /**
+     * Renders daily overview
+     * @param targetDate - the date which is to be displayed in rendered overview
+     * right after rendering
+     */
     private void renderDailyOverview(LocalDate targetDate) {
         removeAll();
         addBasicComponentsAfresh();
@@ -502,6 +556,11 @@ public class CalendarOverview extends Div {
         }
     }
 
+    /**
+     * Renders weekly overview
+     * @param targetDate - the date which is to be displayed in rendered overview
+     * right after rendering
+     */
     private void renderWeeklyOverview(LocalDate targetDate) {
         removeAll();
         addBasicComponentsAfresh();
@@ -564,6 +623,9 @@ public class CalendarOverview extends Div {
         add(weekLayout);
     }
 
+    /**
+     * Adds day names' labels to weekly overview
+     */
     private void addDayLabelsInMonthlyOverview() {
         HorizontalLayout forDaysLabels = new HorizontalLayout();
 
@@ -574,6 +636,11 @@ public class CalendarOverview extends Div {
         add(forDaysLabels);
     }
 
+    /**
+     * Renders monthly overview
+     * @param targetDate - the date which is to be displayed in rendered overview
+     * right after rendering
+     */
     private void renderMonthlyOverview(LocalDate targetDate) {
         removeAll();
         addBasicComponentsAfresh();
@@ -642,6 +709,10 @@ public class CalendarOverview extends Div {
         }
     }
 
+    /**
+     * Initialises select which handles switching between
+     * possible overview types
+     */
     private void initialiseSelect() {
         overviewOptionsSelect = new Select<>();
 
@@ -667,6 +738,9 @@ public class CalendarOverview extends Div {
         });
     }
 
+    /**
+     * Re-adds basic components (common for each overview type) to the view
+     */
     private void addBasicComponentsAfresh() {
         HorizontalLayout forBasicComponents = new HorizontalLayout(overviewOptionsSelect,
                                                                    targetDatePicker,
@@ -674,6 +748,10 @@ public class CalendarOverview extends Div {
         add(forBasicComponents);
     }
 
+    /**
+     * Adds value change listener to textarea responsible for
+     * grabbing data about tags for filtering events
+     */
     private void addFiltrationValueChangeListener() {
         tagsField.addValueChangeListener(e -> {
             if(tagsField.getValue() == null) {
@@ -698,6 +776,9 @@ public class CalendarOverview extends Div {
         });
     }
 
+    /**
+     * Initialises and adds basic components to the view
+     */
     private void addBasicComponents() {
         HorizontalLayout forBasicComponents = new HorizontalLayout();
 
@@ -717,6 +798,9 @@ public class CalendarOverview extends Div {
         add(forBasicComponents);
     }
 
+    /**
+     * Constructor of the calendar overview class
+     */
     public CalendarOverview() {
         addClassName("overview-view");
 
