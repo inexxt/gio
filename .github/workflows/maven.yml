@@ -38,7 +38,8 @@ jobs:
         export PATH=`pwd`:$PATH
         wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
         sudo apt install ./google-chrome-stable_current_amd64.deb
-
+    - name: Set system time
+      run: sudo date +%T -s "13:14:00"
     - name: Test everything end-to-end
       run: |
         chmod +x ./integration_test/test.sh && ./integration_test/test.sh
