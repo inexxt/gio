@@ -35,6 +35,11 @@ import static com.gio.calendar.utilities.IcalParser.parseFile;
 @CssImport("./views/overview/overview-view.css")
 public class IcalView extends Div{
 
+    /**
+     * Shows text in outputContainer
+     * @param text
+     * @param outputContainer
+     */
     private void showOutput(String text,
                             HasComponents outputContainer) {
         Component content = new Paragraph();
@@ -44,11 +49,19 @@ public class IcalView extends Div{
         outputContainer.add(content);
     }
 
+    /**
+     * Collects all events and runs export events function in IcalParser
+     * @return InputStream representing exported file
+     */
     private InputStream inputStream() {
         return IcalParser.exportEvents(CalendarEventRepository.findAll());
     }
 
 
+    /**
+     * Constructor of ical view. Performs initialisation of view:
+     * initialises the view components and adds them to the overview.
+     */
     public IcalView() {
         addClassName("ical-view");
 

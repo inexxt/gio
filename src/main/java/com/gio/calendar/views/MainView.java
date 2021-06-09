@@ -36,6 +36,10 @@ public class MainView extends AppLayout {
     private H1 viewTitle;
     private Button changeColor;
 
+    /**
+     * Constructor of main view. Performs initialisation of view:
+     * initialises the view components and adds them to the overview.
+     */
     public MainView() {
         setPrimarySection(Section.DRAWER);
         addToNavbar(true, createHeaderContent());
@@ -43,6 +47,10 @@ public class MainView extends AppLayout {
         addToDrawer(createDrawerContent(menu));
     }
 
+    /**
+     * Creates component representing header content of page
+     * @return Component representing header content of page
+     */
     private Component createHeaderContent() {
         HorizontalLayout layout = new HorizontalLayout();
         layout.setId("header");
@@ -57,6 +65,11 @@ public class MainView extends AppLayout {
         return layout;
     }
 
+    /**
+     * Creates component on the left of the page
+     * @param menu menu which this component should contain
+     * @return Component on the left of the page
+     */
     private Component createDrawerContent(Tabs menu) {
         VerticalLayout layout = new VerticalLayout();
         layout.setSizeFull();
@@ -77,6 +90,10 @@ public class MainView extends AppLayout {
         return layout;
     }
 
+    /**
+     * Creates menu
+     * @return menu
+     */
     private Tabs createMenu() {
         final Tabs tabs = new Tabs();
         tabs.setOrientation(Tabs.Orientation.VERTICAL);
@@ -86,12 +103,22 @@ public class MainView extends AppLayout {
         return tabs;
     }
 
+    /**
+     * Creates menu items
+     * @return Array representing menu items
+     */
     private Component[] createMenuItems() {
         return new Tab[]{createTab("Today overview", TodayOverview.class), createTab("Calendar overview", CalendarOverview.class),
                 createTab("Add event", NewEventView.class), createTab("Add task", NewTaskView.class),
                 createTab("Add reminder", NewReminderView.class), createTab("Add note", NewNoteView.class), createTab("Import/Export Ical", IcalView.class)};
     }
 
+    /**
+     * Creates one tab of the menu
+     * @param text text of the tab
+     * @param navigationTarget target on click
+     * @return One tab of the menu
+     */
     private static Tab createTab(String text, Class<? extends Component> navigationTarget) {
         final Tab tab = new Tab();
         tab.add(new RouterLink(text, navigationTarget));
@@ -99,6 +126,9 @@ public class MainView extends AppLayout {
         return tab;
     }
 
+    /**
+     * Performs action after navigation
+     */
     @Override
     protected void afterNavigation() {
         super.afterNavigation();
@@ -106,11 +136,20 @@ public class MainView extends AppLayout {
         viewTitle.setText(getCurrentPageTitle());
     }
 
+    /**
+     * Gets tab of the menu for component
+     * @param component
+     * @return Tab of the menu associated with component
+     */
     private Optional<Tab> getTabForComponent(Component component) {
         return menu.getChildren().filter(tab -> ComponentUtil.getData(tab, Class.class).equals(component.getClass()))
                 .findFirst().map(Tab.class::cast);
     }
 
+    /**
+     * Gets current page title
+     * @return String representing current page title
+     */
     private String getCurrentPageTitle() {
         PageTitle title = getContent().getClass().getAnnotation(PageTitle.class);
         return title == null ? "" : title.value();

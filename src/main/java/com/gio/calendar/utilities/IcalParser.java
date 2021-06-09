@@ -23,8 +23,18 @@ import java.util.List;
 import static net.fortuna.ical4j.util.CompatibilityHints.*;
 import static net.fortuna.ical4j.util.CompatibilityHints.KEY_OUTLOOK_COMPATIBILITY;
 
+/**
+ * Class for parsing ical files and for exporting events from database to ical format.
+ */
 public class IcalParser {
 
+    /**
+     * Adds events with properties from propertyList to events list on dates specified in periodList.
+     * @param events list of the event, where new events are added
+     * @param periodList list of dates
+     * @param propertyList list of properties
+     * @param zoneId zone id
+     */
     private static void addEvents(List<CalendarEvent> events, PeriodList periodList, PropertyList propertyList, ZoneId zoneId) {
         String name, description, tags, location, people;
         name = description = tags = location = people = "";
@@ -72,6 +82,12 @@ public class IcalParser {
         }
     }
 
+    /**
+     * Returns date and time in other format
+     * @param date
+     * @param time
+     * @return Date and time in other format
+     */
     private static java.util.Calendar getDate(LocalDate date, LocalTime time) {
         java.util.Calendar outDate = new GregorianCalendar();
         outDate.set(java.util.Calendar.MONTH, date.getMonthValue() - 1);
@@ -83,6 +99,13 @@ public class IcalParser {
         return outDate;
     }
 
+    /**
+     * Parses file as ical file. Throws exceptions if an error occurs.
+     * @param file
+     * @return Returns list of calendar events, which were defined in the file
+     * @throws ParserException
+     * @throws IOException
+     */
     public static List<CalendarEvent> parseFile(InputStream file) throws ParserException, IOException {
         CompatibilityHints.setHintEnabled(KEY_RELAXED_UNFOLDING, true);
         CompatibilityHints.setHintEnabled(KEY_RELAXED_PARSING, true);
@@ -120,6 +143,11 @@ public class IcalParser {
     }
 
 
+    /**
+     * Exports events in ical format
+     * @param events list of all events
+     * @return InputStream representing content of the file containing exported events
+     */
     public static InputStream exportEvents(List<CalendarEvent> events) {
         // Create a calendar
         net.fortuna.ical4j.model.Calendar icsCalendar = new net.fortuna.ical4j.model.Calendar();

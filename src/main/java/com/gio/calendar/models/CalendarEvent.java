@@ -22,6 +22,10 @@ import java.util.Set;
         @NamedQuery(name = "CalendarEvent.findByDate",
                 query = "SELECT e FROM CalendarEvent e WHERE e.eventDate = :date")
 })
+
+/**
+ * Represents calendar event
+ */
 public class CalendarEvent {
 
     @Id
@@ -57,9 +61,17 @@ public class CalendarEvent {
     private String eventName;
     private String eventPlace;
 
+    /**
+     * Constructor for persistance.
+     */
     public CalendarEvent() {
-    } // for persistance
+    }
 
+    /**
+     * Returns true if o equals this object and false otherwise.
+     * @param o
+     * @return true if o equals this object and false otherwise.
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -76,11 +88,26 @@ public class CalendarEvent {
                 Objects.equals(eventPlace, that.eventPlace);
     }
 
+    /**
+     * Generates hash code of object.
+     * @return Integer representing hash code of object.
+     */
     @Override
     public int hashCode() {
         return Objects.hash(eventId, eventDate, eventStartTime, eventEndTime, eventTags, eventPeople, eventDescription, eventName, eventPlace);
     }
 
+    /**
+     * Standard constructor of this class
+     * @param eventName
+     * @param eventDescription
+     * @param eventDate
+     * @param eventStartTime
+     * @param eventEndTime
+     * @param tags
+     * @param place
+     * @param people
+     */
     public CalendarEvent(String eventName,
                          String eventDescription,
                          LocalDate eventDate,
@@ -99,14 +126,26 @@ public class CalendarEvent {
         this.eventPlace = place;
     }
 
+    /**
+     * Gets event start time
+     * @return String representing event start time
+     */
     public String getEventStartTimeString() {
         return TimeDateUtils.timeToString(eventStartTime);
     }
 
+    /**
+     * Gets event end time
+     * @return String representing event end time
+     */
     public String getEventEndTimeString() {
         return TimeDateUtils.timeToString(eventEndTime);
     }
 
+    /**
+     * Updates object's fields with values from newEvent.
+     * @param newEvent
+     */
     public void update(CalendarEvent newEvent) {
         this.eventDate = newEvent.getEventDate();
         this.eventStartTime = newEvent.getEventStartTime();
@@ -118,6 +157,16 @@ public class CalendarEvent {
         this.eventPlace = newEvent.getEventPlace();
     }
 
+    /**
+     * Generates list of repeated events. It computes one event for each day in days list.
+     * @param days
+     * @param starts
+     * @param ends
+     * @param eventName
+     * @param eventDescription
+     * @param eventTags
+     * @return  List of events
+     */
     public static List<CalendarEvent> getRepeatedEvents(List<LocalDate> days,
                                                         List<Integer> starts,
                                                         List<Integer> ends,
@@ -139,6 +188,11 @@ public class CalendarEvent {
         return events;
     }
 
+    /**
+     * Compares event with this object without comparing id.
+     * @param event
+     * @return True if all fields (except id) of event equals all fields of object and false otherwise.
+     */
     public boolean compareWithoutId(CalendarEvent event) {
         return eventDate.equals(event.getEventDate()) &&
                 eventStartTime.equals(event.getEventStartTime()) &&
@@ -150,46 +204,90 @@ public class CalendarEvent {
                 eventPlace.equals(event.getEventPlace());
     }
 
+    /**
+     * Gets id of the event
+     * @return Integer representing id of the event
+     */
     public int getEventId() {
         return eventId;
     }
 
+    /**
+     * Sets id of the event to eventId
+     * @param eventId
+     */
     public void setEventId(int eventId) {
         this.eventId = eventId;
     }
 
+    /**
+     * Gets date of the event
+     * @return Date of the event
+     */
     public LocalDate getEventDate() {
         return eventDate;
     }
 
+    /**
+     * Gets start time of the event
+     * @return Start time of the event
+     */
     public LocalTime getEventStartTime() {
         return eventStartTime;
     }
 
+    /**
+     * Gets end timme of the event
+     * @return End time of the event
+     */
     public LocalTime getEventEndTime() {
         return eventEndTime;
     }
 
+    /**
+     * Gets tags of the event
+     * @return Set of tags
+     */
     public Set<Tag> getEventTags() {
         return eventTags;
     }
 
+    /**
+     * Gets people associated with the event
+     * @return Set representing people associated with the event
+     */
     public Set<Person> getEventPeople() {
         return eventPeople;
     }
 
+    /**
+     * Gets description of the event
+     * @return String representing description of the event
+     */
     public String getEventDescription() {
         return eventDescription;
     }
 
+    /**
+     * Gets name of the event
+     * @return String representing name of the event
+     */
     public String getEventName() {
         return eventName;
     }
 
+    /**
+     * Sets nane of the event to eventName
+     * @param eventName
+     */
     public void setEventName(String eventName) {
         this.eventName = eventName;
     }
 
+    /**
+     * Gets place of the event
+     * @return String representing place of the event
+     */
     public String getEventPlace() {
         return eventPlace;
     }
